@@ -153,8 +153,3 @@ O projeto foi inspirado em:
 Universidade Federal Fluminense — Ciência da Computação
 
 ---
-
-# 📜 Licença
-
-Este projeto possui fins acadêmicos.
-```
