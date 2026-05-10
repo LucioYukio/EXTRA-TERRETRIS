@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Sobre o Projeto
+## Sobre o Projeto
 
 **EXTRA-TERRETRIS** é um jogo multiplayer local competitivo desenvolvido para a disciplina de **Laboratório de Programação de Jogos** da Universidade Federal Fluminense (UFF).
 
@@ -12,19 +12,19 @@ O jogo combina elementos clássicos de **Shoot 'em Up (Shmup)** e **Tetris**, cr
 
 Durante a partida, os jogadores alternam entre:
 
-- ⚔️ Combate espacial em tempo real
-- 🛒 Fases estratégicas de compra de habilidades
-- 🧩 Minigames competitivos inspirados em Tetris
+-  Combate espacial em tempo real
+-  Fases estratégicas de compra de habilidades
+-  Minigames competitivos inspirados em Tetris
 
 ---
 
-# 🎮 Gameplay
+# Gameplay
 
 Cada jogador controla uma nave espacial em lados opostos da tela.
 
 A gameplay é dividida em ciclos compostos por diferentes fases:
 
-## ⚔️ Fase de Combate
+##  Fase de Combate
 
 - Os jogadores enfrentam ondas de inimigos
 - É necessário destruir naves inimigas e sobreviver aos projéteis
@@ -33,7 +33,7 @@ A gameplay é dividida em ciclos compostos por diferentes fases:
 
 ---
 
-## 🛒 Fase de Compras
+## Fase de Compras
 
 Após o combate, os jogadores podem gastar Aura para comprar habilidades especiais.
 
@@ -45,7 +45,7 @@ As habilidades podem:
 
 ---
 
-## 🧩 Fase de Sabotagem
+## Fase de Sabotagem
 
 Um minigame competitivo inspirado em **Tetris**.
 
@@ -58,11 +58,11 @@ Nessa etapa:
 
 ---
 
-# 🌌 Ambientação
+# Ambientação
 
 O jogo se passa em um universo sci-fi com temática alienígena e estética inspirada na cultura Y2K.
 
-## ✨ Estilo Visual
+## Estilo Visual
 
 - Espaço sideral
 - Asteroides
@@ -73,7 +73,7 @@ O jogo se passa em um universo sci-fi com temática alienígena e estética insp
 
 ---
 
-# 🎵 Áudio
+# Áudio
 
 ## Música
 
@@ -88,7 +88,7 @@ O jogo se passa em um universo sci-fi com temática alienígena e estética insp
 
 ---
 
-# 🧠 Principais Mecânicas
+# Principais Mecânicas
 
 - Multiplayer local
 - Shoot 'em Up competitivo
@@ -100,7 +100,7 @@ O jogo se passa em um universo sci-fi com temática alienígena e estética insp
 
 ---
 
-# 🕹️ Fluxo da Partida
+# Fluxo da Partida
 
 ```text
 Menu Inicial
@@ -120,7 +120,7 @@ O loop continua até que um dos jogadores atinja a quantidade de pontos definida
 
 ---
 
-# 🛠️ Tecnologias
+# Tecnologias
 
 > Adicione conforme o desenvolvimento do projeto.
 
@@ -133,24 +133,7 @@ Exemplo:
 - Photoshop
 
 ---
-
-# 📂 Estrutura do Projeto
-
-```bash
-EXTRA-TERRETRIS/
-│
-├── assets/        # Sprites, sons e efeitos
-├── docs/          # Documentação e GDD
-├── src/           # Código-fonte
-├── scenes/        # Cenas do jogo
-├── scripts/       # Scripts e lógica
-├── README.md
-└── .gitignore
-```
-
----
-
-# 📸 Conceitos e Referências
+# Conceitos e Referências
 
 O projeto foi inspirado em:
 
@@ -162,7 +145,7 @@ O projeto foi inspirado em:
 
 ---
 
-# 👨‍💻 Desenvolvedores
+# Desenvolvedores
 
 - Lucio Yukio Ribeiro Sawamura
 - Ronaldo Dias Monteiro Júnior
