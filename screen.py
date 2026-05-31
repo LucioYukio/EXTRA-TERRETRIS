@@ -394,7 +394,7 @@ class Screen:
         while len(render_buffer): # enquanto sobrarem elementos
             for obj in render_buffer.copy():
                 if not isinstance(obj,Object):
-                    continue
+                    render_buffer.remove(obj)
                 if obj.z == layer:
                     render_buffer.remove(obj)
                     if obj.get_tab() == self.get_tab():

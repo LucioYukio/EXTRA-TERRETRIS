@@ -12,6 +12,10 @@ from text import Text
 
 LOG_PERFORMANCE = True
 performance_log : List[List[float]] = []
+## se o fps for menor que isso, tomar algumas medidas, como nao spawnar novos inimigos
+## apenas uma medida preventiva, o fps pode acabar sendo menos que o target.
+FPS_TARGET: float = 60
+fps : float = 0
 
 update_res_scale([TELA_W, TELA_H])
 screen = get_screen()
@@ -35,9 +39,9 @@ control_esquemes = [
     ["w", "s", "a", "d", "space", "alt"]
 ]
 
-enemy_spawn_interval : float = 2.4
+enemy_spawn_interval : float = 0.2
 enemy_spawn_cooldown : float = 0
-MAX_ENEMY_COUNT : int = 10 *2
+MAX_ENEMY_COUNT : int = 50 *2
 enemy_horizontal_padding : int = 8 # padding to account for when spawning enemies
 
 #---------------- FUNCOES ---------------------------
@@ -89,19 +93,19 @@ TAB_JOGO = 0
 
 get_screen().bg_imgs[TAB_JOGO] = "assets/images/double_bg.png"
 
-fps_text : Text = get_screen().add_object(Text(
-    TAB_JOGO, mouse
-))
-fps_text.texts = ["FPS: ", 0]
-fps_text.color = "green"
-fps_text.y = TELA_H - fps_text.get_height()
+# fps_text : Text = get_screen().add_object(Text(
+#     TAB_JOGO, mouse
+# ))
+# fps_text.texts = ["FPS: ", 0]
+# fps_text.color = "green"
+# fps_text.y = TELA_H - fps_text.get_height()
 
-qtd_text : Text = get_screen().add_object(Text(
-    TAB_JOGO, mouse
-))
-qtd_text.texts = ["Objetos: ", 0]
-qtd_text.color = "green"
-qtd_text.y = fps_text.y - qtd_text.get_height()
+# qtd_text : Text = get_screen().add_object(Text(
+#     TAB_JOGO, mouse
+# ))
+# qtd_text.texts = ["Objetos: ", 0]
+# qtd_text.color = "green"
+# qtd_text.y = fps_text.y - qtd_text.get_height()
 
 nave1 : Nave = get_screen().add_object(Nave(
     "assets/images/nave1.png",
@@ -139,20 +143,20 @@ nave2.bullet_img = "assets/images/bullet_green.png"
 nave2.explosion_info["img"] = "assets/images/explosion_green.png"
 nave2.side = 1
 
-pontos1 : Text = get_screen().add_object(Text(
-    TAB_JOGO,
-    mouse
-))
-pontos1.size = 32
-pontos1.texts = ["Pontos: ", 0]
+# pontos1 : Text = get_screen().add_object(Text(
+#     TAB_JOGO,
+#     mouse
+# ))
+# pontos1.size = 32
+# pontos1.texts = ["Pontos: ", 0]
 
-pontos2 : Text = get_screen().add_object(Text(
-    TAB_JOGO,
-    mouse
-))
-pontos2.size = 32
-pontos2.texts = ["Pontos: ", 0]
-pontos2.x = TELA_W - pontos2.get_width()
+# pontos2 : Text = get_screen().add_object(Text(
+#     TAB_JOGO,
+#     mouse
+# ))
+# pontos2.size = 32
+# pontos2.texts = ["Pontos: ", 0]
+# pontos2.x = TELA_W - pontos2.get_width()
 
 
 TAB_TETRIS = 1
@@ -216,7 +220,7 @@ while True:
     # --------
     
     #----------------------- Enemy Spawn ------------------------------
-    if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT:
+    if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and fps > FPS_TARGET:
         spawn_enemy(get_random_pos(0), TAB_JOGO, (-100, int(get_screen().window.width/2)), 0)
         spawn_enemy(get_random_pos(1), TAB_JOGO, (int(get_screen().window.width/2), int(get_screen().window.width) + 100), 1)
         enemy_spawn_cooldown = enemy_spawn_interval
@@ -230,19 +234,17 @@ while True:
     enemy_spawn_cooldown = max(enemy_spawn_cooldown - get_screen().window.delta_time(), 0)
     
     # update UI
-    pontos1.texts[-1] = nave1.health
+    # pontos1.texts[-1] = nave1.health
     
     get_screen().update()
     
-    qtd_text.texts[-1] = len(get_screen()._objs)
-    
-    print(nave2.side)
+    # qtd_text.texts[-1] = len(get_screen()._objs)
     
     intervalo = time.perf_counter() - tempo
     if intervalo < MAX_TEMPO_PASSADO:
         ticks += 1
         fps = ticks/intervalo
-        fps_text.texts[-1] = int(fps)
+        # fps_text.texts[-1] = int(fps)
     else:
         # save in a file for profiling
         performance_log.append([len(get_screen()._objs), ticks/intervalo])
