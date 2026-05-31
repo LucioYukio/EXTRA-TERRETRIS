@@ -122,7 +122,7 @@ class Button(Object):
         self.white_sprite.x = self.black_sprite.x - self._border_width
         self.white_sprite.y = self.black_sprite.y - self._border_width
             
-    def render(self, window: w.Window):
+    def render(self):
         color = self._color_normal
         
         if self.is_pressed():
@@ -134,7 +134,7 @@ class Button(Object):
         else:
             self.black_sprite.draw()
         
-        window.draw_text(
+        get_screen().window.draw_text(
             self._text, 
             self.x + self._margin_x, 
             self.y + self._margin_y,

@@ -208,7 +208,7 @@ class Object:
             if spr.curr_frame != target_frame:
                 spr.set_curr_frame(target_frame)
 
-    def render(self, window: w.Window):
+    def render(self):
         # check what sprites in this object are in bounds and render them.
         for i in range(self.h_parts):
             if self.is_h_part_in_bounds(i):
@@ -398,7 +398,7 @@ class Screen:
                 if obj.z == layer:
                     render_buffer.remove(obj)
                     if obj.get_tab() == self.get_tab():
-                        obj.render(self.window) # desenhar elementos dessa camada
+                        obj.render() # desenhar elementos dessa camada
             layer += 1
         
         self.window.update()

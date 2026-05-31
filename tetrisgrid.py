@@ -63,7 +63,7 @@ class TetrisGrid(Object):
                 grid[i][j].x = self.x + offset.x + self._piece_size.x * j
                 grid[i][j].y = self.y + offset.y + self._piece_size.y * i
     
-    def render(self, window: w.Window):
+    def render(self):
         for i in range(int(self._lines)): # linhas
             for j in range(int(self._columns)): # colunas
                 match self._matrix[i][j]:

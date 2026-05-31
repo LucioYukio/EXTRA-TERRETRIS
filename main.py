@@ -9,6 +9,7 @@ from nave import *
 from enemy import *
 from tetrisgrid import *
 from text import Text
+from tetris import Tetris
 
 LOG_PERFORMANCE = True
 performance_log : List[List[float]] = []
@@ -16,6 +17,7 @@ performance_log : List[List[float]] = []
 ## apenas uma medida preventiva, o fps pode acabar sendo menos que o target.
 FPS_TARGET: float = 60
 fps : float = 0
+last_average_fps : float = 9999
 
 update_res_scale([TELA_W, TELA_H])
 screen = get_screen()
@@ -161,49 +163,15 @@ nave2.side = 1
 
 TAB_TETRIS = 1
 
-tetris_grid1 : TetrisGrid = get_screen().add_object(TetrisGrid(Vector2(42,42), 20, 10, TAB_TETRIS, mouse))
-tetris_grid1.FILLED = "assets/images/tile_filled_purple.png"
-tetris_grid1.x = 200
-tetris_grid1.y = 42
-tetris_grid1.build_grids()
+tetris : Tetris = get_screen().add_object(Tetris(
+    Vector2(32,32),
+    20,
+    10,
+    TAB_TETRIS,
+    mouse,
+    teclado
+))
 
-tetris_grid2 : TetrisGrid = get_screen().add_object(TetrisGrid(Vector2(42,42), 20, 10, TAB_TETRIS, mouse))
-tetris_grid2.FILLED = "assets/images/tile_filled_green.png"
-tetris_grid2.x = 1000
-tetris_grid2.y = 42
-tetris_grid2.build_grids()
-
-# preencher para demonstracao ---------
-for i in range(10):
-    tetris_grid1._matrix[-1][i] = 1
-    tetris_grid1._matrix[-2][i] = 2
-    tetris_grid1._matrix[-3][i] = 2
-    tetris_grid1._matrix[-4][i] = 2
-    
-    tetris_grid2._matrix[-1][i] = 1
-    tetris_grid2._matrix[-2][i] = 1
-    tetris_grid2._matrix[-3][i] = 2
-    tetris_grid2._matrix[-4][i] = 2
-tetris_grid2._matrix[-3][4] = 0
-tetris_grid2._matrix[-4][4] = 0
-tetris_grid2._matrix[-4][5] = 0
-tetris_grid2._matrix[-4][6] = 0
-tetris_grid2._matrix[-5][1] = 2
-
-tetris_grid1._matrix[-3][2] = 0
-tetris_grid1._matrix[-4][4] = 0
-tetris_grid1._matrix[-4][7] = 0
-tetris_grid1._matrix[-4][3] = 0
-    
-tetris_grid1._matrix[4][5] = 2
-tetris_grid1._matrix[5][5] = 2
-tetris_grid1._matrix[6][5] = 2
-tetris_grid1._matrix[7][5] = 2
-
-tetris_grid2._matrix[8][1] = 2
-tetris_grid2._matrix[8][2] = 2
-tetris_grid2._matrix[8][3] = 2
-tetris_grid2._matrix[9][2] = 2
 # -----------
 
 # ------------------------- Game Loop ----------------------------
@@ -214,13 +182,13 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(0)
+get_screen().set_tab(1)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
     
     #----------------------- Enemy Spawn ------------------------------
-    if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and fps > FPS_TARGET:
+    if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
         spawn_enemy(get_random_pos(0), TAB_JOGO, (-100, int(get_screen().window.width/2)), 0)
         spawn_enemy(get_random_pos(1), TAB_JOGO, (int(get_screen().window.width/2), int(get_screen().window.width) + 100), 1)
         enemy_spawn_cooldown = enemy_spawn_interval
@@ -255,6 +223,7 @@ while True:
                 w.writerows(performance_log)
         tempo = time.perf_counter()
         ticks = 0
+        last_average_fps = fps
     
 
     

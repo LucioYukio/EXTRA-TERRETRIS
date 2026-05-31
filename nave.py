@@ -114,13 +114,12 @@ class Rastro(Object):
             self.rastros[i].x = self.rastros[i+1].x + self.rastros[i+1].get_width()/2 - self.rastros[i].get_width()/2
             self.rastros[i].y = self.rastros[i+1].y + self.rastros[i+1].get_height()/2 - self.rastros[i].get_height()/2
     
-    def render(self, window: Window):
-        for r in self.rastros:
-            r.render(window)
+    def render(self):
+        return
     
     def destroy(self):
         for rastro in self.rastros:
-            get_screen().remove_object_by_id(rastro.get_id())
+            rastro.wants_to_die = True
 
 class Nave(Body):
     
@@ -138,6 +137,7 @@ class Nave(Body):
         """Stats vars"""
         self.default_health : float = 9999
         self.health : float = 9999
+        self.score : int = 0
         # tempo ate poder levar dano de novo
         self.damage_interval : float = 1
         self.damage_cooldown : float = 0
@@ -254,12 +254,13 @@ class Nave(Body):
     def destroy_rastro(self):
         if not hasattr(self, "rastro"):
             return
-        self.rastro.destroy()
-        get_screen().remove_object_by_id(self.rastro.get_id())
+        self.rastro.wants_to_die = True
     
     def destroy(self):
-        self.destroy_rastro()
-
+        self.rastro.wants_to_die
+        for r in self.rastro.rastros:
+            r.wants_to_die = True
+    
     def check_damage(self):
         colliders = self.get_colliders()
         for c in colliders:
@@ -278,7 +279,7 @@ class Nave(Body):
             self.wants_to_die = True
 
     def destroy_bullet(self, bullet: Bullet):
-        get_screen().remove_object_by_id(bullet.get_id())
+        bullet.wants_to_die = True
         self.bullets.remove(bullet)
     
     def propagate_bounds(self):
