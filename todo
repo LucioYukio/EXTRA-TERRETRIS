@@ -1,0 +1,18 @@
+[] contador de pontos
+[] poderes
+[] menu principal
+[] loja de poderes
+[] indicador de poderes do lado
+[] BG parallax
+[] Things move in relation to respective player
+    [] add a fictional camera coordinate that offsets every object atrelated to it
+[?] Only check rendering parts if object not entirely in h bounds
+[X] Fix animations
+[] Nave explodes when killed
+[X] Criar class de FX
+    [X] Toca uma animacao e morre depois de terminar
+    [X] Renderiza na segunda camada
+[X] Naves da esquerda so sao afetadas por coisas da esquerda
+[] Fazer um UI de numero com sprite pra nao precisar usar draw text
+[] Fazer animacoes seguirem res_scale
+[] Fazer velocidades e tals seguirem res_scale
