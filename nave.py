@@ -1,19 +1,18 @@
 from typing import Dict
 
 from body import *
-from body import Mouse
 from pplay.animation import Animation
 from pplay.window import Window
 from projectile import Projectile
-from screen import Mouse
+from screen import *
 from effect import Effect
 
 DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 80)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)
 
 class Bullet(Projectile):
-    def __init__(self, img: str, tab: int, mouse: Mouse, objs: list):
-        super().__init__(img, 18, 18, tab, mouse, objs)
+    def __init__(self, img: str, tab: int, objs: list):
+        super().__init__(img, 18, 18, tab, objs)
         self.set_total_frames(4)
         self.frame_duration = 0.1
         
@@ -32,15 +31,14 @@ class Bullet(Projectile):
         #print(self.horizontal_bounds)
     
     def spawn_explosion(self):
-        explosion : Effect = get_screen().add_object(Effect(
+        explosion : Effect = Effect(
             self.explosion_info["img"],
             self.explosion_info["frames"],
             self.explosion_info["duration"],
             self.explosion_info["width"],
             self.explosion_info["height"],
-            self.get_tab(),
-            self._mouse
-        ))
+            self.get_tab()
+        )
         
         target_coords : Vector2 = self.get_center()
         target_coords.x -= explosion.get_width()/2
@@ -50,8 +48,8 @@ class Bullet(Projectile):
         explosion.y = target_coords.y
 
 class NaveBullet(Bullet):
-    def __init__(self, img: str, tab: int, mouse: Mouse, objs: list):
-        super().__init__(img, tab, mouse, objs)
+    def __init__(self, img: str, tab: int, objs: list):
+        super().__init__(img, tab, objs)
         self.tags.append("player_projectile")
         self.velocity.y = -600
         
@@ -60,9 +58,9 @@ class NaveBullet(Bullet):
         #self.explosion_info["img"] = "assets/images/explosion_red.png"
 
 class Rastro(Object):
-    def __init__(self, tab: int, mouse: Mouse, rastros: int):
+    def __init__(self, tab: int, rastros: int):
         # implementar intervalo: espera "intervalo" cooldown para fazer as trocas
-        super().__init__("assets/images/empty_pixel.png",8, 8, tab, mouse)
+        super().__init__(EMPTY_PIXEL,8, 8, tab)
         
         self.rastros : List[Object] = [] # do mais fino pro mais grosso
         self.qtd = rastros
@@ -77,14 +75,13 @@ class Rastro(Object):
         self.keep_in_bounds = False
         
         for i in range(rastros):
-            rastro : Object = get_screen().add_object(Object(
+            rastro : Object = Object(
                 "assets/images/rastro.png",
                 int(self._width * i / rastros + 2),
                 int(self._height * i / rastros + 2),
                 tab,
-                mouse,
                 2
-            ))
+            )
             rastro.destroy_out_of_h_bounds = False
             rastro.destroy_out_of_v_bounds = False
             rastro.horizontal_bounds = self.horizontal_bounds
@@ -125,11 +122,11 @@ class Nave(Body):
     
     rastro : Rastro
     
-    def __init__(self, image: str, width: int, height: int, tab: int, mouse: Mouse, objs: list, keyboard: k.Keyboard, h_parts: int = 16):
-        super().__init__(image, width, height, tab, mouse, objs, h_parts)
+    def __init__(self, image: str, width: int, height: int, tab: int, objs: list, h_parts: int = 16):
+        super().__init__(image, width, height, tab, objs, h_parts)
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile"}
-        self.keyboard : k.Keyboard = keyboard
+        self.keyboard = get_screen().keyboard
         self.speed : float = 300
         self.direction : Vector2 = Vector2(0,0)
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
@@ -170,29 +167,28 @@ class Nave(Body):
         self.categorie = "nave"
     
     def shoot(self):
-        self.bullets.append(get_screen().add_object(NaveBullet(self.bullet_img, self._tab, self._mouse, self.objs)))
+        self.bullets.append(NaveBullet(self.bullet_img, self._tab, self.objs))
         self.bullets[-1].x = self.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].y = self.y - self.bullets[-1].get_height() + 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
 
     def spawn_rastro(self):
-        self.rastro = get_screen().add_object(Rastro(self._tab, self._mouse, 8))
+        self.rastro = Rastro(self._tab, 8)
         self.rastro.horizontal_bounds = self.horizontal_bounds
         for r in self.rastro.rastros:
             r.horizontal_bounds = self.horizontal_bounds
         self.apply_rastro_offset()
 
     def spawn_explosion(self):
-        explosion : Effect = get_screen().add_object(Effect(
+        explosion : Effect = Effect(
             self.explosion_info["img"],
             self.explosion_info["frames"],
             self.explosion_info["duration"],
             self.explosion_info["width"],
             self.explosion_info["height"],
-            self.get_tab(),
-            self._mouse
-        ))
+            self.get_tab()
+        )
         
         target_coords : Vector2 = self.get_center()
         target_coords.x -= explosion.get_width()/2

@@ -5,8 +5,8 @@ class TetrisGrid(Object):
     A matriz _matrix de inteiros dispoe a informacao de cada
     celula: se for 0 esta vazia, se for 1 esta bloqueada e se
     for 2 esta preenchida. CHAMAR BUILD GRIDS APOS CRIAR / MEXER NAS PROPRIEDADES"""
-    def __init__(self, piece_size : Vector2, linhas : int, colunas : int, tab: int, mouse: Mouse):
-        super().__init__("assets/images/black_pixel.png", 1, 1, tab, mouse)
+    def __init__(self, piece_size : Vector2, linhas : int, colunas : int, tab: int):
+        super().__init__("assets/images/black_pixel.png", 1, 1, tab)
         self._piece_size : Vector2 = piece_size
         ## quantidade de pecas
         self._lines : int = linhas

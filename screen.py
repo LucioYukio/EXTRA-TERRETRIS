@@ -21,11 +21,12 @@ from vector2 import Vector2
 # TODO make a global delta_time and time elapsed variables
 
 REF_RES = (1600, 900) # tamanhos seram calculados em relacao a essa variavel
+res_scale : List[float] = [1,1]
 
 TELA_W = 1600
 TELA_H = 900
 
-res_scale : List[float] = [1,1]
+EMPTY_PIXEL = "assets/images/empty_pixel.png"
 
 def update_res_scale(new_res : List[float]):
     global REF_RES, res_scale
@@ -61,8 +62,9 @@ class Object:
     out_of_h_bounds : bool = False
     ## precisa ser atualizado pela screen antes do update
     out_of_v_bounds : bool = False
-    def __init__(self, image : str, width : int, height: int, tab: int, mouse: Mouse, h_parts : int = 1):
-        self._mouse  : Mouse    = mouse
+    def __init__(self, image : str, width : int, height: int, tab: int, h_parts : int = 1):
+        self._mouse : Mouse = get_screen().mouse
+        self._keyboard : k.Keyboard = get_screen().keyboard
 
         self.image : str = image
         self.sprites : List[a.Animation] = []
@@ -88,8 +90,9 @@ class Object:
 
         self.build_sprites()
 
-        self.visible : bool     = True
-        self.enabled : bool     = True
+        self.visible : bool = True
+        self.enabled : bool = True
+        self.playing : bool = True
         ## precisa ser atualizado pela screen antes do update
         self.delta_time : float = 0
         ## precisa ser atualizado pela screen antes do update
@@ -116,6 +119,7 @@ class Object:
         
         self.wants_to_die : bool = False
 
+        get_screen().add_object(self)
 
     def get_tab(self):
         return self._tab
@@ -201,26 +205,33 @@ class Object:
     def animate(self):
         """Aplica a logica de animacao. Chamar em todo update."""
         self._animation_time_elapsed += self.delta_time
-        curr_frame : int = int(self._animation_time_elapsed / self.frame_duration) % self.total_frames
-        for i in range(self.h_parts):
-            spr = self.sprites[i]
-            target_frame : int = i + (self.h_parts * curr_frame)
-            if spr.curr_frame != target_frame:
-                spr.set_curr_frame(target_frame)
+        if self.playing:
+            curr_frame : int = int(self._animation_time_elapsed / self.frame_duration) % self.total_frames
+            for i in range(self.h_parts):
+                spr = self.sprites[i]
+                target_frame : int = i + (self.h_parts * curr_frame)
+                if spr.curr_frame != target_frame:
+                    spr.set_curr_frame(target_frame)
 
     def render(self):
         # check what sprites in this object are in bounds and render them.
+        if not self.visible:
+            return
         for i in range(self.h_parts):
             if self.is_h_part_in_bounds(i):
                 self.sprites[i].draw()
 
-    def update_sprites(self):
+    def update_sprites(self, grow_a_bit: bool = True, h_mult: int = 1):
         """Mudar o tamanho das imagens de acordo com o
-        width e height"""
+        width e height
+            grow_a_bit = if to make each part a little larger
+            h_mult = image width is multiple of h_mult"""
         # TODO corrigir pedacinho da direita nao aparecendo
         i : int = 0
         for spr in self.sprites:
-            spr.image = pygame.transform.scale(spr.image, ((self.get_width() + self.h_parts) * self.total_frames, self.get_height()))
+            width = (self.get_width() + self.h_parts * grow_a_bit) * self.total_frames
+            width -= width % h_mult
+            spr.image = pygame.transform.scale(spr.image, (width, self.get_height()))
             spr.width = int(self.get_width()/self.h_parts)
             spr.width += 1
             spr.height = int(self.get_height())
@@ -231,6 +242,9 @@ class Object:
         """Para criancas terem comportamento por frame"""
         self.screen_size.x = REF_RES[0] * res_scale[0]
         self.screen_size.y = REF_RES[1] * res_scale[1]
+        
+        if self.total_frames == 1 and self.playing == True:
+            self.playing = False
         
         self.animate()
         for spr in self.sprites:
@@ -261,6 +275,7 @@ class Screen:
         self.bg_image    : str          = ""
         self._id_counter : int          = 0
         self.mouse       : Mouse        = Mouse()
+        self.keyboard    : k.Keyboard   = k.Keyboard()
         # one color per tab
         self.bg_colors = {}
         # one image per tab
@@ -404,10 +419,6 @@ class Screen:
         self.window.update()
 
 screen_instance : Screen | None = None
-
-## adds object to global the instance of screen
-def add_object(obj):
-    return get_screen().add_object(obj)
 
 ## returns global screen
 def get_screen():

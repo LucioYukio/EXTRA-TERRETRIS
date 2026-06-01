@@ -6,8 +6,6 @@
 # tem uma variavel de estado que diz se esta sendo clicado ou nao, mas
 # so eh acessivel por funcao
 
-import types
-
 from screen import *
 from pplay.animation import Animation
 import pygame.transform
@@ -16,7 +14,7 @@ BLACK_PIXEL : str = "assets/images/black_pixel.png"
 WHITE_PIXEL : str = "assets/images/white_pixel.png"
 
 class Button(Object):
-    def __init__(self, text: str, size: int, tab: int, mouse: Mouse, x : int = 0, y : int = 0):
+    def __init__(self, text: str, size: int, tab: int, x : int = 0, y : int = 0):
         """Tela da qual o objeto pertence"""
         self._tab = tab
         
@@ -43,7 +41,7 @@ class Button(Object):
         self._color_pressed = "black"
         
         """Variaveis do Object"""
-        self._mouse : Mouse = mouse
+        self._mouse : Mouse = get_screen().mouse
         self.categorie = "UI"
         
         self.update_sprite()

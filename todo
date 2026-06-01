@@ -15,4 +15,7 @@
 [X] Naves da esquerda so sao afetadas por coisas da esquerda
 [] Fazer um UI de numero com sprite pra nao precisar usar draw text
 [] Fazer animacoes seguirem res_scale
-[] Fazer velocidades e tals seguirem res_scale
+[] Fazer velocidades e tals seguirem res_scale (?)
+[] Consertar efeitos, estao mostrando o primeiro frame antes de terminar
+[] Fazer texto que usa imagem ao inves de draw_text
+    [] Fazer sheet com todas as letras

@@ -7,9 +7,8 @@ from button import *
 from body import *
 from nave import *
 from enemy import *
-from tetrisgrid import *
-from text import Text
-from tetris import Tetris
+from text import *
+from tetris import *
 
 LOG_PERFORMANCE = True
 performance_log : List[List[float]] = []
@@ -22,9 +21,6 @@ last_average_fps : float = 9999
 update_res_scale([TELA_W, TELA_H])
 screen = get_screen()
 screen.set_title("Extraterretris")
-
-mouse   = Mouse()
-teclado = k.Keyboard()
 
 # variaveis de botao
 botoes_gap  = 20
@@ -62,15 +58,13 @@ def reset_enemy(enemy: Enemy):
 def spawn_enemy(x: float, tab: int, horizontal_bounds : Tuple[int, int], side: int, inimigo: Enemy | None = None):
     img : str = "assets/images/nave_inimiga_verde.png" if side == 0 else "assets/images/nave_inimiga_roxa.png"
     if not isinstance(inimigo, Enemy):
-        inimigo = get_screen().add_object(EnemySin(
+        inimigo = EnemySin(
             img,
             int(DEFAULT_NAVE_SIZE.x),
             int(DEFAULT_NAVE_SIZE.y),
             tab,
-            mouse,
-            get_screen()._objs,
-            teclado
-        ))
+            get_screen()._objs
+        )
     
     if isinstance(inimigo, Enemy):
         x = clamp(x, 0, get_screen().window.width - inimigo.get_width())
@@ -95,29 +89,13 @@ TAB_JOGO = 0
 
 get_screen().bg_imgs[TAB_JOGO] = "assets/images/double_bg.png"
 
-# fps_text : Text = get_screen().add_object(Text(
-#     TAB_JOGO, mouse
-# ))
-# fps_text.texts = ["FPS: ", 0]
-# fps_text.color = "green"
-# fps_text.y = TELA_H - fps_text.get_height()
-
-# qtd_text : Text = get_screen().add_object(Text(
-#     TAB_JOGO, mouse
-# ))
-# qtd_text.texts = ["Objetos: ", 0]
-# qtd_text.color = "green"
-# qtd_text.y = fps_text.y - qtd_text.get_height()
-
-nave1 : Nave = get_screen().add_object(Nave(
+nave1 : Nave = Nave(
     "assets/images/nave1.png",
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
     TAB_JOGO,
-    get_screen().mouse,
     get_screen()._objs,
-    teclado
- ))
+ )
 nave1.x = get_screen().window.width/4 - nave1.get_width()/2
 nave1.y = TELA_H - nave1.get_height() - 8
 nave1.horizontal_bounds.y = get_screen().window.width/2
@@ -127,15 +105,13 @@ nave1.bullet_img = "assets/images/bullet_purple.png"
 nave1.explosion_info["img"] = "assets/images/explosion_purple.png"
 nave1.side = 0
 
-nave2 : Nave = get_screen().add_object(Nave(
+nave2 : Nave = Nave(
     "assets/images/nave2.png",
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
     TAB_JOGO,
-    get_screen().mouse,
-    get_screen()._objs,
-    teclado
-))
+    get_screen()._objs
+)
 nave2.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
 nave2.y = get_screen().window.height - nave2.get_height() - 8
 nave2.horizontal_bounds.x = get_screen().window.width/2
@@ -145,32 +121,33 @@ nave2.bullet_img = "assets/images/bullet_green.png"
 nave2.explosion_info["img"] = "assets/images/explosion_green.png"
 nave2.side = 1
 
-# pontos1 : Text = get_screen().add_object(Text(
-#     TAB_JOGO,
-#     mouse
-# ))
-# pontos1.size = 32
-# pontos1.texts = ["Pontos: ", 0]
-
-# pontos2 : Text = get_screen().add_object(Text(
-#     TAB_JOGO,
-#     mouse
-# ))
-# pontos2.size = 32
-# pontos2.texts = ["Pontos: ", 0]
-# pontos2.x = TELA_W - pontos2.get_width()
-
 
 TAB_TETRIS = 1
 
-tetris : Tetris = get_screen().add_object(Tetris(
+tetris : Tetris = Tetris(
     Vector2(32,32),
     20,
     10,
     TAB_TETRIS,
-    mouse,
-    teclado
-))
+)
+
+fps_text : CompositeText = CompositeText(
+    Vector2(32,32), # tamanho do texto
+    TAB_TETRIS, # tab
+    color_index=0, 
+    background=True
+)
+fps_text.add_text("FPS:")
+fps_text_value : NumberText = fps_text.add_number(4)
+
+gooner_text : CompositeText = CompositeText(
+    Vector2(32,32), 
+    TAB_TETRIS, 
+    color_index=1, 
+    background=False)
+gooner_text.add_text("Gooner...")
+
+gooner_text.y = 64
 
 # -----------
 
@@ -187,22 +164,23 @@ while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
     
-    #----------------------- Enemy Spawn ------------------------------
-    if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
-        spawn_enemy(get_random_pos(0), TAB_JOGO, (-100, int(get_screen().window.width/2)), 0)
-        spawn_enemy(get_random_pos(1), TAB_JOGO, (int(get_screen().window.width/2), int(get_screen().window.width) + 100), 1)
-        enemy_spawn_cooldown = enemy_spawn_interval
-    
-    for o in get_screen()._objs:
-        if o.y >= TELA_H and isinstance(o, Enemy):
-            reset_enemy(o)
+    if get_screen().get_tab == TAB_JOGO:
+        #----------------------- Enemy Spawn ------------------------------
+        if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
+            spawn_enemy(get_random_pos(0), TAB_JOGO, (-100, int(get_screen().window.width/2)), 0)
+            spawn_enemy(get_random_pos(1), TAB_JOGO, (int(get_screen().window.width/2), int(get_screen().window.width) + 100), 1)
+            enemy_spawn_cooldown = enemy_spawn_interval
+        
+        for o in get_screen()._objs:
+            if o.y >= TELA_H and isinstance(o, Enemy):
+                reset_enemy(o)
     # --------
     
     # drain cooldowns
     enemy_spawn_cooldown = max(enemy_spawn_cooldown - get_screen().window.delta_time(), 0)
     
     # update UI
-    # pontos1.texts[-1] = nave1.health
+    
     
     get_screen().update()
     
@@ -212,11 +190,11 @@ while True:
     if intervalo < MAX_TEMPO_PASSADO:
         ticks += 1
         fps = ticks/intervalo
-        # fps_text.texts[-1] = int(fps)
+        fps_text_value.value = int(fps)
     else:
         # save in a file for profiling
         performance_log.append([len(get_screen()._objs), ticks/intervalo])
-        if LOG_PERFORMANCE and teclado.key_pressed("l"):
+        if LOG_PERFORMANCE and get_screen().keyboard.key_pressed("l"):
             with open("performance.csv", "w") as file:
                 w = csv.writer(file)
                 w.writerow(["quantidade de objs", "fps"])

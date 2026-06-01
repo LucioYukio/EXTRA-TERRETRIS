@@ -3,8 +3,8 @@ from pygame.math import lerp
 from screen import *
 
 class Body(Object):
-    def __init__(self, image : str, width : int, height: int, tab: int, mouse: Mouse, objs: list, h_parts: int = 1):
-        super().__init__(image, width, height, tab, mouse, h_parts)
+    def __init__(self, image : str, width : int, height: int, tab: int, objs: list, h_parts: int = 1):
+        super().__init__(image, width, height, tab, h_parts)
         ## Screen vai fazer com que nao saia da tela
         self.keep_in_bounds = True
         # variaveis de fisica

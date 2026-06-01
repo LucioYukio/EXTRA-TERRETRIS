@@ -1,4 +1,3 @@
-from mouse import Mouse
 from pplay.window import Window
 from screen import *
 from tetrisgrid import *
@@ -102,10 +101,10 @@ class Tetris(Object):
     nao eh a mesma que a grid. Quano o render() desse objeto
     eh chamado, ele envia para a matrix da grid a matrix
     desse objeto + a peca atual."""
-    def __init__(self, piece_size: Vector2, linhas: int, colunas: int, tab: int, mouse: Mouse, keyboard: k.Keyboard, h_parts: int = 1):
-        super().__init__("assets/images/empty_pixel.png", 0, 0, tab, mouse, h_parts)
-        self.keyboard = keyboard
-        self.grid : TetrisGrid = TetrisGrid(piece_size, linhas, colunas, tab, mouse)
+    def __init__(self, piece_size: Vector2, linhas: int, colunas: int, tab: int, h_parts: int = 1):
+        super().__init__(EMPTY_PIXEL, 0, 0, tab, h_parts)
+        self.keyboard = get_screen().keyboard
+        self.grid : TetrisGrid = TetrisGrid(piece_size, linhas, colunas, tab)
         
         self.lines : int = linhas
         self.columns : int = colunas

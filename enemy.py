@@ -2,21 +2,19 @@ from math import cos, sin
 
 from body import Screen
 from nave import *
-from pplay.keyboard import Keyboard
 from pplay.animation import Animation
-from screen import Mouse
 
 
 class EnemyBullet(Bullet):
-    def __init__(self, img: str, tab: int, mouse: Mouse, objs: list):
-        super().__init__(img, tab, mouse, objs)
+    def __init__(self, img: str, tab: int, objs: list):
+        super().__init__(img, tab, objs)
         self.tags.append("enemy_projectile")
         self.velocity.y = 200
         
 
 class Enemy(Nave):
-    def __init__(self, img: str, width: int, height: int, tab: int, mouse: Mouse, objs: list, keyboard: Keyboard):
-        super().__init__(img, width, height, tab, mouse, objs, keyboard)
+    def __init__(self, img: str, width: int, height: int, tab: int, objs: list):
+        super().__init__(img, width, height, tab, objs)
         if "player" in self.tags:
             self.tags.remove("player")
         self.tags.append("enemy")
@@ -37,7 +35,7 @@ class Enemy(Nave):
         self.direction.y = 1
     
     def spawn_rastro(self):
-        self.rastro : Rastro = get_screen().add_object(Rastro(self._tab, self._mouse, 8))
+        self.rastro : Rastro = Rastro(self._tab, 8)
 
     def apply_rastro_offset(self):
         try:
@@ -52,7 +50,7 @@ class Enemy(Nave):
             self.shooting_cooldown = self.shooting_interval
             
     def shoot(self):
-        self.bullets.append(get_screen().add_object(EnemyBullet(self.bullet_img, self._tab, self._mouse, self.objs)))
+        self.bullets.append(EnemyBullet(self.bullet_img, self._tab, self.objs))
         self.bullets[-1].x = self.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].y = self.y + self.get_height() - 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
@@ -60,8 +58,8 @@ class Enemy(Nave):
 
 class EnemySin(Enemy):
     """Inimigo com um padrao de movimento horizontal seno"""
-    def __init__(self, img: str, width: int, height: int, tab: int, mouse: Mouse, objs: list, keyboard: Keyboard):
-        super().__init__(img, width, height, tab, mouse, objs, keyboard)
+    def __init__(self, img: str, width: int, height: int, tab: int, objs: list):
+        super().__init__(img, width, height, tab, objs)
         self.sin_speed : float = 1
     
     def get_direction(self):
