@@ -62,7 +62,7 @@ class Object:
     out_of_h_bounds : bool = False
     ## precisa ser atualizado pela screen antes do update
     out_of_v_bounds : bool = False
-    def __init__(self, image : str, width : int, height: int, tab: int, h_parts : int = 1):
+    def __init__(self, image : str, width : int, height: int, tab: int, h_parts : int = 1, add_to_screen: bool = True):
         self._mouse : Mouse = get_screen().mouse
         self._keyboard : k.Keyboard = get_screen().keyboard
 
@@ -119,7 +119,8 @@ class Object:
         
         self.wants_to_die : bool = False
 
-        get_screen().add_object(self)
+        if add_to_screen:
+            get_screen().add_object(self)
 
     def get_tab(self):
         return self._tab
@@ -149,6 +150,7 @@ class Object:
 
     def set_total_frames(self, total_frames: int):
         self.total_frames = total_frames
+        self.playing = True
         self.build_sprites()
 
     def get_center(self):
@@ -255,13 +257,19 @@ class Object:
         pass
 
     def is_hovered(self):
-        for spr in self.sprites:
-            if self._mouse.is_over_object(spr) and self.enabled:
+        if get_screen().get_tab() != self.get_tab():
+            return False
+        
+        mouse_pos = Vector2()
+        mouse_pos.x, mouse_pos.y = self._mouse.get_position()
+        
+        if mouse_pos.x >= self.x and mouse_pos.x <= self.x + self.get_width() and\
+            mouse_pos.y >= self.y and mouse_pos.y <= self.y + self.get_height():
                 return True
         return False
 
     def is_pressed(self, button: int = 1):
-        return self.is_hovered() and self._mouse.is_button_pressed(1)
+        return self.is_hovered() and self._mouse.is_button_pressed(button)
 
     def is_just_pressed(self, button: int = 1):
         return self.is_hovered() and self._mouse.is_button_just_pressed(button)

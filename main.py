@@ -131,23 +131,6 @@ tetris : Tetris = Tetris(
     TAB_TETRIS,
 )
 
-fps_text : CompositeText = CompositeText(
-    Vector2(32,32), # tamanho do texto
-    TAB_TETRIS, # tab
-    color_index=0, 
-    background=True
-)
-fps_text.add_text("FPS:")
-fps_text_value : NumberText = fps_text.add_number(4)
-
-gooner_text : CompositeText = CompositeText(
-    Vector2(32,32), 
-    TAB_TETRIS, 
-    color_index=1, 
-    background=False)
-gooner_text.add_text("Gooner...")
-
-gooner_text.y = 64
 
 # -----------
 
@@ -190,7 +173,7 @@ while True:
     if intervalo < MAX_TEMPO_PASSADO:
         ticks += 1
         fps = ticks/intervalo
-        fps_text_value.value = int(fps)
+        #fps_text_value.value = int(fps)
     else:
         # save in a file for profiling
         performance_log.append([len(get_screen()._objs), ticks/intervalo])

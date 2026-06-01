@@ -106,10 +106,31 @@ class Text(Object):
                     self.color_index, 
                     self.background)
                 self.letters.append(letter)
+        print("Texto criado.")
     
-    def apply_coords(self, offset_x: float, offset_y: float):
-        super().apply_coords(offset_x, offset_y)
-        
+    def set_color_index(self, color_index: int):
+        self.color_index = color_index
+        for l in self.letters:
+            l.color_index = color_index
+    
+    def get_width(self):
+        if not hasattr(self, "letters") or not self.letters:
+            return 0
+        self.apply_letter_position()
+        farthest_letter = self.letters[0]
+        for letter in self.letters:
+            if letter.x + letter.get_width() > farthest_letter.x + farthest_letter.get_width():
+                farthest_letter = letter
+        return int(farthest_letter.x + farthest_letter.get_width() - self.x)
+
+
+    def get_height(self):
+        if not hasattr(self, "letters") or not self.letters:
+            return 0
+        self.apply_letter_position()
+        return int(self.letters[-1].y - self.y + self.letters[-1].get_height())
+    
+    def apply_letter_position(self):
         w, h = int(self.letter_size.x), int(self.letter_size.y)
         line : int = 0
         column : int = 0
@@ -133,6 +154,10 @@ class Text(Object):
                 column = 0
                 line += 1
             i += 1
+    def apply_coords(self, offset_x: float, offset_y: float):
+        super().apply_coords(offset_x, offset_y)
+        self.apply_letter_position
+        
     
     def destroy(self):
         super().destroy()
@@ -203,7 +228,21 @@ class CompositeText(Object):
         self.texts.append(number_text)
         return number_text
 
-    
+    def get_width(self):
+        if not hasattr(self, "texts") or not self.texts:
+            return 0
+        farthest_point : float = 0
+        for text in self.texts:
+            point = text.x + text.get_width()
+            if point > farthest_point:
+                farthest_point = point
+        return int(farthest_point - self.x)
+
+    def get_height(self):
+        if not hasattr(self, "texts") or not self.texts:
+            return 0
+        return int(self.texts[-1].y + self.texts[-1].get_height() - self.y)
+        
     
 class DrawnText(Object):
     """USES DRAWTEXT"""
