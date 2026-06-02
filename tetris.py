@@ -1,5 +1,6 @@
 from pplay.window import Window
 from screen import *
+import random
 from tetrisgrid import *
 
 # Dica(?): recomendo evitar usar vector2 aqui pois
@@ -93,6 +94,60 @@ PECA_T : Piece = Piece([
     ], center=(1, 0)),
 ])
 
+## peca em formato de L
+PECA_L : Piece = Piece([
+    # primeira forma
+    Form(matrix=[
+        [1, 1, 1], # escrever matrix da forma aqui, desse jeito
+        [0, 0, 1],
+    ], center=(0, 1)), # centro dessa forma
+    # segunda forma
+    Form(matrix=[
+        [0, 1],
+        [0, 1],
+        [1, 1],
+    ], center=(1, 1)),
+    # terceira forma
+    Form(matrix=[
+        [1, 0, 0],
+        [1, 1, 1],
+    ], center=(1, 1)),
+    # quarta forma
+    Form(matrix=[
+        [1, 1],
+        [1, 0],
+        [1, 0],
+    ], center=(1, 0)),
+])
+## peca em formato de S
+PECA_S : Piece = Piece([
+    # primeira forma
+    Form(matrix=[
+        [0, 1, 1], # escrever matrix da forma aqui, desse jeito
+        [1, 1, 0],
+    ], center=(0, 1)), # centro dessa forma
+    # segunda forma
+    Form(matrix=[
+        [1, 0],
+        [1, 1],
+        [0, 1],
+    ], center=(1, 1)),
+])
+## peca em formato de S'
+PECA_ESSE : Piece = Piece([
+    # primeira forma
+    Form(matrix=[
+        [1, 1, 0], # escrever matrix da forma aqui, desse jeito
+        [0, 1, 1],
+    ], center=(0, 1)), # centro dessa forma
+    # segunda forma
+    Form(matrix=[
+        [0, 1],
+        [1, 1],
+        [1, 0],
+    ], center=(1, 1)),
+])
+
 ## peca vazia; NULL
 PECA_NULL : Piece = Piece([FORM_NULL])
     
@@ -112,7 +167,7 @@ class Tetris(Object):
         self.matrix : List[List[int]] = []
         self.build_matrix()
         
-        self.piece_pool : List[Piece] = [PECA_T, ] # pecas que serao possiveis serem escolhidas
+        self.piece_pool : List[Piece] = [PECA_T, PECA_L, PECA_S, PECA_ESSE] # pecas que serao possiveis serem escolhidas
         # ATENCAO: reiniciar posicao da peca sempre que terminar/comecar a usa-la (fica a seu criterio)
         self.curr_piece : Piece = PECA_T # peca escolhida no momento;
         
@@ -157,11 +212,31 @@ class Tetris(Object):
         super().update()
         self.grid.x = self.x
         self.grid.y = self.y
-        
+
+        old_line = self.curr_piece.line
+
         self.curr_piece.line += self.gravity_speed * self.delta_time
-        
+
+        if self.check_collision(self.curr_piece):
+            self.curr_piece.line = old_line
+
+            print("COLIDIU!")
+
+            self.lock_piece()
         if self.keyboard.key_pressed(self.DOWN):
+
+            old_line = self.curr_piece.line
+
             self.curr_piece.line += self.piece_fall_speed * self.delta_time
+
+            if self.check_collision(self.curr_piece):
+                self.curr_piece.line = old_line
+
+                self.lock_piece()
+
+                self.curr_piece = PECA_T
+                self.curr_piece.line = 0
+                self.curr_piece.column = self.columns // 2
         
         if self.side_step_cooldown <= 0:
             if self.keyboard.key_pressed(self.LEFT) and self.curr_piece.column > 0:
@@ -172,9 +247,26 @@ class Tetris(Object):
                 self.side_step_cooldown = self.side_step_interval
         else:
             self.side_step_cooldown -= self.delta_time
-        
+
         if self.rotation_cooldown <= 0 and self.keyboard.key_pressed(self.SPIN):
+
+            rot_antiga = self.curr_piece.rotation
+            col_antiga = self.curr_piece.column
+
             self.curr_piece.rotate()
+
+            if self.check_collision(self.curr_piece):
+
+                self.curr_piece.column -= 1
+
+                if self.check_collision(self.curr_piece):
+
+                    self.curr_piece.column += 2
+
+                    if self.check_collision(self.curr_piece):
+                        self.curr_piece.rotation = rot_antiga
+                        self.curr_piece.column = col_antiga
+
             self.rotation_cooldown = self.rotation_interval
         else:
             self.rotation_cooldown -= self.delta_time
@@ -184,6 +276,31 @@ class Tetris(Object):
     def apply_coords(self, offset_x: float, offset_y: float):
         super().apply_coords(offset_x, offset_y)
         self.grid.apply_coords(offset_x, offset_y)
+
+    def check_collision(self, piece: Piece):
+        forma = piece.get_form()
+
+        for i in range(forma.get_lines()):
+            for j in range(forma.get_columns()):
+
+                if forma.matrix[i][j] == 0:
+                    continue
+
+                linha = int(piece.line) + i
+                coluna = int(piece.column) + j
+
+                # fora da tela
+                if linha >= self.lines:
+                    return True
+
+                if coluna < 0 or coluna >= self.columns:
+                    return True
+
+                # bateu em bloco já existente
+                if linha >= 0 and self.matrix[linha][coluna] != 0:
+                    return True
+
+        return False
     
     def get_height(self):
         if hasattr(self, "grid"):
@@ -196,6 +313,24 @@ class Tetris(Object):
             return self.grid.get_width()
         else:
             return 0
+
+    def lock_piece(self):
+        print("PEÇA FIXADA")
+        forma = self.curr_piece.get_form()
+
+        for i in range(forma.get_lines()):
+            for j in range(forma.get_columns()):
+
+                if forma.matrix[i][j] == 0:
+                    continue
+
+                linha = int(self.curr_piece.line) + i
+                coluna = int(self.curr_piece.column) + j
+
+                self.matrix[linha][coluna] = 1
+        self.curr_piece = random.choice(self.piece_pool)
+        self.curr_piece.line = 0
+        self.curr_piece.column = 4
     
     def render(self):
         # transferir peca

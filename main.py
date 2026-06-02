@@ -14,7 +14,7 @@ LOG_PERFORMANCE = True
 performance_log : List[List[float]] = []
 ## se o fps for menor que isso, tomar algumas medidas, como nao spawnar novos inimigos
 ## apenas uma medida preventiva, o fps pode acabar sendo menos que o target.
-FPS_TARGET: float = 60
+FPS_TARGET: float = 100
 fps : float = 0
 last_average_fps : float = 9999
 
@@ -121,6 +121,9 @@ nave2.bullet_img = "assets/images/bullet_green.png"
 nave2.explosion_info["img"] = "assets/images/explosion_green.png"
 nave2.side = 1
 
+fps_text = CompositeText(Vector2(16, 16), TAB_JOGO, color_index=1, background=True)
+fps_text.add_text("FPS:")
+fps_text_value = fps_text.add_number(3)
 
 TAB_TETRIS = 1
 
@@ -142,12 +145,12 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(1)
+get_screen().set_tab(TAB_TETRIS)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
     
-    if get_screen().get_tab == TAB_JOGO:
+    if get_screen().get_tab() == TAB_JOGO:
         #----------------------- Enemy Spawn ------------------------------
         if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
             spawn_enemy(get_random_pos(0), TAB_JOGO, (-100, int(get_screen().window.width/2)), 0)
@@ -173,7 +176,7 @@ while True:
     if intervalo < MAX_TEMPO_PASSADO:
         ticks += 1
         fps = ticks/intervalo
-        #fps_text_value.value = int(fps)
+        fps_text_value.value = int(fps)
     else:
         # save in a file for profiling
         performance_log.append([len(get_screen()._objs), ticks/intervalo])
