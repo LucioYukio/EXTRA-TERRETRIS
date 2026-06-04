@@ -3,9 +3,9 @@
 [] menu principal
 [] loja de poderes
 [] indicador de poderes do lado
-[] BG parallax
-[] Things move in relation to respective player
-    [] add a fictional camera coordinate that offsets every object atrelated to it
+[X] BG parallax
+[X] Things move in relation to respective player
+    [X] add a fictional camera coordinate that offsets every object atrelated to it
 [?] Only check rendering parts if object not entirely in h bounds
 [X] Fix animations
 [X] Nave explodes when killed
@@ -14,19 +14,19 @@
     [X] Renderiza na segunda camada
 [X] Naves da esquerda so sao afetadas por coisas da esquerda
 [X] Fazer um UI de numero com sprite pra nao precisar usar draw text
-[] Fazer animacoes seguirem res_scale
+[X?] Fazer animacoes seguirem res_scale
 [X] Fazer velocidades e tals seguirem res_scale (?)
 [X] Consertar efeitos, estao mostrando o primeiro frame antes de terminar
 [X] Fazer texto que usa imagem ao inves de draw_text
     [X] Fazer sheet com todas as letras
-[] Fazer overlay com checkerboard para simular transparencia e botar em cima da tetris grid OU
+[X] Fazer overlay com checkerboard para simular transparencia e botar em cima da tetris grid OU
    Fazer overlay semitransparente para o fundo do tetris
-    [] Textura de corrosao talvez ?
-[] Fazer imagens novas para as pecas que combinem mais com o estilo
+    [X] Textura de corrosao talvez ?
+[X] Fazer imagens novas para as pecas que combinem mais com o estilo
 [] Importar o fieldtext do space invaders
-[] Repurpose offset
-    [] usar os offsets que a screen manda pros objectos para fazer um efeito de camera seguindo o player
-[] Fazer Background parallax loopar
+[X] Repurpose offset
+    [X] usar os offsets que a screen manda pros objectos para fazer um efeito de camera seguindo o player
+[X] Fazer Background parallax loopar
 
     ->      ->      -> 
 

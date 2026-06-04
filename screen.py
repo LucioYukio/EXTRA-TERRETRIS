@@ -237,11 +237,25 @@ class Object:
             last_x = sprite.x + sprite.width
 
     def set_curr_frame(self, curr_frame: int):
+        full = getattr(self, '_full_image', None)
+        if full is None and self.sprites:
+            full = self.sprites[0].image
+        if full is None:
+            return
         for i in range(self.h_parts):
             spr = self.sprites[i]
-            target_frame : int = i + (self.h_parts * curr_frame)
-            if spr.curr_frame != target_frame:
-                spr.set_curr_frame(target_frame)
+            frame_w = self.get_width()
+            slice_start = int(curr_frame * frame_w + i * frame_w / self.h_parts)
+            if i < self.h_parts - 1:
+                slice_end = int(curr_frame * frame_w + (i + 1) * frame_w / self.h_parts)
+            else:
+                slice_end = (curr_frame + 1) * frame_w
+            w = slice_end - slice_start
+            if w <= 0:
+                continue
+            spr.image = full.subsurface(pygame.Rect(slice_start, 0, w, self.get_height()))
+            spr.width = w
+            spr.curr_frame = 0
 
     def animate(self):
         """Aplica a logica de animacao. Chamar em todo update."""
@@ -274,6 +288,8 @@ class Object:
             spr.height = int(self.get_height())
             spr.curr_frame = i
             i += 1
+        if self.sprites:
+            self._full_image = self.sprites[0].image.copy()
 
     def update(self):
         self.last_pos.x = self.pos.x

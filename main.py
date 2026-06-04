@@ -216,11 +216,11 @@ aura_text.add_text(" ")
 aura2_text_value = aura_text.add_number(4)
 
 sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
-sidepanel1.z = 4
+sidepanel1.z = 3
 sidepanel1.categorie = "sidepanel"
 
 sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
-sidepanel2.z = 4
+sidepanel2.z = 3
 sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
 
 divisao = Object("assets/images/divisor.png", 48, REF_RES[1], [TAB_JOGO, TAB_TETRIS])
@@ -237,7 +237,7 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(TAB_JOGO)
+get_screen().set_tab(TAB_TETRIS)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
@@ -261,6 +261,7 @@ while True:
         if asteroid_bg2.pos.y >= -asteroid_bg2.get_height()/3:
             asteroid_bg2.pos.y -= asteroid_bg2.get_height()/3
 
+        fps_text.pos.x = SIDEPANEL_W
     #-------------------------------------------------
     if get_screen().get_tab() == TAB_TETRIS:
         tetris1.pos.x = divisao.pos.x - tetris1.get_width()
