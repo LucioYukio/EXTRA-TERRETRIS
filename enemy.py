@@ -6,15 +6,15 @@ from pplay.animation import Animation
 
 
 class EnemyBullet(Bullet):
-    def __init__(self, img: str, tab: int, objs: list):
-        super().__init__(img, tab, objs)
+    def __init__(self, img: str, tabs: List[int], objs: list):
+        super().__init__(img, tabs, objs)
         self.tags.append("enemy_projectile")
         self.velocity.y = 200
         
 
 class Enemy(Nave):
-    def __init__(self, img: str, width: int, height: int, tab: int, objs: list):
-        super().__init__(img, width, height, tab, objs)
+    def __init__(self, img: str, width: int, height: int, tabs: List[int], objs: list):
+        super().__init__(img, width, height, tabs, objs)
         if "player" in self.tags:
             self.tags.remove("player")
         self.tags.append("enemy")
@@ -23,7 +23,7 @@ class Enemy(Nave):
         self.keep_in_bounds = False
         self.destroy_out_of_h_bounds = False
         self.destroy_out_of_v_bounds = True
-        self.speed = 400
+        self.speed = 100
         self.shooting_interval = 2
         
         self.default_health = 4
@@ -35,7 +35,7 @@ class Enemy(Nave):
         self.direction.y = 1
     
     def spawn_rastro(self):
-        self.rastro : Rastro = Rastro(self._tab, 8)
+        self.rastro : Rastro = Rastro(self.get_tabs(), 8)
 
     def apply_rastro_offset(self):
         try:
@@ -50,7 +50,7 @@ class Enemy(Nave):
             self.shooting_cooldown = self.shooting_interval
             
     def shoot(self):
-        self.bullets.append(EnemyBullet(self.bullet_img, self._tab, self.objs))
+        self.bullets.append(EnemyBullet(self.bullet_img, self.get_tabs(), self.objs))
         self.bullets[-1].x = self.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].y = self.y + self.get_height() - 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
@@ -58,10 +58,10 @@ class Enemy(Nave):
 
 class EnemySin(Enemy):
     """Inimigo com um padrao de movimento horizontal seno"""
-    def __init__(self, img: str, width: int, height: int, tab: int, objs: list):
-        super().__init__(img, width, height, tab, objs)
+    def __init__(self, img: str, width: int, height: int, tabs: List[int], objs: list):
+        super().__init__(img, width, height, tabs, objs)
         self.sin_speed : float = 1
     
     def get_direction(self):
         self.direction.y = 1
-        self.direction.x = cos(self._animation_time_elapsed * self.sin_speed)
+        self.direction.x = cos(self.time_elapsed * self.sin_speed)

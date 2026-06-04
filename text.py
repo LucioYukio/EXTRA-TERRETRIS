@@ -9,13 +9,13 @@ def ascii_to_int(c: str):
     return ord(c)
 
 class Letter(Object):
-    def __init__(self, letter: str, width: int, height: int, tab: int, color_index : int = 0, background: bool = False):
+    def __init__(self, letter: str, width: int, height: int, tabs: List[int], color_index : int = 0, background: bool = False):
         """
         color_index:
             black = 0
             white = 1
         """
-        super().__init__("assets/images/letters_black_and_white.png", width, height, tab)
+        super().__init__("assets/images/letters_black_and_white.png", width, height, tabs)
         # (95 simbolos) * (quantidade de cores)
         self.set_total_frames(95 * 2)
         self.z = 4
@@ -27,7 +27,7 @@ class Letter(Object):
         self.color_index : int = color_index # black= 0, white= 1
         
         
-        self.background : Object = Object("assets/images/black_and_white_pixel.png", width, height, tab)
+        self.background : Object = Object("assets/images/black_and_white_pixel.png", width, height, tabs)
         self.background.set_total_frames(2)
         self.background.playing = False
         
@@ -48,7 +48,6 @@ class Letter(Object):
             self.background.set_width(width)
     
     def set_letter(self, letter: str):
-        self._letter
         self.letter_code = ascii_to_int(letter)
     
     def update_curr_frame(self): # atualiza o curr_frame de acordo com self.letter e self.color_index
@@ -76,8 +75,8 @@ class Letter(Object):
         self.background.wants_to_die = True
         
 class Text(Object):
-    def __init__(self, text: str, letter_size: Vector2, tab: int, color_index : int = 0, background: bool = False):
-        super().__init__(EMPTY_PIXEL, 0, 0, tab)
+    def __init__(self, text: str, letter_size: Vector2, tabs: List[int], color_index : int = 0, background: bool = False):
+        super().__init__(EMPTY_PIXEL, 0, 0, tabs)
         
         self.text : str = text
         self.letter_size : Vector2 = letter_size
@@ -102,11 +101,10 @@ class Text(Object):
             if char != '\n':
                 letter : Letter = Letter(
                     char, w, h,
-                    self.get_tab(),
+                    self.get_tabs(),
                     self.color_index, 
                     self.background)
                 self.letters.append(letter)
-        print("Texto criado.")
     
     def set_color_index(self, color_index: int):
         self.color_index = color_index
@@ -156,7 +154,7 @@ class Text(Object):
             i += 1
     def apply_coords(self, offset_x: float, offset_y: float):
         super().apply_coords(offset_x, offset_y)
-        self.apply_letter_position
+        self.apply_letter_position()
         
     
     def destroy(self):
@@ -165,10 +163,10 @@ class Text(Object):
             l.wants_to_die = True
 
 class NumberText(Text):
-    def __init__(self, digits: int, letter_size: Vector2, tab: int, color_index: int = 0, background: bool = False):
+    def __init__(self, digits: int, letter_size: Vector2, tabs: List[int], color_index: int = 0, background: bool = False):
         self.digits = digits
         self.value : float = 0
-        super().__init__("", letter_size, tab, color_index, background)
+        super().__init__("", letter_size, tabs, color_index, background)
         self.playing = False
         
     def set_digits(self, digits: int):
@@ -182,7 +180,7 @@ class NumberText(Text):
             letter.wants_to_die = True
         self.letters.clear()
         
-        self.letters = [Letter("0", w, h, self.get_tab(), self.color_index, self.background) for _ in range(self.digits)]
+        self.letters = [Letter("0", w, h, self.get_tabs(), self.color_index, self.background) for _ in range(self.digits)]
 
     def update(self):
         super().update()
@@ -197,8 +195,8 @@ class NumberText(Text):
                 i += 1
 
 class CompositeText(Object):
-    def __init__(self, letter_size: Vector2, tab: int, color_index: int = 0, background: bool = False):
-        super().__init__(EMPTY_PIXEL, 0, 0, tab)
+    def __init__(self, letter_size: Vector2, tabs: List[int], color_index: int = 0, background: bool = False):
+        super().__init__(EMPTY_PIXEL, 0, 0, tabs)
         self.playing = False
         
         self.texts : List[Text] = []
@@ -221,10 +219,10 @@ class CompositeText(Object):
             
     def add_text(self, text: str):
         """Add a static Text object to this Composite Text"""
-        self.texts.append(Text(text, self.letter_size, self.get_tab(), self.color_index, self.background))
+        self.texts.append(Text(text, self.letter_size, self.get_tabs(), self.color_index, self.background))
         
     def add_number(self, digits: int):
-        number_text = NumberText(digits, self.letter_size, self.get_tab(), self.color_index, self.background)
+        number_text = NumberText(digits, self.letter_size, self.get_tabs(), self.color_index, self.background)
         self.texts.append(number_text)
         return number_text
 
@@ -250,8 +248,8 @@ class DrawnText(Object):
     size : int = 12
     color = "white"
     font_name : str = "Arial"
-    def __init__(self, tab: int):
-        super().__init__(EMPTY_PIXEL, 0, 0, tab)
+    def __init__(self, tabs: List[int]):
+        super().__init__(EMPTY_PIXEL, 0, 0, tabs)
         # serao desenhados em sequencia na tela
         self.texts : List = []
         self.z = 3

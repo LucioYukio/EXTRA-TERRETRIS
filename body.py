@@ -3,8 +3,8 @@ from pygame.math import lerp
 from screen import *
 
 class Body(Object):
-    def __init__(self, image : str, width : int, height: int, tab: int, objs: list, h_parts: int = 1):
-        super().__init__(image, width, height, tab, h_parts)
+    def __init__(self, image : str, width : int, height: int, tabs: List[int], objs: list, h_parts: int = 1):
+        super().__init__(image, width, height, tabs, h_parts)
         ## Screen vai fazer com que nao saia da tela
         self.keep_in_bounds = True
         # variaveis de fisica
@@ -15,7 +15,7 @@ class Body(Object):
         self.stop_on_collision : bool = False
         # custom hitbox, se for -1, sera desconsiderada.
         self.hitbox : Vector2 = Vector2(-1,-1)
-        
+
         self.side : int = 0
 
     def get_hitbox(self):
@@ -23,16 +23,26 @@ class Body(Object):
             return self.hitbox
         # if hitbox is invalid, interpret size as hitbox.
         return Vector2(self.get_width()/2, self.get_height()/2)
-    
+
     def is_colliding_with_body(self, body: Object):
-        if not isinstance(body, Body) or self.side != body.side:
+        if isinstance(body, Body):
+            if self.side != body.side:
+                return False
+            if body is self:
+                return False
+            if get_screen().get_tab() not in self.get_tabs():
+                return False
+            if get_screen().get_tab() not in body.get_tabs():
+                return False
+            return self.do_hitboxes_overlap(
+                self.get_center(),
+                self.get_hitbox(),
+                body.get_center(),
+                body.get_hitbox()
+            )
+        else:
             return False
-        if body is self:
-            return False
-        if body.get_tab() != self.get_tab():
-            return False 
-        return self.do_hitboxes_overlap(self.get_center(), self.get_hitbox(), body.get_center(), body.get_hitbox())
-    
+
     @staticmethod
     def do_hitboxes_overlap(coords1 : Vector2, hitbox1: Vector2, coords2 : Vector2, hitbox2 : Vector2):
         """Expects two centers and two hitboxes"""
@@ -63,7 +73,7 @@ class Body(Object):
         self.velocity.y = self.velocity.y + body.velocity.y
         body.velocity.x = self.velocity.x
         body.velocity.y = self.velocity.y
-        
+
     def apply_velocity(self):
         if self.velocity.x == 0 and self.velocity.y == 0:
             return
@@ -75,7 +85,7 @@ class Body(Object):
             self.x = x
             self.y = y
             self.collide(self.get_collider())
-        
+
     def update(self):
         self.apply_velocity()
         super().update()

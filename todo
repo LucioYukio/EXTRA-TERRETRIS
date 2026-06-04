@@ -8,18 +8,23 @@
     [] add a fictional camera coordinate that offsets every object atrelated to it
 [?] Only check rendering parts if object not entirely in h bounds
 [X] Fix animations
-[] Nave explodes when killed
+[X] Nave explodes when killed
 [X] Criar class de FX
     [X] Toca uma animacao e morre depois de terminar
     [X] Renderiza na segunda camada
 [X] Naves da esquerda so sao afetadas por coisas da esquerda
-[] Fazer um UI de numero com sprite pra nao precisar usar draw text
+[X] Fazer um UI de numero com sprite pra nao precisar usar draw text
 [] Fazer animacoes seguirem res_scale
-[] Fazer velocidades e tals seguirem res_scale (?)
+[X] Fazer velocidades e tals seguirem res_scale (?)
 [] Consertar efeitos, estao mostrando o primeiro frame antes de terminar
-[] Fazer texto que usa imagem ao inves de draw_text
-    [] Fazer sheet com todas as letras
-
+[X] Fazer texto que usa imagem ao inves de draw_text
+    [X] Fazer sheet com todas as letras
+[] Fazer overlay com checkerboard para simular transparencia e botar em cima da tetris grid OU
+   Fazer overlay semitransparente para o fundo do tetris
+    [] Textura de corrosao talvez ?
+[] Fazer imagens novas para as pecas que combinem mais com o estilo
+[] Importar o fieldtext do space invaders
+[] 
 
     ->      ->      -> 
 

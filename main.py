@@ -37,10 +37,20 @@ control_esquemes = [
     ["w", "s", "a", "d", "space", "alt"]
 ]
 
-enemy_spawn_interval : float = 0.2
+enemy_spawn_interval : float = 1
 enemy_spawn_cooldown : float = 0
-MAX_ENEMY_COUNT : int = 50 *2
+MAX_ENEMY_COUNT : int = 10 *2
 enemy_horizontal_padding : int = 8 # padding to account for when spawning enemies
+
+TETRIS_LINES = 20
+TETRIS_COLUMNS = 10
+
+DEFAULT_LETTER_SIZE = Vector2(32,32)
+SMALL_LETTER_SIZE = Vector2(16,16)
+
+SIDEPANEL_W = 120
+
+H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2), Vector2(TELA_W/2, TELA_W-SIDEPANEL_W)]
 
 #---------------- FUNCOES ---------------------------
 
@@ -55,14 +65,14 @@ def reset_enemy(enemy: Enemy):
     enemy.y = -enemy.get_height() + 1
     enemy.health = enemy.default_health
 
-def spawn_enemy(x: float, tab: int, horizontal_bounds : Tuple[int, int], side: int, inimigo: Enemy | None = None):
+def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, inimigo: Enemy | None = None):
     img : str = "assets/images/nave_inimiga_verde.png" if side == 0 else "assets/images/nave_inimiga_roxa.png"
     if not isinstance(inimigo, Enemy):
         inimigo = EnemySin(
             img,
             int(DEFAULT_NAVE_SIZE.x),
             int(DEFAULT_NAVE_SIZE.y),
-            tab,
+            tabs,
             get_screen()._objs
         )
     
@@ -70,7 +80,11 @@ def spawn_enemy(x: float, tab: int, horizontal_bounds : Tuple[int, int], side: i
         x = clamp(x, 0, get_screen().window.width - inimigo.get_width())
         inimigo.x = x
         inimigo.y = -inimigo.get_height() + 1
-        inimigo.horizontal_bounds = Vector2(horizontal_bounds[0], horizontal_bounds[1])
+        inimigo.horizontal_bounds = copy(H_BOUNDS[side])
+        if side == 0:
+            inimigo.horizontal_bounds.x -= extra_margin
+        else:
+            inimigo.horizontal_bounds.y += extra_margin
         inimigo.vertical_bounds = Vector2(-inimigo.get_height(), get_screen().window.height + inimigo.get_height())
         inimigo.bullet_img = "assets/images/bullet_green.png" if side == 0  else "assets/images/bullet_purple.png"
         inimigo.explosion_info["img"] = "assets/images/explosion_green.png" if side == 0 else "assets/images/explosion_purple.png"
@@ -93,12 +107,13 @@ nave1 : Nave = Nave(
     "assets/images/nave1.png",
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
-    TAB_JOGO,
+    [TAB_JOGO],
     get_screen()._objs,
- )
+)
 nave1.x = get_screen().window.width/4 - nave1.get_width()/2
 nave1.y = TELA_H - nave1.get_height() - 8
-nave1.horizontal_bounds.y = get_screen().window.width/2
+nave1.horizontal_bounds = copy(H_BOUNDS[0])
+nave1.horizontal_bounds.x -= nave1.get_width()/2
 nave1.UP, nave1.DOWN, nave1.LEFT, nave1.RIGHT, nave1.SHOOT, nave1.POWER = control_esquemes[1]
 nave1.z = 1
 nave1.bullet_img = "assets/images/bullet_purple.png"
@@ -109,30 +124,63 @@ nave2 : Nave = Nave(
     "assets/images/nave2.png",
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
-    TAB_JOGO,
+    [TAB_JOGO],
     get_screen()._objs
 )
 nave2.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
 nave2.y = get_screen().window.height - nave2.get_height() - 8
-nave2.horizontal_bounds.x = get_screen().window.width/2
+nave2.horizontal_bounds = H_BOUNDS[1]
 nave2.UP, nave2.DOWN, nave2.LEFT, nave2.RIGHT, nave2.SHOOT, nave2.POWER = control_esquemes[0]
 nave2.z = 1
 nave2.bullet_img = "assets/images/bullet_green.png"
 nave2.explosion_info["img"] = "assets/images/explosion_green.png"
 nave2.side = 1
 
-fps_text = CompositeText(Vector2(16, 16), TAB_JOGO, color_index=1, background=True)
+fps_text = CompositeText(SMALL_LETTER_SIZE, [TAB_JOGO], color_index=1, background=True)
 fps_text.add_text("FPS:")
 fps_text_value = fps_text.add_number(3)
 
+
 TAB_TETRIS = 1
 
-tetris : Tetris = Tetris(
-    Vector2(32,32),
-    20,
-    10,
-    TAB_TETRIS,
+divisao = Object("assets/images/tile_empty.png", 64, REF_RES[1], [TAB_TETRIS])
+divisao.x = TELA_W/2 - divisao.get_width()
+
+piece_size = Vector2(REF_RES[1]/TETRIS_LINES, REF_RES[1]/TETRIS_LINES)
+
+tetris1 : Tetris = Tetris(
+    piece_size,
+    TETRIS_LINES,
+    TETRIS_COLUMNS,
+    [TAB_TETRIS],
 )
+tetris1.UP, tetris1.DOWN, tetris1.LEFT, tetris1.RIGHT, tetris1.SPIN, tetris1.POWER = control_esquemes[1]
+
+tetris2 : Tetris = Tetris(
+    piece_size,
+    TETRIS_LINES,
+    TETRIS_COLUMNS,
+    [TAB_TETRIS],
+)
+tetris2.UP, tetris2.DOWN, tetris2.LEFT, tetris2.RIGHT, tetris2.SPIN, tetris2.POWER = control_esquemes[0]
+tetris2.grid.FILLED = "assets/images/tile_filled_purple.png"
+tetris2.grid.MARKED = "assets/images/tile_marked_purple.png"
+tetris2.grid.overlay_img = "assets/images/tech_background_purple_animated.png"
+tetris2.grid.build_grids()
+
+
+# general
+aura_text : CompositeText = CompositeText(DEFAULT_LETTER_SIZE, [TAB_JOGO, TAB_TETRIS], color_index=1, background=True)
+aura1_text_value = aura_text.add_number(4)
+aura_text.add_text(" ")
+aura2_text_value = aura_text.add_number(4)
+
+sidepanel1 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
+sidepanel1.z = 2
+
+sidepanel2 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
+sidepanel2.z = 2
+sidepanel2.x = TELA_W - sidepanel2.get_width()
 
 
 # -----------
@@ -145,7 +193,7 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(TAB_TETRIS)
+get_screen().set_tab(TAB_JOGO)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
@@ -153,21 +201,31 @@ while True:
     if get_screen().get_tab() == TAB_JOGO:
         #----------------------- Enemy Spawn ------------------------------
         if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
-            spawn_enemy(get_random_pos(0), TAB_JOGO, (-100, int(get_screen().window.width/2)), 0)
-            spawn_enemy(get_random_pos(1), TAB_JOGO, (int(get_screen().window.width/2), int(get_screen().window.width) + 100), 1)
+            spawn_enemy(get_random_pos(0), [TAB_JOGO], 0, 100)
+            spawn_enemy(get_random_pos(1), [TAB_JOGO], 1, 100)
             enemy_spawn_cooldown = enemy_spawn_interval
         
         for o in get_screen()._objs:
             if o.y >= TELA_H and isinstance(o, Enemy):
                 reset_enemy(o)
+
+    if get_screen().get_tab() == TAB_TETRIS:
+        aura1_text_value.value = tetris1.points
+        
+        tetris1.x = divisao.x - tetris1.get_width()
+        tetris2.x = divisao.x + divisao.get_width()
+        
     # --------
     
     # drain cooldowns
     enemy_spawn_cooldown = max(enemy_spawn_cooldown - get_screen().window.delta_time(), 0)
     
     # update UI
-    
-    
+    aura_text.x = TELA_W/2 - aura_text.get_width()/2
+    aura_text.y = TELA_H - aura_text.get_height()
+    aura1_text_value.value = tetris1.points
+    aura2_text_value.value = tetris2.points
+
     get_screen().update()
     
     # qtd_text.texts[-1] = len(get_screen()._objs)

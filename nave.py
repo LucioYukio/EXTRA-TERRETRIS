@@ -11,8 +11,8 @@ DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 80)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)
 
 class Bullet(Projectile):
-    def __init__(self, img: str, tab: int, objs: list):
-        super().__init__(img, 18, 18, tab, objs)
+    def __init__(self, img: str, tabs: List[int], objs: list):
+        super().__init__(img, 18, 18, tabs, objs)
         self.set_total_frames(4)
         self.frame_duration = 0.1
         
@@ -37,7 +37,7 @@ class Bullet(Projectile):
             self.explosion_info["duration"],
             self.explosion_info["width"],
             self.explosion_info["height"],
-            self.get_tab()
+            self.get_tabs()
         )
         
         target_coords : Vector2 = self.get_center()
@@ -48,8 +48,8 @@ class Bullet(Projectile):
         explosion.y = target_coords.y
 
 class NaveBullet(Bullet):
-    def __init__(self, img: str, tab: int, objs: list):
-        super().__init__(img, tab, objs)
+    def __init__(self, img: str, tabs: List[int], objs: list):
+        super().__init__(img, tabs, objs)
         self.tags.append("player_projectile")
         self.velocity.y = -600
         
@@ -58,9 +58,9 @@ class NaveBullet(Bullet):
         #self.explosion_info["img"] = "assets/images/explosion_red.png"
 
 class Rastro(Object):
-    def __init__(self, tab: int, rastros: int):
+    def __init__(self, tabs: List[int], rastros: int):
         # implementar intervalo: espera "intervalo" cooldown para fazer as trocas
-        super().__init__(EMPTY_PIXEL,8, 8, tab)
+        super().__init__(EMPTY_PIXEL,8, 8, tabs)
         
         self.rastros : List[Object] = [] # do mais fino pro mais grosso
         self.qtd = rastros
@@ -79,7 +79,7 @@ class Rastro(Object):
                 "assets/images/rastro.png",
                 int(self._width * i / rastros + 2),
                 int(self._height * i / rastros + 2),
-                tab,
+                tabs,
                 2
             )
             rastro.destroy_out_of_h_bounds = False
@@ -122,8 +122,8 @@ class Nave(Body):
     
     rastro : Rastro
     
-    def __init__(self, image: str, width: int, height: int, tab: int, objs: list, h_parts: int = 16):
-        super().__init__(image, width, height, tab, objs, h_parts)
+    def __init__(self, image: str, width: int, height: int, tabs: List[int], objs: list, h_parts: int = 16):
+        super().__init__(image, width, height, tabs, objs, h_parts)
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile"}
         self.keyboard = get_screen().keyboard
@@ -142,7 +142,7 @@ class Nave(Body):
         self.explosion_info : Dict = {
             "img" : "assets/images/explosion.png",
             "frames" : 11,
-            "duration" : 0.5,
+            "duration" : 2,
             "width" : 128,
             "height" : 128
         }
@@ -167,14 +167,14 @@ class Nave(Body):
         self.categorie = "nave"
     
     def shoot(self):
-        self.bullets.append(NaveBullet(self.bullet_img, self._tab, self.objs))
+        self.bullets.append(NaveBullet(self.bullet_img, self.get_tabs(), self.objs))
         self.bullets[-1].x = self.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].y = self.y - self.bullets[-1].get_height() + 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
 
     def spawn_rastro(self):
-        self.rastro = Rastro(self._tab, 8)
+        self.rastro = Rastro(self.get_tabs(), 8)
         self.rastro.horizontal_bounds = self.horizontal_bounds
         for r in self.rastro.rastros:
             r.horizontal_bounds = self.horizontal_bounds
@@ -187,7 +187,7 @@ class Nave(Body):
             self.explosion_info["duration"],
             self.explosion_info["width"],
             self.explosion_info["height"],
-            self.get_tab()
+            self.get_tabs()
         )
         
         target_coords : Vector2 = self.get_center()

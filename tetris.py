@@ -1,3 +1,5 @@
+from copy import copy
+
 from pplay.window import Window
 from screen import *
 import random
@@ -95,7 +97,7 @@ PECA_T : Piece = Piece([
 ])
 
 ## peca em formato de L
-PECA_L : Piece = Piece([
+PECA_L1 : Piece = Piece([
     # primeira forma
     Form(matrix=[
         [1, 1, 1], # escrever matrix da forma aqui, desse jeito
@@ -119,8 +121,35 @@ PECA_L : Piece = Piece([
         [1, 0],
     ], center=(1, 0)),
 ])
+
+## peca em formato de L'
+PECA_L2 : Piece = Piece([
+    # primeira forma
+    Form(matrix=[
+        [0, 0, 1], # escrever matrix da forma aqui, desse jeito
+        [1, 1, 1],
+    ], center=(1, 1)), # centro dessa forma
+    # segunda forma
+    Form(matrix=[
+        [1, 0],
+        [1, 0],
+        [1, 1],
+    ], center=(1, 0)),
+    # terceira forma
+    Form(matrix=[
+        [1, 1, 1],
+        [1, 0, 0],
+    ], center=(0, 1)),
+    # quarta forma
+    Form(matrix=[
+        [1, 1],
+        [0, 1],
+        [0, 1],
+    ], center=(1, 1)),
+])
+
 ## peca em formato de S
-PECA_S : Piece = Piece([
+PECA_S1 : Piece = Piece([
     # primeira forma
     Form(matrix=[
         [0, 1, 1], # escrever matrix da forma aqui, desse jeito
@@ -133,8 +162,9 @@ PECA_S : Piece = Piece([
         [0, 1],
     ], center=(1, 1)),
 ])
+
 ## peca em formato de S'
-PECA_ESSE : Piece = Piece([
+PECA_S2 : Piece = Piece([
     # primeira forma
     Form(matrix=[
         [1, 1, 0], # escrever matrix da forma aqui, desse jeito
@@ -148,6 +178,31 @@ PECA_ESSE : Piece = Piece([
     ], center=(1, 1)),
 ])
 
+## peca em formato de quadrado
+PECA_Q : Piece = Piece([
+    # primeira forma
+    Form(matrix=[
+        [1, 1], # escrever matrix da forma aqui, desse jeito
+        [1, 1],
+    ], center=(0, 0))
+])
+
+## peca em formato de I
+PECA_I : Piece = Piece([
+    # primeira forma
+    Form(matrix=[
+        [1], # escrever matrix da forma aqui, desse jeito
+        [1],
+        [1],
+        [1],
+    ], center=(1, 0)), # centro dessa forma
+    # segunda forma
+    Form(matrix=[
+        [1, 1, 1, 1],
+    ], center=(0, 1))
+])
+
+
 ## peca vazia; NULL
 PECA_NULL : Piece = Piece([FORM_NULL])
     
@@ -156,23 +211,28 @@ class Tetris(Object):
     nao eh a mesma que a grid. Quano o render() desse objeto
     eh chamado, ele envia para a matrix da grid a matrix
     desse objeto + a peca atual."""
-    def __init__(self, piece_size: Vector2, linhas: int, colunas: int, tab: int, h_parts: int = 1):
-        super().__init__(EMPTY_PIXEL, 0, 0, tab, h_parts)
+    def __init__(self, piece_size: Vector2, linhas: int, colunas: int, tabs: List[int], h_parts: int = 1):
+        super().__init__(EMPTY_PIXEL, 0, 0, tabs, h_parts)
         self.keyboard = get_screen().keyboard
-        self.grid : TetrisGrid = TetrisGrid(piece_size, linhas, colunas, tab)
+        self.grid : TetrisGrid = TetrisGrid(piece_size, linhas, colunas, tabs)
         
         self.lines : int = linhas
         self.columns : int = colunas
+        self.points : int = 0
         
         self.matrix : List[List[int]] = []
         self.build_matrix()
         
-        self.piece_pool : List[Piece] = [PECA_T, PECA_L, PECA_S, PECA_ESSE] # pecas que serao possiveis serem escolhidas
+        # copiar tudo para ter uma instancia propria de cada peca
+        self.piece_pool : List[Piece] = [copy(PECA_T), copy(PECA_L1), copy(PECA_L2), copy(PECA_Q), copy(PECA_I), copy(PECA_S1), copy(PECA_S2)] # pecas que serao possiveis serem escolhidas
         # ATENCAO: reiniciar posicao da peca sempre que terminar/comecar a usa-la (fica a seu criterio)
-        self.curr_piece : Piece = PECA_T # peca escolhida no momento;
+        self.curr_piece : Piece = PECA_NULL # peca escolhida no momento;
         
-        # velocidades; em quadradinhos por segundo; tiles/second
         self.gravity_speed: float = 1 # velocidade da gravidade; passiva
+        self.gravity_increment_interval: float = 10 # intervalo entre aumentos de gravidade
+        self.gravity_increment_cooldown: float = self.gravity_increment_interval
+        self.gravity_increment_value: float = 0.1 # valor adicionado a gravidade periodicamente
+        
         self.piece_fall_speed: float = 10 # velocidade da caida acelerada da peca; ativa
         
         # intervalos
@@ -182,17 +242,35 @@ class Tetris(Object):
         self.side_step_cooldown: float = 0
         
         # teclas
+        self.UP    : str = "w"
         self.DOWN  : str = "s"
         self.LEFT  : str = "a"
         self.RIGHT : str = "d"
         self.SPIN  : str = "space"
         self.POWER : str = "alt"
         
-        
+        self.choice_piece()
+
     def build_matrix(self):
         self.matrix = [[0] * self.columns for _ in range(self.lines)]
         self.grid.build_grids()
-    
+
+    def handle_filled_lines(self):
+        # checa se alguma linha esta cheia.
+        # se sim, apaga a linha e incrementa um ponto
+        sequencia = 0
+        for linha in self.matrix:
+            cheia = True
+            for tile in linha:
+                if tile != 2:
+                    cheia = False
+            if cheia:
+                self.matrix.remove(linha)
+                self.matrix.insert(0, [0] * self.columns)
+                self.points += 1 + sequencia
+                sequencia += 1
+
+
     ## preenche a ultima posicao livre
     def add_filled_at_end(self):
         # get last empty pos
@@ -207,100 +285,111 @@ class Tetris(Object):
     def add_blocked_line_bellow(self):
         self.matrix.pop(0)
         self.matrix.append([1] * self.columns)
-    
+
     def update(self):
         super().update()
         self.grid.x = self.x
         self.grid.y = self.y
 
         old_line = self.curr_piece.line
+        old_column = self.curr_piece.column
+        old_rotation = self.curr_piece.rotation
 
-        self.curr_piece.line += self.gravity_speed * self.delta_time
+        self.curr_piece.line += self.gravity_speed * self.delta_time # gravidade
 
-        if self.check_collision(self.curr_piece):
-            self.curr_piece.line = old_line
-
-            print("COLIDIU!")
-
-            self.lock_piece()
         if self.keyboard.key_pressed(self.DOWN):
-
-            old_line = self.curr_piece.line
-
             self.curr_piece.line += self.piece_fall_speed * self.delta_time
 
-            if self.check_collision(self.curr_piece):
-                self.curr_piece.line = old_line
-
-                self.lock_piece()
-
-                self.curr_piece = PECA_T
-                self.curr_piece.line = 0
-                self.curr_piece.column = self.columns // 2
-        
         if self.side_step_cooldown <= 0:
             if self.keyboard.key_pressed(self.LEFT) and self.curr_piece.column > 0:
+                # joga pra coluna esquerda
                 self.curr_piece.column -= 1
-                self.side_step_cooldown = self.side_step_interval    
+                self.side_step_cooldown = self.side_step_interval
+                if self.check_collision_wall(self.curr_piece) or self.check_collision_tiles(self.curr_piece):
+                    self.curr_piece.column = old_column # undo movement
             if self.keyboard.key_pressed(self.RIGHT) and self.curr_piece.column < (self.columns) - self.curr_piece.get_columns():
+                # joga pra coluna direita
                 self.curr_piece.column += 1
                 self.side_step_cooldown = self.side_step_interval
+                if self.check_collision_wall(self.curr_piece) or self.check_collision_tiles(self.curr_piece):
+                    self.curr_piece.column = old_column # undo movement
         else:
             self.side_step_cooldown -= self.delta_time
 
-        if self.rotation_cooldown <= 0 and self.keyboard.key_pressed(self.SPIN):
-
-            rot_antiga = self.curr_piece.rotation
-            col_antiga = self.curr_piece.column
-
+        if self.rotation_cooldown <= 0 and (self.keyboard.key_pressed(self.SPIN) or self.keyboard.key_pressed(self.UP)):
             self.curr_piece.rotate()
-
-            if self.check_collision(self.curr_piece):
-
-                self.curr_piece.column -= 1
-
-                if self.check_collision(self.curr_piece):
-
-                    self.curr_piece.column += 2
-
-                    if self.check_collision(self.curr_piece):
-                        self.curr_piece.rotation = rot_antiga
-                        self.curr_piece.column = col_antiga
-
+            if self.check_collision_wall(self.curr_piece) or self.check_collision_tiles(self.curr_piece):
+                self.curr_piece.rotate(-1)
             self.rotation_cooldown = self.rotation_interval
         else:
             self.rotation_cooldown -= self.delta_time
-            
+
+        if self.check_collision(self.curr_piece): # se bateu
+            # volta a ser como era antes dos movimentos
+            self.curr_piece.rotation = old_rotation
+            self.curr_piece.line = old_line
+            self.curr_piece.column = old_column
+
+            self.lock_piece()
+            self.choice_piece()
+
+        if self.gravity_increment_cooldown <= 0:
+            self.gravity_speed += self.gravity_increment_value
+            self.gravity_increment_cooldown = self.gravity_increment_interval
+        else:
+            self.gravity_increment_cooldown -= self.delta_time
+
         self.grid.update()
+        self.handle_filled_lines()
     
     def apply_coords(self, offset_x: float, offset_y: float):
         super().apply_coords(offset_x, offset_y)
         self.grid.apply_coords(offset_x, offset_y)
 
-    def check_collision(self, piece: Piece):
+    def check_collision_tiles(self, piece: Piece):
+        """retorna se colidiu ou nao com algum tile"""
+        if self.check_collision_floor(piece):
+            return True
         forma = piece.get_form()
-
         for i in range(forma.get_lines()):
             for j in range(forma.get_columns()):
-
                 if forma.matrix[i][j] == 0:
                     continue
-
                 linha = int(piece.line) + i
                 coluna = int(piece.column) + j
-
-                # fora da tela
-                if linha >= self.lines:
-                    return True
-
-                if coluna < 0 or coluna >= self.columns:
-                    return True
-
                 # bateu em bloco já existente
                 if linha >= 0 and self.matrix[linha][coluna] != 0:
                     return True
-
         return False
+
+    def check_collision_wall(self, piece: Piece):
+        """retorna se saiu ou nao da grid"""
+        forma = piece.get_form()
+        for i in range(forma.get_lines()):
+            for j in range(forma.get_columns()):
+                if forma.matrix[i][j] == 0:
+                    continue
+                coluna = int(piece.column) + j
+                if coluna < 0 or coluna >= self.columns:
+                    return True
+        return False
+
+    def check_collision_floor(self, piece: Piece):
+        """retorna se bateu no chao"""
+        forma = piece.get_form()
+        for i in range(forma.get_lines()):
+            for j in range(forma.get_columns()):
+                if forma.matrix[i][j] == 0:
+                    continue
+                linha = int(piece.line) + i
+                # fora da tela
+                if linha >= self.lines:
+                    return True
+        return False
+    
+    def check_collision(self, piece: Piece):
+        """retorna se colidiu ou nao com o chao ou com um tile"""
+        return self.check_collision_floor(piece) or self.check_collision_tiles(piece)
     
     def get_height(self):
         if hasattr(self, "grid"):
@@ -315,7 +404,6 @@ class Tetris(Object):
             return 0
 
     def lock_piece(self):
-        print("PEÇA FIXADA")
         forma = self.curr_piece.get_form()
 
         for i in range(forma.get_lines()):
@@ -327,10 +415,15 @@ class Tetris(Object):
                 linha = int(self.curr_piece.line) + i
                 coluna = int(self.curr_piece.column) + j
 
-                self.matrix[linha][coluna] = 1
-        self.curr_piece = random.choice(self.piece_pool)
+                self.matrix[linha][coluna] = 2
+
+
+    def choice_piece(self):
+        old_piece = self.curr_piece
+        while old_piece == self.curr_piece:
+            self.curr_piece = random.choice(self.piece_pool)
         self.curr_piece.line = 0
-        self.curr_piece.column = 4
+        self.curr_piece.column = self.columns // 2 - self.curr_piece.get_columns()//2
     
     def render(self):
         # transferir peca
@@ -338,11 +431,10 @@ class Tetris(Object):
         for i in range(self.lines):
             for j in range(self.columns):
                 value : int = 0
-                
                 if i >= int(self.curr_piece.line) and i < int(self.curr_piece.line) + self.curr_piece.get_lines() and\
                     j >= int(self.curr_piece.column) and j < int(self.curr_piece.column) + self.curr_piece.get_columns():
-                        value = forma.matrix[i - int(self.curr_piece.line)][j - int(self.curr_piece.column)] * 2
-                if value != 2:
+                        value = forma.matrix[i - int(self.curr_piece.line)][j - int(self.curr_piece.column)] * 3
+                if value != 3:
                     value = self.matrix[i][j]
                 self.grid._matrix[i][j] = value
         

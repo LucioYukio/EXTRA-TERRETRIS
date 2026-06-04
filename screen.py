@@ -23,8 +23,8 @@ from vector2 import Vector2
 REF_RES = (1600, 900) # tamanhos seram calculados em relacao a essa variavel
 res_scale : List[float] = [1,1]
 
-TELA_W = 1600
-TELA_H = 900
+TELA_W = 1280
+TELA_H = 720
 
 EMPTY_PIXEL = "assets/images/empty_pixel.png"
 
@@ -62,7 +62,7 @@ class Object:
     out_of_h_bounds : bool = False
     ## precisa ser atualizado pela screen antes do update
     out_of_v_bounds : bool = False
-    def __init__(self, image : str, width : int, height: int, tab: int, h_parts : int = 1, add_to_screen: bool = True):
+    def __init__(self, image : str, width : int, height: int, tabs: List[int], h_parts : int = 1, add_to_screen: bool = True):
         self._mouse : Mouse = get_screen().mouse
         self._keyboard : k.Keyboard = get_screen().keyboard
 
@@ -72,19 +72,18 @@ class Object:
         self.h_parts : int = h_parts
 
         """tab da qual o objeto pertence"""
-        self._tab    : int      = tab
+        self._tabs : List[int] = tabs
 
         """Coordenadas locais"""
         self.x : float = 0
         self.y : float = 0
-        self.z : int   = 0 # ordem de desenho; camada; maior valor eh desenhado na frente
+        self.z : int = 0 # ordem de desenho; camada; maior valor eh desenhado na frente
 
         """Tamanho local"""
         self.set_width(width)
         self.set_height(height)
 
         """variaveis de animacao"""
-        self._animation_time_elapsed : float = 0
         self.frame_duration : float = 1 # em segundos, maior que 0
         self.total_frames : int = 1
 
@@ -93,8 +92,8 @@ class Object:
         self.visible : bool = True
         self.enabled : bool = True
         self.playing : bool = True
-        ## precisa ser atualizado pela screen antes do update
         self.delta_time : float = 0
+        self.time_elapsed : float = 0
         ## precisa ser atualizado pela screen antes do update
         self.out_of_screen : bool = False
         ## se diferente de -1, considera esse valor como limites horizontais
@@ -122,11 +121,14 @@ class Object:
         if add_to_screen:
             get_screen().add_object(self)
 
-    def get_tab(self):
-        return self._tab
+    def get_tabs(self):
+        return self._tabs
 
-    def set_tab(self, tab: int):
-        self._tab = tab
+    def add_tab(self, tab: int):
+        self._tabs.append(tab)
+
+    def remove_tab(self, tab: int):
+        self._tabs.remove(tab)
 
     def get_id(self):
         return self._id
@@ -162,7 +164,8 @@ class Object:
             spr = a.Animation(self.image, self.total_frames)
             spr.playing = False
             self.sprites.append(spr)
-        self.update_sprites()
+        if self.image != EMPTY_PIXEL:
+            self.update_sprites()
     
     def get_h_bounds(self):
         h_bounds : List[float] = []
@@ -206,9 +209,8 @@ class Object:
 
     def animate(self):
         """Aplica a logica de animacao. Chamar em todo update."""
-        self._animation_time_elapsed += self.delta_time
         if self.playing:
-            curr_frame : int = int(self._animation_time_elapsed / self.frame_duration) % self.total_frames
+            curr_frame : int = int(self.time_elapsed / self.frame_duration) % self.total_frames
             for i in range(self.h_parts):
                 spr = self.sprites[i]
                 target_frame : int = i + (self.h_parts * curr_frame)
@@ -241,6 +243,9 @@ class Object:
             i += 1
 
     def update(self):
+        self.delta_time = get_screen().window.delta_time()
+        self.time_elapsed += self.delta_time
+        
         """Para criancas terem comportamento por frame"""
         self.screen_size.x = REF_RES[0] * res_scale[0]
         self.screen_size.y = REF_RES[1] * res_scale[1]
@@ -257,7 +262,7 @@ class Object:
         pass
 
     def is_hovered(self):
-        if get_screen().get_tab() != self.get_tab():
+        if get_screen().get_tab() not in self.get_tabs():
             return False
         
         mouse_pos = Vector2()
@@ -289,7 +294,7 @@ class Screen:
         # one image per tab
         self.bg_imgs = {}
         
-        self.bg : gi.GameImage = gi.GameImage("assets/images/black_pixel.png")
+        self.bg : gi.GameImage = gi.GameImage(EMPTY_PIXEL)
         
         self.ticks : int = 0
         self.time_elapsed : float = 0
@@ -327,7 +332,7 @@ class Screen:
     def clear_tab(self, tab: int):
         """Apagar todo objeto da tab passada"""
         for obj in self._objs:
-            if obj.get_tab() == tab:
+            if tab in obj.get_tabs():
                 self.remove_object_by_id(obj.get_id())
 
     def get_objs_with_tags(self, tags: List[str]):
@@ -374,7 +379,11 @@ class Screen:
                 ids_to_remove.append(obj.get_id())
                 continue
             # da pra jogar todos os objetos nao usados para o mesmo lugar no limbo, tambem...
-            tab_offset : float = (obj.get_tab() - self._tab) * 5000
+            tab_offset : float = 0
+            if self.get_tab() not in obj.get_tabs():
+                tab_offset = 5000
+            else:
+                tab_offset = 0
             obj.apply_coords(tab_offset, tab_offset)
             if obj.visible and tab_offset == 0 and obj:
                 # objeto ativo, atualizar
@@ -420,7 +429,7 @@ class Screen:
                     render_buffer.remove(obj)
                 if obj.z == layer:
                     render_buffer.remove(obj)
-                    if obj.get_tab() == self.get_tab():
+                    if self.get_tab() in obj.get_tabs():
                         obj.render() # desenhar elementos dessa camada
             layer += 1
         
