@@ -61,8 +61,8 @@ def get_random_pos(side: int):
         return randrange(int(get_screen().window.width/2) + enemy_horizontal_padding, int(get_screen().window.width) - enemy_horizontal_padding)
 
 def reset_enemy(enemy: Enemy):
-    enemy.x = get_random_pos(enemy.side)
-    enemy.y = -enemy.get_height() + 1
+    enemy.pos.x = get_random_pos(enemy.side)
+    enemy.pos.y = -enemy.get_height() + 1
     enemy.health = enemy.default_health
 
 def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, inimigo: Enemy | None = None):
@@ -78,8 +78,8 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
     
     if isinstance(inimigo, Enemy):
         x = clamp(x, 0, get_screen().window.width - inimigo.get_width())
-        inimigo.x = x
-        inimigo.y = -inimigo.get_height() + 1
+        inimigo.pos.x = x
+        inimigo.pos.y = -inimigo.get_height() + 1
         inimigo.horizontal_bounds = copy(H_BOUNDS[side])
         if side == 0:
             inimigo.horizontal_bounds.x -= extra_margin
@@ -110,8 +110,8 @@ nave1 : Nave = Nave(
     [TAB_JOGO],
     get_screen()._objs,
 )
-nave1.x = get_screen().window.width/4 - nave1.get_width()/2
-nave1.y = TELA_H - nave1.get_height() - 8
+nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
+nave1.pos.y = TELA_H - nave1.get_height() - 8
 nave1.horizontal_bounds = copy(H_BOUNDS[0])
 nave1.horizontal_bounds.x -= nave1.get_width()/2
 nave1.UP, nave1.DOWN, nave1.LEFT, nave1.RIGHT, nave1.SHOOT, nave1.POWER = control_esquemes[1]
@@ -127,8 +127,8 @@ nave2 : Nave = Nave(
     [TAB_JOGO],
     get_screen()._objs
 )
-nave2.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
-nave2.y = get_screen().window.height - nave2.get_height() - 8
+nave2.pos.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
+nave2.pos.y = get_screen().window.height - nave2.get_height() - 8
 nave2.horizontal_bounds = H_BOUNDS[1]
 nave2.UP, nave2.DOWN, nave2.LEFT, nave2.RIGHT, nave2.SHOOT, nave2.POWER = control_esquemes[0]
 nave2.z = 1
@@ -144,7 +144,7 @@ fps_text_value = fps_text.add_number(3)
 TAB_TETRIS = 1
 
 divisao = Object("assets/images/tile_empty.png", 64, REF_RES[1], [TAB_TETRIS])
-divisao.x = TELA_W/2 - divisao.get_width()
+divisao.pos.x = TELA_W/2 - divisao.get_width()
 
 piece_size = Vector2(REF_RES[1]/TETRIS_LINES, REF_RES[1]/TETRIS_LINES)
 
@@ -181,7 +181,7 @@ sidepanel1.categorie = "sidepanel"
 
 sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
 sidepanel2.z = 2
-sidepanel2.x = TELA_W - sidepanel2.get_width()
+sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
 
 
 # -----------
@@ -194,7 +194,7 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(TAB_TETRIS)
+get_screen().set_tab(TAB_JOGO)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
@@ -207,14 +207,14 @@ while True:
             enemy_spawn_cooldown = enemy_spawn_interval
         
         for o in get_screen()._objs:
-            if o.y >= TELA_H and isinstance(o, Enemy):
+            if o.pos.y >= TELA_H and isinstance(o, Enemy):
                 reset_enemy(o)
 
     if get_screen().get_tab() == TAB_TETRIS:
         aura1_text_value.value = tetris1.points
         
-        tetris1.x = divisao.x - tetris1.get_width()
-        tetris2.x = divisao.x + divisao.get_width()
+        tetris1.pos.x = divisao.pos.x - tetris1.get_width()
+        tetris2.pos.x = divisao.pos.x + divisao.get_width()
         
     # --------
     
@@ -222,8 +222,8 @@ while True:
     enemy_spawn_cooldown = max(enemy_spawn_cooldown - get_screen().window.delta_time(), 0)
     
     # update UI
-    aura_text.x = TELA_W/2 - aura_text.get_width()/2
-    aura_text.y = TELA_H - aura_text.get_height()
+    aura_text.pos.x = TELA_W/2 - aura_text.get_width()/2
+    aura_text.pos.y = TELA_H - aura_text.get_height()
     aura1_text_value.value = tetris1.points
     aura2_text_value.value = tetris2.points
 

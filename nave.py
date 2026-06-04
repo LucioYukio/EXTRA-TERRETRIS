@@ -44,8 +44,8 @@ class Bullet(Projectile):
         target_coords.x -= explosion.get_width()/2
         target_coords.y -= explosion.get_height()/2
         
-        explosion.x = target_coords.x
-        explosion.y = target_coords.y
+        explosion.pos.x = target_coords.x
+        explosion.pos.y = target_coords.y
 
 class NaveBullet(Bullet):
     def __init__(self, img: str, tabs: List[int], objs: list):
@@ -105,11 +105,11 @@ class Rastro(Object):
     def advance_rastro(self):
         if self.qtd <= 0:
             return 
-        self.rastros[-1].x = self.x + self.offset.x - self._width/2
-        self.rastros[-1].y = self.y + self.offset.y - self._height + 1
+        self.rastros[-1].pos.x = self.pos.x + self.offset.x - self._width/2
+        self.rastros[-1].pos.y = self.pos.y + self.offset.y - self._height + 1
         for i in range(self.qtd - 1):
-            self.rastros[i].x = self.rastros[i+1].x + self.rastros[i+1].get_width()/2 - self.rastros[i].get_width()/2
-            self.rastros[i].y = self.rastros[i+1].y + self.rastros[i+1].get_height()/2 - self.rastros[i].get_height()/2
+            self.rastros[i].pos.x = self.rastros[i+1].pos.x + self.rastros[i+1].get_width()/2 - self.rastros[i].get_width()/2
+            self.rastros[i].pos.y = self.rastros[i+1].pos.y + self.rastros[i+1].get_height()/2 - self.rastros[i].get_height()/2
     
     def render(self):
         return
@@ -168,8 +168,8 @@ class Nave(Body):
     
     def shoot(self):
         self.bullets.append(NaveBullet(self.bullet_img, self.get_tabs(), self.objs))
-        self.bullets[-1].x = self.x + self.get_width()/2 - self.bullets[-1].get_width()/2
-        self.bullets[-1].y = self.y - self.bullets[-1].get_height() + 5
+        self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
+        self.bullets[-1].pos.y = self.pos.y - self.bullets[-1].get_height() + 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
 
@@ -194,8 +194,8 @@ class Nave(Body):
         target_coords.x -= explosion.get_width()/2
         target_coords.y -= explosion.get_height()/2
         
-        explosion.x = target_coords.x
-        explosion.y = target_coords.y
+        explosion.pos.x = target_coords.x
+        explosion.pos.y = target_coords.y
     
     def apply_rastro_offset(self):
         try:    self.rastro
@@ -301,8 +301,8 @@ class Nave(Body):
         
         self.shooting_cooldown = max(self.shooting_cooldown - self.delta_time, 0)
         
-        self.rastro.x = self.x
-        self.rastro.y = self.y
+        self.rastro.pos.x = self.pos.x
+        self.rastro.pos.y = self.pos.y
         self.rastro.delta_time = self.delta_time
         self.rastro.update()
         

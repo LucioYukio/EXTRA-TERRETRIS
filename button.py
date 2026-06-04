@@ -89,12 +89,12 @@ class Button(Object):
             
     def update(self):
         super().update()
-        self.black_sprite.x = self.x
-        self.black_sprite.y = self.y
-        self.white_sprite.x = self.black_sprite.x - self._border_width
-        self.white_sprite.y = self.black_sprite.y - self._border_width
-        self.text.x = self.black_sprite.x + self._margin_x
-        self.text.y = self.black_sprite.y + self._margin_y  
+        self.black_sprite.pos.x = self.pos.x
+        self.black_sprite.pos.y = self.pos.y
+        self.white_sprite.pos.x = self.black_sprite.pos.x - self._border_width
+        self.white_sprite.pos.y = self.black_sprite.pos.y - self._border_width
+        self.text.pos.x = self.black_sprite.pos.x + self._margin_x
+        self.text.pos.y = self.black_sprite.pos.y + self._margin_y  
          
         self.update_sprite()
         

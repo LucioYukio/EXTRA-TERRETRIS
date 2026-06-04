@@ -65,8 +65,8 @@ class Letter(Object):
 
     def update(self):
         super().update()
-        self.background.x = self.x
-        self.background.y = self.y
+        self.background.pos.x = self.pos.x
+        self.background.pos.y = self.pos.y
         
         self.update_curr_frame()
     
@@ -117,16 +117,16 @@ class Text(Object):
         self.apply_letter_position()
         farthest_letter = self.letters[0]
         for letter in self.letters:
-            if letter.x + letter.get_width() > farthest_letter.x + farthest_letter.get_width():
+            if letter.pos.x + letter.get_width() > farthest_letter.pos.x + farthest_letter.get_width():
                 farthest_letter = letter
-        return int(farthest_letter.x + farthest_letter.get_width() - self.x)
+        return int(farthest_letter.pos.x + farthest_letter.get_width() - self.pos.x)
 
 
     def get_height(self):
         if not hasattr(self, "letters") or not self.letters:
             return 0
         self.apply_letter_position()
-        return int(self.letters[-1].y - self.y + self.letters[-1].get_height())
+        return int(self.letters[-1].pos.y - self.pos.y + self.letters[-1].get_height())
     
     def apply_letter_position(self):
         w, h = int(self.letter_size.x), int(self.letter_size.y)
@@ -144,8 +144,8 @@ class Text(Object):
             letter : Letter = self.letters[j]
             
             if char != '\n':
-                letter.x = self.x + (w * column)
-                letter.y = self.y + (h * line)
+                letter.pos.x = self.pos.x + (w * column)
+                letter.pos.y = self.pos.y + (h * line)
                 j += 1
                 column += 1
             else:
@@ -207,14 +207,14 @@ class CompositeText(Object):
     def apply_coords(self, offset_x: float, offset_y: float):
         super().apply_coords(offset_x, offset_y)
         
-        last_coord : Vector2 = Vector2(self.x, self.y)
+        last_coord : Vector2 = Vector2(self.pos.x, self.pos.y)
         for text in self.texts:
-            text.x = last_coord.x
-            text.y = last_coord.y
+            text.pos.x = last_coord.x
+            text.pos.y = last_coord.y
             text.apply_coords(offset_x, offset_y)
             last_coord = Vector2(
-                text.letters[-1].x + text.letter_size.x,
-                text.letters[-1].y
+                text.letters[-1].pos.x + text.letter_size.x,
+                text.letters[-1].pos.y
             )
             
     def add_text(self, text: str):
@@ -231,15 +231,15 @@ class CompositeText(Object):
             return 0
         farthest_point : float = 0
         for text in self.texts:
-            point = text.x + text.get_width()
+            point = text.pos.x + text.get_width()
             if point > farthest_point:
                 farthest_point = point
-        return int(farthest_point - self.x)
+        return int(farthest_point - self.pos.x)
 
     def get_height(self):
         if not hasattr(self, "texts") or not self.texts:
             return 0
-        return int(self.texts[-1].y + self.texts[-1].get_height() - self.y)
+        return int(self.texts[-1].pos.y + self.texts[-1].get_height() - self.pos.y)
         
     
 class DrawnText(Object):
@@ -259,7 +259,7 @@ class DrawnText(Object):
         return "".join([str(txt) for txt in self.texts])
     
     def render(self):
-        get_screen().window.draw_text(self.get_text(), self.x, self.y, self.size, self.color, self.font_name)
+        get_screen().window.draw_text(self.get_text(), self.pos.x, self.pos.y, self.size, self.color, self.font_name)
     
     def get_text_size(self):
         return get_text_size(self.get_text(), self.font_name, self.size)

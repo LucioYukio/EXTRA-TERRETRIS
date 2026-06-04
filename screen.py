@@ -4,8 +4,6 @@
 import math
 from typing import List, Tuple
 
-from pygame.surface import Surface
-
 import pplay.window as w
 import pplay.gameobject as go
 import pplay.gameimage as gi
@@ -75,8 +73,7 @@ class Object:
         self._tabs : List[int] = tabs
 
         """Coordenadas locais"""
-        self.x : float = 0
-        self.y : float = 0
+        self.pos : Vector2 = Vector2(0, 0)
         self.z : int = 0 # ordem de desenho; camada; maior valor eh desenhado na frente
         # multiplica os offsets contabilizados no apply_coords()
         self.offset_multiplier : float = 0 # quanto maior, mais perto da tela. Quanto mais proximo de 0, mais longe.
@@ -158,7 +155,7 @@ class Object:
         self.build_sprites()
 
     def get_center(self):
-        return Vector2(self.x + self.get_width()/2, self.y + self.get_height()/2)
+        return Vector2(self.pos.x + self.get_width()/2, self.pos.y + self.get_height()/2)
 
     def build_sprites(self):
         self.sprites.clear()
@@ -189,8 +186,8 @@ class Object:
         if self.out_of_h_bounds:
             return False
         coords : Vector2 = Vector2(
-            self.x + (self.get_width()/self.h_parts) * h_part,
-            self.y
+            self.pos.x + (self.get_width()/self.h_parts) * h_part,
+            self.pos.y
         )
         size : Vector2 = Vector2(
             self.get_width()/self.h_parts,
@@ -207,11 +204,11 @@ class Object:
     def apply_coords(self, offset_x : float, offset_y : float):
         offset_x *= self.offset_multiplier
         offset_y *= self.offset_multiplier
-        last_x : float = offset_x + self.x
+        last_x : float = offset_x + self.pos.x
         for i in range(self.h_parts):
             sprite = self.sprites[i]
             sprite.x = last_x
-            sprite.y = offset_y + self.y
+            sprite.y = offset_y + self.pos.y
             last_x = sprite.x + sprite.width
 
     def animate(self):
@@ -276,8 +273,8 @@ class Object:
         mouse_pos = Vector2()
         mouse_pos.x, mouse_pos.y = self._mouse.get_position()
         
-        if mouse_pos.x >= self.x and mouse_pos.x <= self.x + self.get_width() and\
-            mouse_pos.y >= self.y and mouse_pos.y <= self.y + self.get_height():
+        if mouse_pos.x >= self.pos.x and mouse_pos.x <= self.pos.x + self.get_width() and\
+            mouse_pos.y >= self.pos.y and mouse_pos.y <= self.pos.y + self.get_height():
                 return True
         return False
 
@@ -406,16 +403,16 @@ class Screen:
                 obj.update()
                 
                 if obj.keep_in_bounds:
-                    obj.x = clamp(obj.x, h_bounds.x, h_bounds.y - obj.get_width())
-                    obj.y = clamp(obj.y, v_bounds.x, v_bounds.y - obj.get_height())
+                    obj.pos.x = clamp(obj.pos.x, h_bounds.x, h_bounds.y - obj.get_width())
+                    obj.pos.y = clamp(obj.pos.y, v_bounds.x, v_bounds.y - obj.get_height())
                 else:
-                    obj.out_of_h_bounds = obj.x > h_bounds.y or\
-                        obj.x + obj.get_width() < h_bounds.x
-                    obj.out_of_v_bounds = obj.y > v_bounds.y or\
-                        obj.y + obj.get_height() < v_bounds.x
+                    obj.out_of_h_bounds = obj.pos.x > h_bounds.y or\
+                        obj.pos.x + obj.get_width() < h_bounds.x
+                    obj.out_of_v_bounds = obj.pos.y > v_bounds.y or\
+                        obj.pos.y + obj.get_height() < v_bounds.x
 
-                obj.out_of_screen = ((obj.x + obj.get_width() < h_bounds.x) or (obj.x > h_bounds.y)) or\
-                    ((obj.y + obj.get_height() < v_bounds.x) or (obj.y > v_bounds.y))
+                obj.out_of_screen = ((obj.pos.x + obj.get_width() < h_bounds.x) or (obj.pos.x > h_bounds.y)) or\
+                    ((obj.pos.y + obj.get_height() < v_bounds.x) or (obj.pos.y > v_bounds.y))
 
                 if obj.out_of_h_bounds and obj.destroy_out_of_h_bounds or\
                 obj.out_of_v_bounds and obj.destroy_out_of_v_bounds:

@@ -51,8 +51,8 @@ class Enemy(Nave):
             
     def shoot(self):
         self.bullets.append(EnemyBullet(self.bullet_img, self.get_tabs(), self.objs))
-        self.bullets[-1].x = self.x + self.get_width()/2 - self.bullets[-1].get_width()/2
-        self.bullets[-1].y = self.y + self.get_height() - 5
+        self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
+        self.bullets[-1].pos.y = self.pos.y + self.get_height() - 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
 

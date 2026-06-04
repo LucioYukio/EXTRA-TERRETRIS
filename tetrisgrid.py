@@ -89,12 +89,12 @@ class TetrisGrid(Object):
         self.overlay.apply_coords(offset_x, offset_y)
     
     def update_grid_position(self, grid : List[List[gi.GameImage]], offset : Vector2):
-        self.overlay.x = self.x
-        self.overlay.y = self.y
+        self.overlay.pos.x = self.pos.x
+        self.overlay.pos.y = self.pos.y
         for i in range(int(self._lines)): # linhas
             for j in range(int(self._columns)): # colunas
-                grid[i][j].x = self.x + offset.x + self._piece_size.x * j
-                grid[i][j].y = self.y + offset.y + self._piece_size.y * i
+                grid[i][j].x = self.pos.x + offset.x + self._piece_size.x * j
+                grid[i][j].y = self.pos.y + offset.y + self._piece_size.y * i
     
     def animate(self):
         super().animate()

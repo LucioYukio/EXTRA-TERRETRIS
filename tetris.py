@@ -288,8 +288,8 @@ class Tetris(Object):
 
     def update(self):
         super().update()
-        self.grid.x = self.x
-        self.grid.y = self.y
+        self.grid.pos.x = self.pos.x
+        self.grid.pos.y = self.pos.y
 
         old_line = self.curr_piece.line
         old_column = self.curr_piece.column
