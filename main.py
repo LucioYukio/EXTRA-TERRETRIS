@@ -163,9 +163,9 @@ tetris2 : Tetris = Tetris(
     [TAB_TETRIS],
 )
 tetris2.UP, tetris2.DOWN, tetris2.LEFT, tetris2.RIGHT, tetris2.SPIN, tetris2.POWER = control_esquemes[0]
-tetris2.grid.FILLED = "assets/images/tile_filled_purple.png"
-tetris2.grid.MARKED = "assets/images/tile_marked_purple.png"
-tetris2.grid.overlay_img = "assets/images/tech_background_purple_animated.png"
+tetris2.grid.FILLED = "assets/images/tile_filled_green.png"
+tetris2.grid.MARKED = "assets/images/tile_marked_green.png"
+tetris2.grid.overlay_img = "assets/images/tech_background_green_animated.png"
 tetris2.grid.build_grids()
 
 
@@ -175,10 +175,11 @@ aura1_text_value = aura_text.add_number(4)
 aura_text.add_text(" ")
 aura2_text_value = aura_text.add_number(4)
 
-sidepanel1 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
+sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
 sidepanel1.z = 2
+sidepanel1.categorie = "sidepanel"
 
-sidepanel2 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
+sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
 sidepanel2.z = 2
 sidepanel2.x = TELA_W - sidepanel2.get_width()
 
@@ -193,7 +194,7 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(TAB_JOGO)
+get_screen().set_tab(TAB_TETRIS)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------

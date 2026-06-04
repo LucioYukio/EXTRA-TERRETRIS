@@ -7,7 +7,7 @@ from projectile import Projectile
 from screen import *
 from effect import Effect
 
-DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 80)
+DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 83)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)
 
 class Bullet(Projectile):

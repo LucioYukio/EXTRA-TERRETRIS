@@ -23,8 +23,8 @@ from vector2 import Vector2
 REF_RES = (1600, 900) # tamanhos seram calculados em relacao a essa variavel
 res_scale : List[float] = [1,1]
 
-TELA_W = 1280
-TELA_H = 720
+TELA_W = 1600
+TELA_H = 900
 
 EMPTY_PIXEL = "assets/images/empty_pixel.png"
 
@@ -78,6 +78,8 @@ class Object:
         self.x : float = 0
         self.y : float = 0
         self.z : int = 0 # ordem de desenho; camada; maior valor eh desenhado na frente
+        # multiplica os offsets contabilizados no apply_coords()
+        self.offset_multiplier : float = 0 # quanto maior, mais perto da tela. Quanto mais proximo de 0, mais longe.
 
         """Tamanho local"""
         self.set_width(width)
@@ -203,9 +205,14 @@ class Object:
 
 
     def apply_coords(self, offset_x : float, offset_y : float):
+        offset_x *= self.offset_multiplier
+        offset_y *= self.offset_multiplier
+        last_x : float = offset_x + self.x
         for i in range(self.h_parts):
-            self.sprites[i].x = offset_x + self.x + (self.get_width()/self.h_parts) * i
-            self.sprites[i].y = offset_y + self.y
+            sprite = self.sprites[i]
+            sprite.x = last_x
+            sprite.y = offset_y + self.y
+            last_x = sprite.x + sprite.width
 
     def animate(self):
         """Aplica a logica de animacao. Chamar em todo update."""
@@ -225,19 +232,20 @@ class Object:
             if self.is_h_part_in_bounds(i):
                 self.sprites[i].draw()
 
-    def update_sprites(self, grow_a_bit: bool = True, h_mult: int = 1):
-        """Mudar o tamanho das imagens de acordo com o
+    def update_sprites(self, grow_a_bit: bool = False):
+        """
+        Mudar o tamanho das imagens de acordo com o
         width e height
-            grow_a_bit = if to make each part a little larger
-            h_mult = image width is multiple of h_mult"""
+            grow_a_bit: if to make each part a little larger
+        """
         # TODO corrigir pedacinho da direita nao aparecendo
         i : int = 0
         for spr in self.sprites:
-            width = (self.get_width() + self.h_parts * grow_a_bit) * self.total_frames
-            width -= width % h_mult
+            width = self.get_width() * self.total_frames
+            #width = (self.get_width() + self.h_parts * grow_a_bit) * self.total_frames
             spr.image = pygame.transform.scale(spr.image, (width, self.get_height()))
             spr.width = int(self.get_width()/self.h_parts)
-            spr.width += 1
+            #spr.width += 1
             spr.height = int(self.get_height())
             spr.curr_frame = i
             i += 1
@@ -380,10 +388,6 @@ class Screen:
                 continue
             # da pra jogar todos os objetos nao usados para o mesmo lugar no limbo, tambem...
             tab_offset : float = 0
-            if self.get_tab() not in obj.get_tabs():
-                tab_offset = 5000
-            else:
-                tab_offset = 0
             obj.apply_coords(tab_offset, tab_offset)
             if obj.visible and tab_offset == 0 and obj:
                 # objeto ativo, atualizar

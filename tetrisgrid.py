@@ -25,14 +25,14 @@ class TetrisGrid(Object):
         self._marked_grid  : List[List[gi.GameImage]] = [] # celulas preenchidas
         
         # overlay do fundo
-        self.overlay_img : str = "assets/images/tech_background_green_animated.png"
+        self.overlay_img : str = "assets/images/tech_background_purple_animated.png"
         self.overlay : Object = Object(EMPTY_PIXEL, 0, 0, tabs, add_to_screen=False)
         
         # imagens
         self.EMPTY   : str = "assets/images/tile_empty.png"
         self.BLOCKED : str = "assets/images/tile_blocked.png"
-        self.FILLED  : str = "assets/images/tile_filled_green.png"
-        self.MARKED  : str = "assets/images/tile_marked_green.png"
+        self.FILLED  : str = "assets/images/tile_filled_purple.png"
+        self.MARKED  : str = "assets/images/tile_marked_purple.png"
 
     def get_width(self):
         if hasattr(self, "_piece_size") and hasattr(self, "_columns"):
