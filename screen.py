@@ -73,10 +73,14 @@ class Object:
         self._tabs : List[int] = tabs
 
         """Coordenadas locais"""
-        self.pos : Vector2 = Vector2(0, 0)
+        self.pos : Vector2 = Vector2()
+        # posicao no ultimo frame
+        self.last_pos : Vector2 = Vector2()
         self.z : int = 0 # ordem de desenho; camada; maior valor eh desenhado na frente
         # multiplica os offsets contabilizados no apply_coords()
         self.offset_multiplier : float = 0 # quanto maior, mais perto da tela. Quanto mais proximo de 0, mais longe.
+        # offset sera calculado em relacao a esse objeto.
+        self.anchor : Object = self
 
         """Tamanho local"""
         self.set_width(width)
@@ -180,6 +184,21 @@ class Object:
             h_bounds.append(self.screen_size.x)
         
         return h_bounds
+
+    def get_v_bounds(self):
+        v_bounds : List[float] = []
+        
+        if self.vertical_bounds.x != -1:
+            v_bounds.append(self.vertical_bounds.x)
+        else:
+            v_bounds.append(0)
+        
+        if self.vertical_bounds.y != -1:
+            v_bounds.append(self.vertical_bounds.y)
+        else:
+            v_bounds.append(self.screen_size.x)
+        
+        return v_bounds
     
     # checks to see if the part is inside h_bounds
     def is_h_part_in_bounds(self, h_part : int):
@@ -200,15 +219,21 @@ class Object:
             return False
         return True
 
+    def get_movement(self):
+        """
+        retorna movimento desse objeto no ultimo frame
+        """
+        return Vector2(
+            self.pos.x - self.last_pos.x,
+            self.pos.y - self.last_pos.y
+        )
 
     def apply_coords(self, offset_x : float, offset_y : float):
-        offset_x *= self.offset_multiplier
-        offset_y *= self.offset_multiplier
-        last_x : float = offset_x + self.pos.x
+        last_x : float = self.pos.x
         for i in range(self.h_parts):
             sprite = self.sprites[i]
             sprite.x = last_x
-            sprite.y = offset_y + self.pos.y
+            sprite.y = self.pos.y
             last_x = sprite.x + sprite.width
 
     def animate(self):
@@ -248,10 +273,12 @@ class Object:
             i += 1
 
     def update(self):
+        self.last_pos.x = self.pos.x
+        self.last_pos.y = self.pos.y
+        
         self.delta_time = get_screen().window.delta_time()
         self.time_elapsed += self.delta_time
         
-        """Para criancas terem comportamento por frame"""
         self.screen_size.x = REF_RES[0] * res_scale[0]
         self.screen_size.y = REF_RES[1] * res_scale[1]
         
@@ -261,7 +288,12 @@ class Object:
         self.animate()
         for spr in self.sprites:
             spr.update()
-
+        
+        if self.anchor != self:
+            anchor_movement = self.anchor.get_movement()
+            self.pos.x -= anchor_movement.x * self.offset_multiplier
+            self.pos.y -= anchor_movement.y * self.offset_multiplier
+        
     # call this before "destroying" the object, for custom behaviour
     def destroy(self):
         pass

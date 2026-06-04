@@ -105,6 +105,7 @@ class Rastro(Object):
     def advance_rastro(self):
         if self.qtd <= 0:
             return 
+        
         self.rastros[-1].pos.x = self.pos.x + self.offset.x - self._width/2
         self.rastros[-1].pos.y = self.pos.y + self.offset.y - self._height + 1
         for i in range(self.qtd - 1):
@@ -172,10 +173,14 @@ class Nave(Body):
         self.bullets[-1].pos.y = self.pos.y - self.bullets[-1].get_height() + 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
+        if self.anchor != self:
+            self.bullets[-1].anchor = self.anchor
 
     def spawn_rastro(self):
-        self.rastro = Rastro(self.get_tabs(), 8)
+        self.rastro : Rastro = Rastro(self.get_tabs(), 8)
         self.rastro.horizontal_bounds = self.horizontal_bounds
+        if self.rastro.anchor != self:
+            self.rastro.anchor = self.anchor
         for r in self.rastro.rastros:
             r.horizontal_bounds = self.horizontal_bounds
         self.apply_rastro_offset()
@@ -283,6 +288,7 @@ class Nave(Body):
         self.rastro.propagate_bounds()
     
     def update(self):
+        super().update()
         if self.rastro.horizontal_bounds != self.horizontal_bounds:
             self.propagate_bounds()
         
@@ -301,9 +307,16 @@ class Nave(Body):
         
         self.shooting_cooldown = max(self.shooting_cooldown - self.delta_time, 0)
         
+        if self.anchor != self:
+            anchor_movement = self.anchor.get_movement()
+            for rastro in self.rastro.rastros:
+                rastro.pos.x -= anchor_movement.x/2
+                rastro.pos.y -= anchor_movement.y/2
+        
         self.rastro.pos.x = self.pos.x
         self.rastro.pos.y = self.pos.y
         self.rastro.delta_time = self.delta_time
         self.rastro.update()
         
-        super().update()
+        
+        

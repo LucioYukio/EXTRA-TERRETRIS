@@ -16,6 +16,8 @@ class Body(Object):
         # custom hitbox, se for -1, sera desconsiderada.
         self.hitbox : Vector2 = Vector2(-1,-1)
 
+        self.offset_multiplier = 1
+
         self.side : int = 0 # "parte da tela" que o corpo pertence
 
     def get_hitbox(self):
@@ -77,15 +79,15 @@ class Body(Object):
     def apply_velocity(self):
         if self.velocity.x == 0 and self.velocity.y == 0:
             return
-        x , y = self.pos.x, self.pos.y
+        x, y = self.pos.x, self.pos.y
         self.pos.x += self.velocity.x * self.delta_time * res_scale[0]
         self.pos.y += self.velocity.y * self.delta_time * res_scale[1]
-        # encostar no objeto, fazer de maneira mais optimizada depois
+        # encostar no objeto, fazer de maneira mais optimizada depois (?)
         if self.get_collider() and self.stop_on_collision:
             self.pos.x = x
             self.pos.y = y
             self.collide(self.get_collider())
 
     def update(self):
-        self.apply_velocity()
         super().update()
+        self.apply_velocity()

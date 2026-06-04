@@ -26,6 +26,8 @@ class Enemy(Nave):
         self.speed = 100
         self.shooting_interval = 2
         
+        self.offset_multiplier = 0.5
+        
         self.default_health = 4
         self.health = 4
         
@@ -34,8 +36,8 @@ class Enemy(Nave):
     def get_direction(self):
         self.direction.y = 1
     
-    def spawn_rastro(self):
-        self.rastro : Rastro = Rastro(self.get_tabs(), 8)
+    # def spawn_rastro(self):
+    #     self.rastro : Rastro = Rastro(self.get_tabs(), 8)
 
     def apply_rastro_offset(self):
         try:
@@ -55,6 +57,9 @@ class Enemy(Nave):
         self.bullets[-1].pos.y = self.pos.y + self.get_height() - 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
+        if self.anchor != self:
+            self.bullets[-1].anchor = self.anchor
+        self.bullets[-1].offset_multiplier = self.offset_multiplier
 
 class EnemySin(Enemy):
     """Inimigo com um padrao de movimento horizontal seno"""

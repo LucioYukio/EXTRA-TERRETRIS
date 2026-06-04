@@ -2,6 +2,7 @@ import csv
 from random import randrange
 import time
 
+import nave
 from screen import *
 from button import *
 from body import *
@@ -82,8 +83,10 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
         inimigo.pos.y = -inimigo.get_height() + 1
         inimigo.horizontal_bounds = copy(H_BOUNDS[side])
         if side == 0:
+            inimigo.anchor = nave1
             inimigo.horizontal_bounds.x -= extra_margin
         else:
+            inimigo.anchor = nave2
             inimigo.horizontal_bounds.y += extra_margin
         inimigo.vertical_bounds = Vector2(-inimigo.get_height(), get_screen().window.height + inimigo.get_height())
         inimigo.bullet_img = "assets/images/bullet_green.png" if side == 0  else "assets/images/bullet_purple.png"
@@ -247,6 +250,6 @@ while True:
         tempo = time.perf_counter()
         ticks = 0
         last_average_fps = fps
-    
+
 
     
