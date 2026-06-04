@@ -33,11 +33,11 @@ class Enemy(Nave):
         
         self.hitbox = Vector2(-1,-1)
         
+        self.points_value : int = 10 # pontos que player recebe ao matar esse inimigo
+        self.points_list : List[int] = [0,0] # linkar (=) lista de pontos (aura) usado
+        
     def get_direction(self):
         self.direction.y = 1
-    
-    # def spawn_rastro(self):
-    #     self.rastro : Rastro = Rastro(self.get_tabs(), 8)
 
     def apply_rastro_offset(self):
         try:
@@ -60,6 +60,11 @@ class Enemy(Nave):
         if self.anchor != self:
             self.bullets[-1].anchor = self.anchor
         self.bullets[-1].offset_multiplier = self.offset_multiplier
+        self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
+
+    def destroy(self):
+        super().destroy()
+        self.points_list[self.side] += self.points_value
 
 class EnemySin(Enemy):
     """Inimigo com um padrao de movimento horizontal seno"""

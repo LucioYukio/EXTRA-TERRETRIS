@@ -236,15 +236,18 @@ class Object:
             sprite.y = self.pos.y
             last_x = sprite.x + sprite.width
 
+    def set_curr_frame(self, curr_frame: int):
+        for i in range(self.h_parts):
+            spr = self.sprites[i]
+            target_frame : int = i + (self.h_parts * curr_frame)
+            if spr.curr_frame != target_frame:
+                spr.set_curr_frame(target_frame)
+
     def animate(self):
         """Aplica a logica de animacao. Chamar em todo update."""
         if self.playing:
             curr_frame : int = int(self.time_elapsed / self.frame_duration) % self.total_frames
-            for i in range(self.h_parts):
-                spr = self.sprites[i]
-                target_frame : int = i + (self.h_parts * curr_frame)
-                if spr.curr_frame != target_frame:
-                    spr.set_curr_frame(target_frame)
+            self.set_curr_frame(curr_frame)
 
     def render(self):
         # check what sprites in this object are in bounds and render them.
@@ -338,6 +341,9 @@ class Screen:
         
         self.set_tab(0)
         
+        # desenhar loading na tela
+        self.window.draw_text("Carregando...", 100, 100)
+        self.window.update()
 
     def set_tab(self, tab: int):
         self._tab = tab

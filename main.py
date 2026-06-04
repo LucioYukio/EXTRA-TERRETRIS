@@ -2,6 +2,7 @@ import csv
 from random import randrange
 import time
 
+from background import Background
 import nave
 from screen import *
 from button import *
@@ -53,6 +54,13 @@ SIDEPANEL_W = 120
 
 H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2), Vector2(TELA_W/2, TELA_W-SIDEPANEL_W)]
 
+# velocity in which the background descends
+BG_VELOCITY = 0.1
+BG_SCALE = 1.66
+
+auras : List[int] = [0, 0]
+
+
 #---------------- FUNCOES ---------------------------
 
 def get_random_pos(side: int):
@@ -76,7 +84,7 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
             tabs,
             get_screen()._objs
         )
-    
+        
     if isinstance(inimigo, Enemy):
         x = clamp(x, 0, get_screen().window.width - inimigo.get_width())
         inimigo.pos.x = x
@@ -90,8 +98,9 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
             inimigo.horizontal_bounds.y += extra_margin
         inimigo.vertical_bounds = Vector2(-inimigo.get_height(), get_screen().window.height + inimigo.get_height())
         inimigo.bullet_img = "assets/images/bullet_green.png" if side == 0  else "assets/images/bullet_purple.png"
-        inimigo.explosion_info["img"] = "assets/images/explosion_green.png" if side == 0 else "assets/images/explosion_purple.png"
+        inimigo.bullet_explosion_img = "assets/images/explosion_small_green.png" if side == 0  else "assets/images/explosion_small_purple.png"
         inimigo.side = side
+        inimigo.points_list = auras
 
 def enemy_count():
     count : int = 0
@@ -106,6 +115,8 @@ TAB_JOGO = 0
 
 get_screen().bg_imgs[TAB_JOGO] = "assets/images/double_bg.png"
 
+
+
 nave1 : Nave = Nave(
     "assets/images/nave1.png",
     int(DEFAULT_NAVE_SIZE.x),
@@ -116,11 +127,10 @@ nave1 : Nave = Nave(
 nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
 nave1.pos.y = TELA_H - nave1.get_height() - 8
 nave1.horizontal_bounds = copy(H_BOUNDS[0])
-nave1.horizontal_bounds.x -= nave1.get_width()/2
 nave1.UP, nave1.DOWN, nave1.LEFT, nave1.RIGHT, nave1.SHOOT, nave1.POWER = control_esquemes[1]
 nave1.z = 1
 nave1.bullet_img = "assets/images/bullet_purple.png"
-nave1.explosion_info["img"] = "assets/images/explosion_purple.png"
+nave1.bullet_explosion_img = "assets/images/explosion_small_purple.png"
 nave1.side = 0
 
 nave2 : Nave = Nave(
@@ -136,8 +146,38 @@ nave2.horizontal_bounds = H_BOUNDS[1]
 nave2.UP, nave2.DOWN, nave2.LEFT, nave2.RIGHT, nave2.SHOOT, nave2.POWER = control_esquemes[0]
 nave2.z = 1
 nave2.bullet_img = "assets/images/bullet_green.png"
-nave2.explosion_info["img"] = "assets/images/explosion_green.png"
+nave2.bullet_explosion_img = "assets/images/explosion_small_green.png"
+
 nave2.side = 1
+
+asteroid_bg1 : Background = Background(
+    "assets/images/asteroids_bg_narrow.png",
+    int(528 * BG_SCALE),
+    int(2041 * BG_SCALE),
+    [TAB_JOGO],
+    0,
+    32,
+    nave1,
+    Vector2(SIDEPANEL_W, TELA_W/2)
+)
+asteroid_bg1.offset_multiplier = 0.2
+asteroid_bg1.pos.y = TELA_H - asteroid_bg1.get_height()
+asteroid_bg1.pos.x = 30
+
+asteroid_bg2 : Background = Background(
+    "assets/images/asteroids_bg_narrow.png",
+    int(528 * BG_SCALE),
+    int(2041 * BG_SCALE),
+    [TAB_JOGO],
+    1,
+    32,
+    nave2,
+    Vector2(TELA_W/2, TELA_W)
+)
+asteroid_bg2.offset_multiplier = 0.2
+asteroid_bg2.pos.y = TELA_H - asteroid_bg2.get_height() + 200 # numero aleatorio para variar
+asteroid_bg2.pos.x = TELA_W/2 - 100
+
 
 fps_text = CompositeText(SMALL_LETTER_SIZE, [TAB_JOGO], color_index=1, background=True)
 fps_text.add_text("FPS:")
@@ -145,9 +185,6 @@ fps_text_value = fps_text.add_number(3)
 
 
 TAB_TETRIS = 1
-
-divisao = Object("assets/images/tile_empty.png", 64, REF_RES[1], [TAB_TETRIS])
-divisao.pos.x = TELA_W/2 - divisao.get_width()
 
 piece_size = Vector2(REF_RES[1]/TETRIS_LINES, REF_RES[1]/TETRIS_LINES)
 
@@ -179,13 +216,16 @@ aura_text.add_text(" ")
 aura2_text_value = aura_text.add_number(4)
 
 sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
-sidepanel1.z = 2
+sidepanel1.z = 4
 sidepanel1.categorie = "sidepanel"
 
 sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
-sidepanel2.z = 2
+sidepanel2.z = 4
 sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
 
+divisao = Object("assets/images/divisor.png", 48, REF_RES[1], [TAB_JOGO, TAB_TETRIS])
+divisao.pos.x = TELA_W/2 - divisao.get_width()
+divisao.z = 3
 
 # -----------
 
@@ -212,10 +252,17 @@ while True:
         for o in get_screen()._objs:
             if o.pos.y >= TELA_H and isinstance(o, Enemy):
                 reset_enemy(o)
-
-    if get_screen().get_tab() == TAB_TETRIS:
-        aura1_text_value.value = tetris1.points
         
+        # FAZER LOOPAR !!!!!!
+        asteroid_bg1.pos.y += BG_VELOCITY
+        if asteroid_bg1.pos.y >= -asteroid_bg1.get_height()/3:
+            asteroid_bg1.pos.y -= asteroid_bg1.get_height()/3
+        asteroid_bg2.pos.y += BG_VELOCITY
+        if asteroid_bg2.pos.y >= -asteroid_bg2.get_height()/3:
+            asteroid_bg2.pos.y -= asteroid_bg2.get_height()/3
+
+    #-------------------------------------------------
+    if get_screen().get_tab() == TAB_TETRIS:
         tetris1.pos.x = divisao.pos.x - tetris1.get_width()
         tetris2.pos.x = divisao.pos.x + divisao.get_width()
         
@@ -227,8 +274,8 @@ while True:
     # update UI
     aura_text.pos.x = TELA_W/2 - aura_text.get_width()/2
     aura_text.pos.y = TELA_H - aura_text.get_height()
-    aura1_text_value.value = tetris1.points
-    aura2_text_value.value = tetris2.points
+    aura1_text_value.value = auras[0]
+    aura2_text_value.value = auras[1]
 
     get_screen().update()
     

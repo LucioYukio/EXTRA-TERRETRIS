@@ -17,8 +17,8 @@ class Bullet(Projectile):
         self.frame_duration = 0.1
         
         self.explosion_info : Dict = {
-            "img" : "assets/images/explosion.png",
-            "frames" : 11,
+            "img" : "assets/images/explosion_small.png",
+            "frames" : 8,
             "duration" : 0.2,
             "width" : 48,
             "height" : 48
@@ -128,7 +128,7 @@ class Nave(Body):
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile"}
         self.keyboard = get_screen().keyboard
-        self.speed : float = 300
+        self.speed : float = 250
         self.direction : Vector2 = Vector2(0,0)
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
         
@@ -142,14 +142,15 @@ class Nave(Body):
         
         self.explosion_info : Dict = {
             "img" : "assets/images/explosion.png",
-            "frames" : 11,
-            "duration" : 2,
-            "width" : 128,
-            "height" : 128
+            "frames" : 8,
+            "duration" : 1,
+            "width" : 90,
+            "height" : 90
         }
         
         """Bullet vars"""
         self.bullet_img : str = "assets/images/bullet_white.png"
+        self.bullet_explosion_img : str = "assets/images/explosion_small.png"
         self.default_shooting_interval : float = 0.2
         self.shooting_interval : float = self.default_shooting_interval
         self.shooting_cooldown : float = 0
@@ -173,6 +174,7 @@ class Nave(Body):
         self.bullets[-1].pos.y = self.pos.y - self.bullets[-1].get_height() + 5
         self.bullets[-1].horizontal_bounds = self.horizontal_bounds
         self.bullets[-1].side = self.side
+        self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
         if self.anchor != self:
             self.bullets[-1].anchor = self.anchor
 
@@ -201,6 +203,9 @@ class Nave(Body):
         
         explosion.pos.x = target_coords.x
         explosion.pos.y = target_coords.y
+        if self.anchor != self:
+            explosion.anchor = self.anchor
+            explosion.offset_multiplier = self.offset_multiplier
     
     def apply_rastro_offset(self):
         try:    self.rastro

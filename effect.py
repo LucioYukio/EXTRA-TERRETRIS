@@ -4,7 +4,7 @@ class Effect(Object):
     def __init__(self, image: str, total_frames: int, total_duration: int, width: int, height: int, tabs: List[int], h_parts: int = 8):
         """
         Object that dies once animation finishes.
-        Always leave at least one empry frame at the end of the image.
+        Always leave at least one empty frame at the end of the image.
         """
         super().__init__(image, width, height, tabs, h_parts)
         self.set_total_frames(total_frames)

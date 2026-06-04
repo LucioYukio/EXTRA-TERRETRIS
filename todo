@@ -26,6 +26,7 @@
 [] Importar o fieldtext do space invaders
 [] Repurpose offset
     [] usar os offsets que a screen manda pros objectos para fazer um efeito de camera seguindo o player
+[] Fazer Background parallax loopar
 
     ->      ->      -> 
 
