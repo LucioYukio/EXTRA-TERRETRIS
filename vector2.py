@@ -48,6 +48,16 @@ class Vector2:
         else:
             return self.copy()
     
+    def __sub__(self, vector2):
+        if isinstance(vector2, Vector2):
+            vector = Vector2(
+            self.x - vector2.x,
+            self.y - vector2.y
+            )
+            return vector
+        else:
+            return self.copy()
+    
     def __mul__(self, scalar: int | float):
         return Vector2(self.x * scalar, self.y * scalar)
     

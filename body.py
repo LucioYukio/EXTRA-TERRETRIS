@@ -26,7 +26,7 @@ class Body(Object):
             "frames" : 8,
             "duration" : 1,
             "width" : width,
-            "height" : height
+            "height" : width
         }
 
         self.side : int = 0 # "parte da tela" que o corpo pertence
