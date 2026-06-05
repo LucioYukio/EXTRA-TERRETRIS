@@ -53,7 +53,7 @@ def get_text_size(text: str, font_name: str, size_pt: int):
     return font.size(text)
 
 
-#------------------------ IMAGE BUFFER -----------------------
+#------------------------ IMAGE CACHE -----------------------
 # tive que fazer aqui e nao em um outro modulo pois pygame precisa estar iniciado
 images: Dict[str, Surface] = {}
 def get_image(filepath: str):

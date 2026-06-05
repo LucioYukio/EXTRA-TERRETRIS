@@ -30,7 +30,7 @@ class Enemy(Nave):
         self.target : Object = target
         self.bullet_turning_speed : float = 3/1000
         
-        self.offset_multiplier = 0.5
+        self.offset_multiplier = 1
         
         self.default_health = 4
         self.health = 4

@@ -4,7 +4,6 @@ import time
 
 from asteroid import Asteroid
 from background import Background
-import nave
 from screen import *
 from button import *
 from body import *

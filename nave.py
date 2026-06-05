@@ -319,8 +319,7 @@ class Nave(Body):
         if self.anchor != self:
             anchor_movement = self.anchor.get_movement()
             for rastro in self.rastro.rastros:
-                rastro.pos.x -= anchor_movement.x/2
-                rastro.pos.y -= anchor_movement.y/2
+                rastro.pos -= (anchor_movement) * self.offset_multiplier
         
         self.rastro.pos.x = self.pos.x
         self.rastro.pos.y = self.pos.y
