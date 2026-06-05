@@ -1,8 +1,8 @@
 from body import *
 from pplay.animation import Animation
 class Projectile(Body):
-    def __init__(self, image: str, width: int, height: int, tabs: List[int], objs: list, h_parts: int = 1):
-        super().__init__(image, width, height, tabs, objs, h_parts)
+    def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 1):
+        super().__init__(image, width, height, tabs, h_parts)
         self.keep_in_bounds = False
         self.destroy_out_of_h_bounds = True
         self.destroy_out_of_v_bounds = True
@@ -13,7 +13,16 @@ class Projectile(Body):
         self.wants_to_die : bool = False
         self.tags.append("projectile")
         
+        self.direction : Vector2 = Vector2()
+        self.speed : float = 1
+        
         self.categorie = "projectile"
     
     def get_damage(self):
         return self.damage
+    
+    def update(self):
+        super().update()
+        self.direction.normalize()
+        self.velocity = self.direction * self.speed
+        

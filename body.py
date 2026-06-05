@@ -3,14 +3,14 @@ from pygame.math import lerp
 from screen import *
 
 class Body(Object):
-    def __init__(self, image : str, width : int, height: int, tabs: List[int], objs: list, h_parts: int = 1):
+    def __init__(self, image : str, width : int, height: int, tabs: List[int], h_parts: int = 1):
         super().__init__(image, width, height, tabs, h_parts)
         ## Screen vai fazer com que nao saia da tela
         self.keep_in_bounds = True
         # variaveis de fisica
         self.velocity : Vector2 = Vector2(0,0)
         ## para detectar colisao
-        self.objs = objs
+        self.objs = get_screen()._objs
         # se True, bate em objetos ao colidir
         self.stop_on_collision : bool = False
         # custom hitbox, se for -1, sera desconsiderada.

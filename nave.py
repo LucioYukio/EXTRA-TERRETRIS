@@ -1,18 +1,20 @@
 from typing import Dict
 
 from body import *
+from body import List
 from pplay.animation import Animation
 from pplay.window import Window
 from projectile import Projectile
 from screen import *
 from effect import Effect
+from screen import List
 
 DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 83)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)
 
 class Bullet(Projectile):
-    def __init__(self, img: str, tabs: List[int], objs: list):
-        super().__init__(img, 18, 18, tabs, objs)
+    def __init__(self, img: str, tabs: List[int]):
+        super().__init__(img, 18, 18, tabs)
         self.set_total_frames(4)
         self.frame_duration = 0.1
         
@@ -47,11 +49,27 @@ class Bullet(Projectile):
         explosion.pos.x = target_coords.x
         explosion.pos.y = target_coords.y
 
+class FollowingBullet(Bullet):
+    """Follows the target, turning at turning speed.
+    Keep turning speed between 0 and 1, or else it under/overshoots"""
+    def __init__(self, img: str, target: Object, turning_speed: float, tabs: List[int]):
+        super().__init__(img, tabs)
+        self.target : Object = target
+        self.turning_speed : float = turning_speed
+        self.following_duration : float = 3 # after this, bullet does not follow target
+        
+    def update(self):
+        if self.time_elapsed < self.following_duration:
+            self.direction = self.direction.lerp(self.pos.look_at(self.target.get_center()), self.turning_speed * self.delta_time)
+            self.direction.normalize()
+        super().update()
+        
 class NaveBullet(Bullet):
-    def __init__(self, img: str, tabs: List[int], objs: list):
-        super().__init__(img, tabs, objs)
+    def __init__(self, img: str, tabs: List[int]):
+        super().__init__(img, tabs)
         self.tags.append("player_projectile")
-        self.velocity.y = -600
+        self.speed = 600
+        self.direction.y = -1
         
         self.categorie = "nave bullet"
         
@@ -123,8 +141,8 @@ class Nave(Body):
     
     rastro : Rastro
     
-    def __init__(self, image: str, width: int, height: int, tabs: List[int], objs: list, h_parts: int = 16):
-        super().__init__(image, width, height, tabs, objs, h_parts)
+    def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 16):
+        super().__init__(image, width, height, tabs, h_parts)
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile"}
         self.keyboard = get_screen().keyboard
@@ -167,16 +185,24 @@ class Nave(Body):
         self.pressing_both : Vector2 = Vector2(0,0)
         
         self.categorie = "nave"
+        self.bullet_instance_counter : List[int] = [0]
+        # so pode atirar se quantidade de balas for menor que max_bullet_count
+        self.max_bullet_count : int = -1 # se -1, pode atirar o quanto quiser
     
     def shoot(self):
-        self.bullets.append(NaveBullet(self.bullet_img, self.get_tabs(), self.objs))
+        if self.max_bullet_count == -1 or self.bullet_instance_counter[0] < self.max_bullet_count:
+            self.spawn_bullet()
+            self.bullets[-1].horizontal_bounds = self.horizontal_bounds
+            self.bullets[-1].side = self.side
+            if self.anchor != self:
+                self.bullets[-1].anchor = self.anchor
+            self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
+            self.bullets[-1].instance_counter = self.bullet_instance_counter
+    
+    def spawn_bullet(self):
+        self.bullets.append(NaveBullet(self.bullet_img, self.get_tabs()))
         self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].pos.y = self.pos.y - self.bullets[-1].get_height() + 5
-        self.bullets[-1].horizontal_bounds = self.horizontal_bounds
-        self.bullets[-1].side = self.side
-        self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
-        if self.anchor != self:
-            self.bullets[-1].anchor = self.anchor
 
     def spawn_rastro(self):
         self.rastro : Rastro = Rastro(self.get_tabs(), 8)

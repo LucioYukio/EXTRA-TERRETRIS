@@ -27,6 +27,20 @@
 [X] Repurpose offset
     [X] usar os offsets que a screen manda pros objectos para fazer um efeito de camera seguindo o player
 [X] Fazer Background parallax loopar
+[] Tiro que segue o player
+    [] Multiplicador da velocidade da troca de direcao
+[] Algumas naves explodem em detritos
+[] Asteroides vem de vez em quando
+
+
+#RESENHA------
+[] Inimigo que fica no bg e atira na direcao da tela
+    [] Tiro comeca pequeno e escuro e aumenta e fica claro
+    [] Z do tiro vai indo de algum valor para outro, interpolando
+    [] .offset_multiplier vai aumentando tambem
+    [] Variavel mais importante eh "tempo de vida do tiro", que diz
+        quanto tempo o tiro demora pra chegar na tela desde o nascimento dele
+#------
 
     ->      ->      -> 
 

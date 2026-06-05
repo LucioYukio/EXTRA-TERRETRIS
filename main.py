@@ -42,6 +42,7 @@ control_esquemes = [
 enemy_spawn_interval : float = 1
 enemy_spawn_cooldown : float = 0
 MAX_ENEMY_COUNT : int = 10 *2
+MAX_ENEMY_BULLET_COUNT : int = 10 *2
 enemy_horizontal_padding : int = 8 # padding to account for when spawning enemies
 
 TETRIS_LINES = 20
@@ -60,6 +61,10 @@ BG_SCALE = 1.66
 
 auras : List[int] = [0, 0]
 
+# counters
+# Eh uma lista para eu poder linkar em inimigos eh poder decrementar na morte
+enemy_counter : List[int] = [0] 
+enemy_bullet_counter : List[int] = [0]
 
 #---------------- FUNCOES ---------------------------
 
@@ -81,9 +86,12 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
             img,
             int(DEFAULT_NAVE_SIZE.x),
             int(DEFAULT_NAVE_SIZE.y),
-            tabs,
-            get_screen()._objs
+            nave1 if side == 0 else nave2,
+            tabs
         )
+        inimigo.instance_counter = enemy_counter
+        inimigo.bullet_instance_counter = enemy_bullet_counter
+        inimigo.max_bullet_count = MAX_ENEMY_BULLET_COUNT
         
     if isinstance(inimigo, Enemy):
         x = clamp(x, 0, get_screen().window.width - inimigo.get_width())
@@ -102,12 +110,12 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
         inimigo.side = side
         inimigo.points_list = auras
 
-def enemy_count():
-    count : int = 0
-    for obj in get_screen()._objs:
-        if isinstance(obj, Enemy):
-            count += 1
-    return count
+# def enemy_count():
+#     count : int = 0
+#     for obj in get_screen()._objs:
+#         if isinstance(obj, Enemy):
+#             count += 1
+#     return count
 
 #---------------- TABS -----------------
 
@@ -122,7 +130,6 @@ nave1 : Nave = Nave(
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
     [TAB_JOGO],
-    get_screen()._objs,
 )
 nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
 nave1.pos.y = TELA_H - nave1.get_height() - 8
@@ -138,7 +145,6 @@ nave2 : Nave = Nave(
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
     [TAB_JOGO],
-    get_screen()._objs
 )
 nave2.pos.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
 nave2.pos.y = get_screen().window.height - nave2.get_height() - 8
@@ -237,14 +243,14 @@ MAX_TEMPO_PASSADO = 2
 ticks = 0
 tempo = time.perf_counter()
 
-get_screen().set_tab(TAB_TETRIS)
+get_screen().set_tab(TAB_JOGO)
 while True:
     #----------------------- Callback Dos Botoes ----------------------
     # --------
     
     if get_screen().get_tab() == TAB_JOGO:
         #----------------------- Enemy Spawn ------------------------------
-        if enemy_spawn_cooldown <= 0 and enemy_count() + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
+        if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
             spawn_enemy(get_random_pos(0), [TAB_JOGO], 0, 100)
             spawn_enemy(get_random_pos(1), [TAB_JOGO], 1, 100)
             enemy_spawn_cooldown = enemy_spawn_interval

@@ -5,16 +5,17 @@ from nave import *
 from pplay.animation import Animation
 
 
-class EnemyBullet(Bullet):
-    def __init__(self, img: str, tabs: List[int], objs: list):
-        super().__init__(img, tabs, objs)
+class EnemyBullet(FollowingBullet):
+    def __init__(self, img: str, tabs: List[int], target: Object, turning_speed: float):
+        super().__init__(img, target, turning_speed, tabs)
         self.tags.append("enemy_projectile")
-        self.velocity.y = 200
+        self.speed = 200
+        self.direction.y = 1
         
 
 class Enemy(Nave):
-    def __init__(self, img: str, width: int, height: int, tabs: List[int], objs: list):
-        super().__init__(img, width, height, tabs, objs)
+    def __init__(self, img: str, width: int, height: int, target: Object, tabs: List[int]):
+        super().__init__(img, width, height, tabs)
         if "player" in self.tags:
             self.tags.remove("player")
         self.tags.append("enemy")
@@ -25,6 +26,9 @@ class Enemy(Nave):
         self.destroy_out_of_v_bounds = True
         self.speed = 100
         self.shooting_interval = 2
+        
+        self.target : Object = target
+        self.bullet_turning_speed : float = 0.005
         
         self.offset_multiplier = 0.5
         
@@ -51,16 +55,10 @@ class Enemy(Nave):
             self.shoot()
             self.shooting_cooldown = self.shooting_interval
             
-    def shoot(self):
-        self.bullets.append(EnemyBullet(self.bullet_img, self.get_tabs(), self.objs))
+    def spawn_bullet(self):
+        self.bullets.append(EnemyBullet(self.bullet_img, self.get_tabs(), self.target, self.bullet_turning_speed))
         self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].pos.y = self.pos.y + self.get_height() - 5
-        self.bullets[-1].horizontal_bounds = self.horizontal_bounds
-        self.bullets[-1].side = self.side
-        if self.anchor != self:
-            self.bullets[-1].anchor = self.anchor
-        self.bullets[-1].offset_multiplier = self.offset_multiplier
-        self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
 
     def destroy(self):
         super().destroy()
@@ -68,8 +66,8 @@ class Enemy(Nave):
 
 class EnemySin(Enemy):
     """Inimigo com um padrao de movimento horizontal seno"""
-    def __init__(self, img: str, width: int, height: int, tabs: List[int], objs: list):
-        super().__init__(img, width, height, tabs, objs)
+    def __init__(self, img: str, width: int, height: int, target: Object, tabs: List[int]):
+        super().__init__(img, width, height, target, tabs)
         self.sin_speed : float = 1
     
     def get_direction(self):

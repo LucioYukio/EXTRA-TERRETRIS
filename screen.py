@@ -116,6 +116,7 @@ class Object:
         self.categorie : str = ""
 
         self.tags = []
+        self.instance_counter : List[int] = [0] # decrements the first element when dead
 
         self._id     : int      = 0
         
@@ -315,7 +316,7 @@ class Object:
         
     # call this before "destroying" the object, for custom behaviour
     def destroy(self):
-        pass
+        self.instance_counter[0] -= 1
 
     def is_hovered(self):
         if get_screen().get_tab() not in self.get_tabs():
