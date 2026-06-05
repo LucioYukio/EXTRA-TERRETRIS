@@ -6,11 +6,11 @@ from projectile import *
 from screen import List
 
 class Debri(Projectile):
-    def __init__(self, width: int, height: int, total_health: float, tabs: List[int]):
-        super().__init__("assets/images/spinning_asteroid.png", width, height, tabs, 6)
+    def __init__(self, image, width: int, height: int, total_health: float, tabs: List[int]):
+        super().__init__(image, width, height, tabs, 6)
         
         self.set_total_frames(59)
-        self.frame_duration = (1/(24 * 6))
+        self.frame_duration = (1/(24 * 4))
         self.playing = True
         
         self.speed = 300
@@ -125,9 +125,9 @@ class Asteroid(Projectile):
             explosion.anchor = self.anchor
             explosion.offset_multiplier = self.offset_multiplier
     
-    def spawn_debri(self, direction: Vector2):
+    def spawn_debri(self,image: str, direction: Vector2):
         w, h = self.get_width()//2, self.get_height()//2
-        debri : Debri = Debri(w, h, self.total_health//4, self.get_tabs())
+        debri : Debri = Debri(image, w, h, self.total_health//4, self.get_tabs())
         direction.normalize()
         debri.direction = direction
         debri.speed = self.speed*2
@@ -135,10 +135,10 @@ class Asteroid(Projectile):
         debri.horizontal_bounds = self.horizontal_bounds
     
     def spawn_debris(self):
-        self.spawn_debri(Vector2(-1,-1))
-        self.spawn_debri(Vector2(-1, 1))
-        self.spawn_debri(Vector2( 1, 1))
-        self.spawn_debri(Vector2( 1,-1))
+        self.spawn_debri("assets/images/spinning_debri_top_left.png",Vector2(-1,-1))
+        self.spawn_debri("assets/images/spinning_debri_bottom_left.png",Vector2(-1, 1))
+        self.spawn_debri("assets/images/spinning_debri_top_right.png",Vector2( 1, 1))
+        self.spawn_debri("assets/images/spinning_debri_bottom_right.png",Vector2( 1,-1))
     
     def update(self):
         super().update()

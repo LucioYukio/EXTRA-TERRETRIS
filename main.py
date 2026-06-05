@@ -20,7 +20,7 @@ LOG_PERFORMANCE = True
 performance_log : List[List[float]] = []
 ## se o fps for menor que isso, tomar algumas medidas, como nao spawnar novos inimigos
 ## apenas uma medida preventiva, o fps pode acabar sendo menos que o target.
-FPS_TARGET: float = 100
+FPS_TARGET: float = 0
 fps : float = 0
 last_average_fps : float = 9999
 
@@ -45,7 +45,7 @@ control_esquemes = [
 
 enemy_spawn_interval : float = 2.2 # cuidado! nao botar o mesmo que o intervalo de tiro.
 enemy_spawn_cooldown : float = 0
-MAX_ENEMY_COUNT : int = 10 *2
+MAX_ENEMY_COUNT : int = 100 *2
 MAX_ENEMY_BULLET_COUNT : int = 10 *2
 
 TETRIS_LINES = 20
