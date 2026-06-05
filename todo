@@ -31,7 +31,15 @@
     [] Multiplicador da velocidade da troca de direcao
 [] Algumas naves explodem em detritos
 [] Asteroides vem de vez em quando
-
+    [] Dois Asteroides spawnam no inicio do game.
+        Quando o asteroid eh destrido,
+        explosao spawna e ele volta laaaa pra cima.
+        Quando o asteroid passa pra baixo da tela,
+        ele volta laaaa pra cima 
+[] Naves voltam laaaa para cima ao inves de morrer (talves??)
+[] Outra camada de background
+[] Transicao nave para tetris quando alguem morre
+[] Tela de loading antes de carregar tudo
 
 #RESENHA------
 [] Inimigo que fica no bg e atira na direcao da tela

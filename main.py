@@ -2,6 +2,7 @@ import csv
 from random import randrange
 import time
 
+from asteroid import Asteroid
 from background import Background
 import nave
 from screen import *
@@ -11,6 +12,9 @@ from nave import *
 from enemy import *
 from text import *
 from tetris import *
+
+
+#------------------------- CONSTANTES ---------------------------------------------------------
 
 LOG_PERFORMANCE = True
 performance_log : List[List[float]] = []
@@ -39,11 +43,10 @@ control_esquemes = [
     ["w", "s", "a", "d", "space", "alt"]
 ]
 
-enemy_spawn_interval : float = 1
+enemy_spawn_interval : float = 2.2 # cuidado! nao botar o mesmo que o intervalo de tiro.
 enemy_spawn_cooldown : float = 0
 MAX_ENEMY_COUNT : int = 10 *2
 MAX_ENEMY_BULLET_COUNT : int = 10 *2
-enemy_horizontal_padding : int = 8 # padding to account for when spawning enemies
 
 TETRIS_LINES = 20
 TETRIS_COLUMNS = 10
@@ -52,34 +55,45 @@ DEFAULT_LETTER_SIZE = Vector2(32,32)
 SMALL_LETTER_SIZE = Vector2(16,16)
 
 SIDEPANEL_W = 120
+DIVISOR_W = 48
 
-H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2), Vector2(TELA_W/2, TELA_W-SIDEPANEL_W)]
+H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2 - DIVISOR_W/2), Vector2(TELA_W/2 + DIVISOR_W/2, TELA_W-SIDEPANEL_W)]
 
 # velocity in which the background descends
-BG_VELOCITY = 0.1
+BG_VELOCITY = 0.2
 BG_SCALE = 1.66
+
+ASTEROID_RESET_INTERVAL : float = 5 # intervalo para esse asteroid voltar la pra cima depois de sair da tela
+ASTEROID_HEALTH_MULTIPLIER : float = 10
+ASTEROID_BASE_POINT_VALUE : float = 30
 
 auras : List[int] = [0, 0]
 
 # counters
 # Eh uma lista para eu poder linkar em inimigos eh poder decrementar na morte
-enemy_counter : List[int] = [0] 
+enemy_counter        : List[int] = [0] 
 enemy_bullet_counter : List[int] = [0]
+asteroid_counter     : List[int] = [0]
+
+#-------------------------------------------------------------------
+
+
+
 
 #---------------- FUNCOES ---------------------------
 
 def get_random_pos(side: int):
     if side == 0: # esquerda
-        return randrange(enemy_horizontal_padding, int(get_screen().window.width/2))
+        return randrange(0, TELA_W//2)
     else:
-        return randrange(int(get_screen().window.width/2) + enemy_horizontal_padding, int(get_screen().window.width) - enemy_horizontal_padding)
+        return randrange(TELA_W//2, TELA_W)
 
 def reset_enemy(enemy: Enemy):
     enemy.pos.x = get_random_pos(enemy.side)
     enemy.pos.y = -enemy.get_height() + 1
     enemy.health = enemy.default_health
 
-def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, inimigo: Enemy | None = None):
+def spawn_enemy(x: float, tabs: List[int], side: int, inimigo: Enemy | None = None):
     img : str = "assets/images/nave_inimiga_verde.png" if side == 0 else "assets/images/nave_inimiga_roxa.png"
     if not isinstance(inimigo, Enemy):
         inimigo = EnemySin(
@@ -100,15 +114,28 @@ def spawn_enemy(x: float, tabs: List[int], side: int, extra_margin: int = 0, ini
         inimigo.horizontal_bounds = copy(H_BOUNDS[side])
         if side == 0:
             inimigo.anchor = nave1
-            inimigo.horizontal_bounds.x -= extra_margin
         else:
             inimigo.anchor = nave2
-            inimigo.horizontal_bounds.y += extra_margin
         inimigo.vertical_bounds = Vector2(-inimigo.get_height(), get_screen().window.height + inimigo.get_height())
         inimigo.bullet_img = "assets/images/bullet_green.png" if side == 0  else "assets/images/bullet_purple.png"
         inimigo.bullet_explosion_img = "assets/images/explosion_small_green.png" if side == 0  else "assets/images/explosion_small_purple.png"
         inimigo.side = side
         inimigo.points_list = auras
+
+def spawn_asteroid(x: float, size: int, health: float, tabs: List[int], side: int):
+    asteroid = Asteroid(size, size, health, tabs)
+    asteroid.side = side
+    asteroid.horizontal_bounds = copy(H_BOUNDS[side])
+    asteroid.pos.x = x
+    asteroid.pos.y = 0
+    if side == 0:
+        asteroid.anchor = nave1
+        asteroid.horizontal_bounds.x
+    else:
+        asteroid.anchor = nave2
+        asteroid.horizontal_bounds.y
+    return asteroid
+    
 
 # def enemy_count():
 #     count : int = 0
@@ -164,7 +191,7 @@ asteroid_bg1 : Background = Background(
     0,
     32,
     nave1,
-    Vector2(SIDEPANEL_W, TELA_W/2)
+    Vector2(SIDEPANEL_W, TELA_W/2 - 16)
 )
 asteroid_bg1.offset_multiplier = 0.2
 asteroid_bg1.pos.y = TELA_H - asteroid_bg1.get_height()
@@ -183,6 +210,24 @@ asteroid_bg2 : Background = Background(
 asteroid_bg2.offset_multiplier = 0.2
 asteroid_bg2.pos.y = TELA_H - asteroid_bg2.get_height() + 200 # numero aleatorio para variar
 asteroid_bg2.pos.x = TELA_W/2 - 100
+
+asteroids : List[Asteroid] = [
+    spawn_asteroid(get_random_pos(0), 100, 1 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 0),
+    spawn_asteroid(get_random_pos(0), 140, 2 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 0),
+    spawn_asteroid(get_random_pos(0), 240, 3 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 0),
+    spawn_asteroid(get_random_pos(1), 100, 1 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 1),
+    spawn_asteroid(get_random_pos(1), 140, 2 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 1),
+    spawn_asteroid(get_random_pos(1), 240, 3 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 1),
+]
+i = 0
+total = len(asteroids)//2
+for asteroid in asteroids:
+    asteroid.pos.y = -(TELA_H * (i + 1)) *2
+    asteroid.speed = 150 * (total - i+1)/total
+    asteroid.damage = i
+    asteroid.points_list = auras
+    asteroid.points_value = ASTEROID_BASE_POINT_VALUE * (i + 1)
+    i = (i + 1) % total
 
 
 fps_text = CompositeText(SMALL_LETTER_SIZE, [TAB_JOGO], color_index=1, background=True)
@@ -229,8 +274,8 @@ sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SID
 sidepanel2.z = 3
 sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
 
-divisao = Object("assets/images/divisor.png", 48, REF_RES[1], [TAB_JOGO, TAB_TETRIS])
-divisao.pos.x = TELA_W/2 - divisao.get_width()
+divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [TAB_JOGO, TAB_TETRIS])
+divisao.pos.x = TELA_W/2 - divisao.get_width()/2
 divisao.z = 3
 
 # -----------
@@ -251,15 +296,14 @@ while True:
     if get_screen().get_tab() == TAB_JOGO:
         #----------------------- Enemy Spawn ------------------------------
         if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
-            spawn_enemy(get_random_pos(0), [TAB_JOGO], 0, 100)
-            spawn_enemy(get_random_pos(1), [TAB_JOGO], 1, 100)
+            spawn_enemy(get_random_pos(0), [TAB_JOGO], 0)
+            spawn_enemy(get_random_pos(1), [TAB_JOGO], 1)
             enemy_spawn_cooldown = enemy_spawn_interval
         
         for o in get_screen()._objs:
             if o.pos.y >= TELA_H and isinstance(o, Enemy):
                 reset_enemy(o)
         
-        # FAZER LOOPAR !!!!!!
         asteroid_bg1.pos.y += BG_VELOCITY
         if asteroid_bg1.pos.y >= -asteroid_bg1.get_height()/3:
             asteroid_bg1.pos.y -= asteroid_bg1.get_height()/3
@@ -267,7 +311,17 @@ while True:
         if asteroid_bg2.pos.y >= -asteroid_bg2.get_height()/3:
             asteroid_bg2.pos.y -= asteroid_bg2.get_height()/3
 
+
+        for asteroid in asteroids:
+            if asteroid.pos.y >= TELA_H:
+                asteroid.pos.y = TELA_H * 2 # (necessariamente fora da tela)
+            if asteroid.reset_timer >= ASTEROID_RESET_INTERVAL:
+                # reset asteroid
+                asteroid.pos.y = -asteroid.get_height() 
+                asteroid.pos.x = get_random_pos(asteroid.side)
+        
         fps_text.pos.x = SIDEPANEL_W
+        
     #-------------------------------------------------
     if get_screen().get_tab() == TAB_TETRIS:
         tetris1.pos.x = divisao.pos.x - tetris1.get_width()

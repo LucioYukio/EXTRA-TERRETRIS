@@ -22,7 +22,7 @@ class Projectile(Body):
         return self.damage
     
     def update(self):
-        super().update()
         self.direction.normalize()
         self.velocity = self.direction * self.speed
+        super().update()
         

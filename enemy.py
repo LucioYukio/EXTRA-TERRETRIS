@@ -19,7 +19,7 @@ class Enemy(Nave):
         if "player" in self.tags:
             self.tags.remove("player")
         self.tags.append("enemy")
-        self.damage_from_tags = {"player_projectile"}
+        self.damage_from_tags = {"player_projectile", "asteroid"}
         self.health = 3
         self.keep_in_bounds = False
         self.destroy_out_of_h_bounds = False
@@ -28,7 +28,7 @@ class Enemy(Nave):
         self.shooting_interval = 2
         
         self.target : Object = target
-        self.bullet_turning_speed : float = 0.005
+        self.bullet_turning_speed : float = 3/1000
         
         self.offset_multiplier = 0.5
         
@@ -59,6 +59,10 @@ class Enemy(Nave):
         self.bullets.append(EnemyBullet(self.bullet_img, self.get_tabs(), self.target, self.bullet_turning_speed))
         self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].pos.y = self.pos.y + self.get_height() - 5
+
+    def spawn_rastro(self):
+        super().spawn_rastro()
+        self.rastro.speed = -400
 
     def destroy(self):
         super().destroy()

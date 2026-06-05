@@ -92,6 +92,8 @@ class Rastro(Object):
         self.destroy_out_of_v_bounds = False
         self.keep_in_bounds = False
         
+        self.speed : float = 0 # joga os rastrinho pra essa direcao sempre
+        
         for i in range(rastros):
             rastro : Object = Object(
                 "assets/images/rastro.png",
@@ -127,8 +129,9 @@ class Rastro(Object):
         self.rastros[-1].pos.x = self.pos.x + self.offset.x - self._width/2
         self.rastros[-1].pos.y = self.pos.y + self.offset.y - self._height + 1
         for i in range(self.qtd - 1):
-            self.rastros[i].pos.x = self.rastros[i+1].pos.x + self.rastros[i+1].get_width()/2 - self.rastros[i].get_width()/2
-            self.rastros[i].pos.y = self.rastros[i+1].pos.y + self.rastros[i+1].get_height()/2 - self.rastros[i].get_height()/2
+            self.rastros[i].pos.x = self.rastros[i+1].get_center().x - self.rastros[i].get_width()/2
+            self.rastros[i].pos.y = self.rastros[i+1].get_center().y - self.rastros[i].get_height()/2
+            self.rastros[i].pos.y += self.speed * self.delta_time
     
     def render(self):
         return
@@ -141,30 +144,23 @@ class Nave(Body):
     
     rastro : Rastro
     
-    def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 16):
+    def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 2):
         super().__init__(image, width, height, tabs, h_parts)
         self.tags.append("player")
-        self.damage_from_tags = {"enemy_projectile"}
+        self.damage_from_tags = {"enemy_projectile", "asteroid"}
         self.keyboard = get_screen().keyboard
         self.speed : float = 250
         self.direction : Vector2 = Vector2(0,0)
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
+        self.z = 1
         
         """Stats vars"""
-        self.default_health : float = 9999
-        self.health : float = 9999
+        self.default_health : float = 5
+        self.health : float = self.default_health
         self.score : int = 0
         # tempo ate poder levar dano de novo
         self.damage_interval : float = 1
         self.damage_cooldown : float = 0
-        
-        self.explosion_info : Dict = {
-            "img" : "assets/images/explosion.png",
-            "frames" : 8,
-            "duration" : 1,
-            "width" : 90,
-            "height" : 90
-        }
         
         """Bullet vars"""
         self.bullet_img : str = "assets/images/bullet_white.png"
@@ -206,32 +202,14 @@ class Nave(Body):
 
     def spawn_rastro(self):
         self.rastro : Rastro = Rastro(self.get_tabs(), 8)
+        self.rastro.speed = 400
         self.rastro.horizontal_bounds = self.horizontal_bounds
         if self.rastro.anchor != self:
             self.rastro.anchor = self.anchor
         for r in self.rastro.rastros:
             r.horizontal_bounds = self.horizontal_bounds
+            r.z = 1
         self.apply_rastro_offset()
-
-    def spawn_explosion(self):
-        explosion : Effect = Effect(
-            self.explosion_info["img"],
-            self.explosion_info["frames"],
-            self.explosion_info["duration"],
-            self.explosion_info["width"],
-            self.explosion_info["height"],
-            self.get_tabs()
-        )
-        
-        target_coords : Vector2 = self.get_center()
-        target_coords.x -= explosion.get_width()/2
-        target_coords.y -= explosion.get_height()/2
-        
-        explosion.pos.x = target_coords.x
-        explosion.pos.y = target_coords.y
-        if self.anchor != self:
-            explosion.anchor = self.anchor
-            explosion.offset_multiplier = self.offset_multiplier
     
     def apply_rastro_offset(self):
         try:    self.rastro

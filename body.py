@@ -1,5 +1,8 @@
+from typing import Dict
+
 from pygame.math import lerp
 
+from effect import Effect
 from screen import *
 
 class Body(Object):
@@ -17,6 +20,14 @@ class Body(Object):
         self.hitbox : Vector2 = Vector2(-1,-1)
 
         self.offset_multiplier = 1
+
+        self.explosion_info : Dict = {
+            "img" : "assets/images/explosion.png",
+            "frames" : 8,
+            "duration" : 1,
+            "width" : width,
+            "height" : height
+        }
 
         self.side : int = 0 # "parte da tela" que o corpo pertence
 
@@ -87,6 +98,26 @@ class Body(Object):
             self.pos.x = x
             self.pos.y = y
             self.collide(self.get_collider())
+
+    def spawn_explosion(self):
+        explosion : Effect = Effect(
+            self.explosion_info["img"],
+            self.explosion_info["frames"],
+            self.explosion_info["duration"],
+            self.explosion_info["width"],
+            self.explosion_info["height"],
+            self.get_tabs()
+        )
+        
+        target_coords : Vector2 = self.get_center()
+        target_coords.x -= explosion.get_width()/2
+        target_coords.y -= explosion.get_height()/2
+        
+        explosion.pos.x = target_coords.x
+        explosion.pos.y = target_coords.y
+        if self.anchor != self:
+            explosion.anchor = self.anchor
+            explosion.offset_multiplier = self.offset_multiplier
 
     def update(self):
         super().update()
