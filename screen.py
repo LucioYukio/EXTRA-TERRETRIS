@@ -2,8 +2,11 @@
 # da pra trocar de tab facilmente
 # as tabs tem um offset muito grande e sao desenhadas so quando selecionadas
 import math
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
+from pygame import Surface, image
+
+#from imagecache import get_image
 import pplay.window as w
 import pplay.gameobject as go
 import pplay.gameimage as gi
@@ -48,6 +51,28 @@ def get_text_size(text: str, font_name: str, size_pt: int):
         pygame.font.init()
     font = pygame.font.SysFont(font_name, size_pt)
     return font.size(text)
+
+
+#------------------------ IMAGE BUFFER -----------------------
+# tive que fazer aqui e nao em um outro modulo pois pygame precisa estar iniciado
+images: Dict[str, Surface] = {}
+def get_image(filepath: str):
+    """
+    Checa de a imagem ja existe no cache.
+    Se existe, retorna uma copia da surface respectiva.
+    Se nao, adiciona no cache e retorna a surface.
+    Isso eh necessario porque pesa muito pegar do disco toda vez.
+    """
+    img : Surface | None = images.get(filepath, None)
+    
+    if img == None:
+        images[filepath] = image.load(filepath).convert_alpha()
+        return images[filepath]
+    else:
+        return img
+#---------------------------------------------------------------
+
+
 
 class Object:
     _width : int = 0
@@ -165,7 +190,9 @@ class Object:
     def build_sprites(self):
         self.sprites.clear()
         for i in range(self.h_parts):
-            spr = a.Animation(self.image, self.total_frames)
+            # aqui ele le do disco para cada h_part
+            spr = a.Animation(EMPTY_PIXEL, self.total_frames)
+            spr.image = get_image(self.image)
             spr.playing = False
             self.sprites.append(spr)
         if self.image != EMPTY_PIXEL:
