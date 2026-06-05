@@ -5,6 +5,52 @@ from nave import Bullet
 from projectile import *
 from screen import List
 
+class Debri(Projectile):
+    def __init__(self, width: int, height: int, total_health: float, tabs: List[int]):
+        super().__init__("assets/images/spinning_asteroid.png", width, height, tabs, 6)
+        
+        self.set_total_frames(59)
+        self.frame_duration = (1/24)
+        self.playing = True
+        
+        self.speed = 300
+        
+        self.hitbox = Vector2(width/2* 0.775, height/2* 0.775) # tem que ser um pouco menor
+        
+        self.keep_in_bounds          = False
+        self.destroy_out_of_screen   = False
+        self.destroy_out_of_h_bounds = False
+        
+        self.destroy_out_of_v_bounds = True
+        self.destroy_on_hit          = True
+        
+        self.damage_from_tags = {"enemy_projectile", "player_projectile"}
+        
+        self.health : float = total_health
+        
+        self.points_value : int = 10 # pontos que player recebe ao matar esse inimigo
+        self.points_list : List[int] = [0,0] # linkar (=) lista de pontos (aura) usado
+        
+        self.categorie = "debri"
+        self.tags.append("debri")
+        
+    def check_damage(self):
+        colliders = self.get_colliders()
+        for c in colliders:
+            if isinstance(c, Bullet):
+                # destroy bullet
+                c.wants_to_die = c.destroy_on_hit
+                if c.destroy_on_hit and isinstance(c, Bullet):
+                    c.spawn_explosion()
+                # take damage
+                self.health -= c.damage
+                if self.health <= 0:
+                    self.wants_to_die = True
+                    
+    def update(self):
+        super().update()
+        self.check_damage()
+
 class Asteroid(Projectile):
     def __init__(self, width: int, height: int, total_health: float, tabs: List[int]):
         super().__init__("assets/images/spinning_asteroid.png", width, height, tabs, 6)
@@ -28,7 +74,6 @@ class Asteroid(Projectile):
         
         self.total_health : float = total_health
         self.health : float = total_health
-        self.dead : bool = False
         
         self.points_value : int = 10 # pontos que player recebe ao matar esse inimigo
         self.points_list : List[int] = [0,0] # linkar (=) lista de pontos (aura) usado
@@ -54,7 +99,7 @@ class Asteroid(Projectile):
     def die(self):
         """get out of screen, restore health and spawn debris"""
         self.spawn_explosion()
-        self.spawn_debri()
+        self.spawn_debris()
         self.pos.y = TELA_H
         self.health = self.total_health
         self.points_list[self.side] += self.points_value
@@ -80,12 +125,17 @@ class Asteroid(Projectile):
             explosion.anchor = self.anchor
             explosion.offset_multiplier = self.offset_multiplier
     
-    def spawn_debri(self):
-        pass
+    def spawn_debri(self, direction: Vector2):
+        debri : Debri = Debri(self.get_width()//4, self.get_height()//4, self.total_health//4, self.get_tabs())
+        direction.normalize()
+        debri.direction = direction
+        debri.speed = self.speed*4
     
-    def destroy(self):
-        super().destroy()
-        print("destroyed")
+    def spawn_debris(self):
+        self.spawn_debri(Vector2(-1,-1))
+        self.spawn_debri(Vector2(-1, 1))
+        self.spawn_debri(Vector2( 1, 1))
+        self.spawn_debri(Vector2( 1,-1))
     
     def update(self):
         super().update()
