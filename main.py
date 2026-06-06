@@ -43,9 +43,9 @@ control_esquemes = [
     ["w", "s", "a", "d", "space", "alt"]
 ]
 
-enemy_spawn_interval : float = 2.2 # cuidado! nao botar o mesmo que o intervalo de tiro.
+enemy_spawn_interval : float = 1.5 # cuidado! nao botar o mesmo que o intervalo de tiro.
 enemy_spawn_cooldown : float = 0
-MAX_ENEMY_COUNT : int = 100 *2
+MAX_ENEMY_COUNT : int = 10 *2
 MAX_ENEMY_BULLET_COUNT : int = 10 *2
 
 TETRIS_LINES = 20

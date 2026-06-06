@@ -25,7 +25,7 @@ class Body(Object):
         # custom hitbox, se for -1, sera desconsiderada.
         self.hitbox : Vector2 = Vector2(-1,-1)
 
-        self.radius : float = max(width, height)
+        self.radius : float = max(width, height)/2
         
         self.offset_multiplier = 1
 
