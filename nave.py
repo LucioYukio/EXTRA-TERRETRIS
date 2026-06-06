@@ -1,13 +1,9 @@
 from typing import Dict
 
-from body import *
-from body import List
-from pplay.animation import Animation
-from pplay.window import Window
-from projectile import Projectile
-from screen import *
+from body import Body
 from effect import Effect
-from screen import List
+from projectile import Projectile
+from screen import Vector2, Object, List, get_screen, EMPTY_PIXEL
 
 DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 83)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)

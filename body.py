@@ -1,9 +1,7 @@
 from typing import Dict
 
-from pygame.math import lerp
-
 from effect import Effect
-from screen import *
+from screen import Object, List, Vector2, get_screen, res_scale
 
 class Body(Object):
     def __init__(self, image : str, width : int, height: int, tabs: List[int], h_parts: int = 1):

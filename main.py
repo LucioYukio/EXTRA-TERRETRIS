@@ -1,16 +1,16 @@
 import csv
+from copy import copy
 from random import randrange
 import time
 
 from asteroid import Asteroid
 from background import Background
-from screen import *
-from button import *
-from body import *
-from nave import *
-from enemy import *
-from text import *
-from tetris import *
+from enemy import Enemy, EnemySin
+from nave import DEFAULT_NAVE_SIZE, Nave
+from screen import (List, Vector2, TELA_W, TELA_H, REF_RES, clamp,
+                    get_screen, Object, update_res_scale)
+from tetris import Tetris
+from text import CompositeText
 
 
 #------------------------- CONSTANTES ---------------------------------------------------------

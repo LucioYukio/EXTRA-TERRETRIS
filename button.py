@@ -6,12 +6,8 @@
 # tem uma variavel de estado que diz se esta sendo clicado ou nao, mas
 # so eh acessivel por funcao
 
-from pickle import TRUE
-
-from screen import *
-from pplay.animation import Animation
-from text import Text, NumberText
-import pygame.transform
+from screen import Object, Vector2, List, Mouse, get_screen, EMPTY_PIXEL
+from text import Text
 
 BLACK_PIXEL : str = "assets/images/black_pixel.png"
 WHITE_PIXEL : str = "assets/images/white_pixel.png"

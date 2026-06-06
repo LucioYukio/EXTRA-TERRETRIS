@@ -1,6 +1,7 @@
-from pplay.animation import Animation
-from screen import *
-from screen import Vector2
+from screen import Object, List, Vector2, EMPTY_PIXEL, get_screen, get_text_size
+
+SYMBOL_QUANTITY = 95
+SYMBOL_OFFSET = 32
 
 def int_to_ascii(x: int):
     return chr(x)
@@ -49,7 +50,16 @@ class Letter(Object):
             self.background.set_width(width)
     
     def set_letter(self, letter: str):
+        self._letter = letter
         self.letter_code = ascii_to_int(letter)
+
+    def get_letter(self):
+        return self._letter
+
+    def increment_letter_code(self, amount: int):
+        old_code = self.letter_code
+        new_code = ((old_code - SYMBOL_OFFSET + amount) % SYMBOL_QUANTITY) + SYMBOL_OFFSET
+        self.set_letter(chr(new_code))
     
     def update_curr_frame(self): # atualiza o curr_frame de acordo com self.letter e self.color_index
         self.sprites[0].set_curr_frame(
@@ -76,11 +86,12 @@ class Letter(Object):
         self.background.wants_to_die = True
         
 class Text(Object):
-    def __init__(self, text: str, letter_size: Vector2, tabs: List[int], color_index : int = 0, background: bool = False):
+    def __init__(self, text: str, letter_size: Vector2, tabs: List[int], color_index : int = 0, background: bool = False, newline_size: float = 0):
         super().__init__(EMPTY_PIXEL, 0, 0, tabs)
         
         self.text : str = text
         self.letter_size : Vector2 = letter_size
+        self.newline_size : float = newline_size
         
         self.color_index : int = color_index
         self.background : bool = background
@@ -146,7 +157,7 @@ class Text(Object):
             
             if char != '\n':
                 letter.pos.x = self.pos.x + (w * column)
-                letter.pos.y = self.pos.y + (h * line)
+                letter.pos.y = self.pos.y + (h + self.newline_size) * line
                 j += 1
                 column += 1
             else:
@@ -195,8 +206,79 @@ class NumberText(Text):
                 self.letters[i].set_letter(digit)
                 i += 1
 
+class TextField(Text):
+    def __init__(self, digits: int, letter_size: Vector2, tabs: List[int], color_index: int = 0):
+        self.digits = digits
+        self.active_char: int = 0
+        
+        self.setinha_cima : Object = Object("assets/images/setinha_up.png", 16, 8, tabs, add_to_screen=False)
+        self.setinha_baixo : Object = Object("assets/images/setinha_down.png", 16, 8, tabs, add_to_screen=False)
+
+        self.LEFT = "left"
+        self.RIGHT = "right"
+        self.UP = "up"
+        self.DOWN = "down"
+
+        self.input_interval : float = 0.15
+        self.input_cooldown : float = 0
+
+        super().__init__("A"*digits, letter_size, tabs, color_index, background=True)
+
+    def load_text(self, text: str):
+        i = 0
+        for c in text:
+            if i > self.digits:
+                break
+            self.letters[i].set_letter(c)
+    
+    def parse_text(self):
+        txt : str = ""
+        for letter in self.letters:
+            txt = "".join([txt, letter.get_letter()])
+        return txt
+
+    def update_appearance(self):
+        for i in range(self.digits):
+            if self.active_char != i:
+                self.letters[i].color_index = self.color_index
+            else:
+                self.letters[i].color_index = self.color_index
+                self.setinha_cima.pos.x = self.letters[i].get_center().x - self.setinha_cima.get_width()/2
+                self.setinha_cima.pos.y = self.letters[i].pos.y - self.setinha_cima.get_height() - 6
+                self.setinha_cima.apply_coords(0,0)
+                
+                self.setinha_baixo.pos.x = self.setinha_cima.pos.x
+                self.setinha_baixo.pos.y = self.letters[i].pos.y + self.get_height() + 6
+                self.setinha_baixo.apply_coords(0,0)
+
+    def walk_active_char(self, amount: int = 1):
+        self.active_char = (self.active_char + amount) % self.digits
+
+    def render(self):
+        super().render()
+        self.setinha_cima.render()
+        self.setinha_baixo.render()
+
+    def change_char(self, char: int, amount: int = 1):
+        self.letters[char].increment_letter_code(amount)
+
+    def update(self):
+        side_step = self._keyboard.key_pressed(self.RIGHT) - self._keyboard.key_pressed(self.LEFT)
+        vertical_step = self._keyboard.key_pressed(self.UP) - self._keyboard.key_pressed(self.DOWN)
+
+        if self.input_cooldown <= 0 and (side_step != 0 or vertical_step != 0):
+            self.walk_active_char(side_step)
+            self.change_char(self.active_char, vertical_step)
+            self.input_cooldown = self.input_interval
+        else:
+            self.input_cooldown -= self.delta_time
+
+        self.update_appearance()
+        super().update()
+
+
 class CompositeText(Object):
-    def __init__(self, letter_size: Vector2, tabs: List[int], color_index: int = 0, background: bool = False):
+    def __init__(self, letter_size: Vector2, tabs: List[int], color_index: int = 0, background: bool = False, newline_size: float = 0):
         super().__init__(EMPTY_PIXEL, 0, 0, tabs)
         self.playing = False
         
@@ -204,32 +286,48 @@ class CompositeText(Object):
         self.letter_size : Vector2 = letter_size
         self.color_index : int = color_index
         self.background : bool = background
-    
-    def apply_coords(self, offset_x: float, offset_y: float):
-        super().apply_coords(offset_x, offset_y)
-        
-        last_coord : Vector2 = Vector2(self.pos.x, self.pos.y)
+        self.newline_size : float = newline_size
+
+    def apply_text_position(self):
+        last_coord: Vector2 = Vector2(self.pos.x, self.pos.y)
         for text in self.texts:
             text.pos.x = last_coord.x
             text.pos.y = last_coord.y
-            text.apply_coords(offset_x, offset_y)
             last_coord = Vector2(
-                text.letters[-1].pos.x + text.letter_size.x,
-                text.letters[-1].pos.y
+                text.pos.x + text.get_width(),
+                text.pos.y
             )
+            if text.text and text.text[-1] == '\n':
+                last_coord.y += text.letter_size.y + self.newline_size
+                last_coord.x = self.pos.x
+
+    def apply_coords(self, offset_x: float, offset_y: float):
+        super().apply_coords(offset_x, offset_y)
+        self.apply_text_position()
             
     def add_text(self, text: str):
-        """Add a static Text object to this Composite Text"""
-        self.texts.append(Text(text, self.letter_size, self.get_tabs(), self.color_index, self.background))
+        self.texts.append(Text(text, self.letter_size, self.get_tabs(), self.color_index, self.background, self.newline_size))
         
     def add_number(self, digits: int):
         number_text = NumberText(digits, self.letter_size, self.get_tabs(), self.color_index, self.background)
         self.texts.append(number_text)
         return number_text
 
+    def add_field(self, digits: int, color_index: int = -1):
+        if color_index == -1:
+            color_index = self.color_index
+        textfield = TextField(digits, self.letter_size, self.get_tabs(), color_index)
+        self.texts.append(textfield)
+        return textfield
+
+    def clear(self):
+        for text in self.texts:
+            text.wants_to_die = True
+
     def get_width(self):
         if not hasattr(self, "texts") or not self.texts:
             return 0
+        self.apply_text_position()
         farthest_point : float = 0
         for text in self.texts:
             point = text.pos.x + text.get_width()
@@ -240,6 +338,7 @@ class CompositeText(Object):
     def get_height(self):
         if not hasattr(self, "texts") or not self.texts:
             return 0
+        self.apply_text_position()
         return int(self.texts[-1].pos.y + self.texts[-1].get_height() - self.pos.y)
         
     

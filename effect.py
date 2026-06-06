@@ -1,4 +1,4 @@
-from screen import *
+from screen import Object, List
 
 class Effect(Object):
     def __init__(self, image: str, total_frames: int, total_duration: int, width: int, height: int, tabs: List[int], h_parts: int = 8):

@@ -1,4 +1,6 @@
-from screen import *
+import pygame.transform
+from pplay import gameimage as gi
+from screen import Object, Vector2, List, EMPTY_PIXEL, res_scale
 
 class TetrisGrid(Object):
     """Grid que serve apenas para mostrar as pecas de tetris.

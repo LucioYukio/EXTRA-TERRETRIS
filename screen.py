@@ -1,20 +1,14 @@
 # usar cada tab como se fosse uma janela
 # da pra trocar de tab facilmente
 # as tabs tem um offset muito grande e sao desenhadas so quando selecionadas
-import math
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from pygame import Surface, image
 
-#from imagecache import get_image
 import pplay.window as w
-import pplay.gameobject as go
 import pplay.gameimage as gi
 from betteranimation import Animation
 import pplay.keyboard as k
-import pplay.mouse as m
-import pplay.gameobject as go
-import pplay.window as w
 import pygame.transform
 from mouse import Mouse
 from vector2 import Vector2

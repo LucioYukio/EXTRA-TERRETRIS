@@ -1,9 +1,7 @@
-from typing import Dict
-
 from effect import Effect
 from nave import Bullet
-from projectile import *
-from screen import List
+from projectile import Projectile
+from screen import Vector2, List, TELA_H
 
 class Debri(Projectile):
     def __init__(self, image, width: int, height: int, total_health: float, tabs: List[int]):

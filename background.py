@@ -1,6 +1,4 @@
-from typing import List
-
-from screen import *
+from screen import Object, List, Vector2, EMPTY_PIXEL
 
 class Background(Object):
     """

@@ -1,9 +1,9 @@
 from copy import copy
-
-from pplay.window import Window
-from screen import *
 import random
-from tetrisgrid import *
+
+from screen import Object, Vector2, List, EMPTY_PIXEL, get_screen
+from typing import Tuple
+from tetrisgrid import TetrisGrid
 
 # Dica(?): recomendo evitar usar vector2 aqui pois
 # linha = y e coluna = x, o que pode confundir.

@@ -1,5 +1,5 @@
-from body import *
-from pplay.animation import Animation
+from body import Body
+from screen import Vector2, List
 class Projectile(Body):
     def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 1):
         super().__init__(image, width, height, tabs, h_parts)

@@ -1,8 +1,7 @@
-from math import cos, sin
+from math import cos
 
-from body import Screen
-from nave import *
-from pplay.animation import Animation
+from nave import FollowingBullet, Nave
+from screen import Object, List, Vector2
 
 
 class EnemyBullet(FollowingBullet):
