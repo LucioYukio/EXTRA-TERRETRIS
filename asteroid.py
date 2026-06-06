@@ -4,8 +4,8 @@ from projectile import Projectile
 from screen import Vector2, List, TELA_H
 
 class Debri(Projectile):
-    def __init__(self, image, width: int, height: int, total_health: float, tabs: List[int]):
-        super().__init__(image, width, height, tabs, 6)
+    def __init__(self, image, width: int, height: int, side: int, total_health: float, tabs: List[int]):
+        super().__init__(image, width, height, side, tabs, 6)
         
         self.set_total_frames(59)
         self.frame_duration = (1/(24 * 4))
@@ -33,7 +33,7 @@ class Debri(Projectile):
         self.tags.append("debri")
         
     def check_damage(self):
-        colliders = self.get_colliders()
+        colliders = self.get_colliders(self.damage_from_tags)
         for c in colliders:
             if isinstance(c, Bullet):
                 # destroy bullet
@@ -50,8 +50,8 @@ class Debri(Projectile):
         self.check_damage()
 
 class Asteroid(Projectile):
-    def __init__(self, width: int, height: int, total_health: float, tabs: List[int]):
-        super().__init__("assets/images/spinning_asteroid.png", width, height, tabs, 6)
+    def __init__(self, width: int, height: int, side: int, total_health: float, tabs: List[int]):
+        super().__init__("assets/images/spinning_asteroid.png", width, height, side, tabs, 6)
         
         self.set_total_frames(59)
         self.frame_duration = (1/24)
@@ -82,7 +82,7 @@ class Asteroid(Projectile):
         self.tags.append("asteroid")
     
     def check_damage(self):
-        colliders = self.get_colliders()
+        colliders = self.get_colliders(self.damage_from_tags)
         for c in colliders:
             if isinstance(c, Bullet):
                 # destroy bullet
@@ -125,7 +125,7 @@ class Asteroid(Projectile):
     
     def spawn_debri(self,image: str, direction: Vector2):
         w, h = self.get_width()//2, self.get_height()//2
-        debri : Debri = Debri(image, w, h, self.total_health//4, self.get_tabs())
+        debri : Debri = Debri(image, w, h, self.side, self.total_health//4, self.get_tabs())
         direction.normalize()
         debri.direction = direction
         debri.speed = self.speed*2

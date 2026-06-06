@@ -1,11 +1,19 @@
-from typing import Dict
+from math import sqrt
+from typing import Dict, Set
 
+import perf
 from effect import Effect
 from screen import Object, List, Vector2, get_screen, res_scale
 
+# side : List[body]
+bodies : Dict = {
+    0 : [],
+    1 : []
+}
+
 class Body(Object):
-    def __init__(self, image : str, width : int, height: int, tabs: List[int], h_parts: int = 1):
-        super().__init__(image, width, height, tabs, h_parts)
+    def __init__(self, image : str, width : int, height: int, side: int, tabs: List[int], h_parts: int = 1, z: int = 0):
+        super().__init__(image, width, height, tabs, h_parts, z=z)
         ## Screen vai fazer com que nao saia da tela
         self.keep_in_bounds = True
         # variaveis de fisica
@@ -17,6 +25,8 @@ class Body(Object):
         # custom hitbox, se for -1, sera desconsiderada.
         self.hitbox : Vector2 = Vector2(-1,-1)
 
+        self.radius : float = max(width, height)
+        
         self.offset_multiplier = 1
 
         self.explosion_info : Dict = {
@@ -27,7 +37,9 @@ class Body(Object):
             "height" : width
         }
 
-        self.side : int = 0 # "parte da tela" que o corpo pertence
+        self.side : int = side # "parte da tela" que o corpo pertence
+        
+        bodies[side].append(self)
 
     def get_hitbox(self):
         if self.hitbox.x != -1 and self.hitbox.y != -1: # if hitbox is valid
@@ -36,6 +48,7 @@ class Body(Object):
         return Vector2(self.get_width()/2, self.get_height()/2)
 
     def is_colliding_with_body(self, body: Object):
+        perf.count("collision_checks")
         if isinstance(body, Body):
             if self.side != body.side:
                 return False
@@ -65,16 +78,40 @@ class Body(Object):
         )
 
     def get_collider(self):
-        for obj in self.objs:
+        perf.count("get_collider_calls")
+        perf.start("collision")
+        for obj in bodies[self.side]:
             if self.is_colliding_with_body(obj):
+                perf.stop("collision")
                 return obj
+        perf.stop("collision")
         return None
 
-    def get_colliders(self):
+    def get_colliders(self, tags_to_check: Set[str]):
+        perf.count("get_colliders_calls")
+        perf.start("collisions")
         objs = []
-        for obj in self.objs:
-            if self.is_colliding_with_body(obj):
-                objs.append(obj)
+        for obj in bodies[self.side]:
+            if isinstance(obj, Body):
+                # check for distance
+                distance = sqrt(((self.pos.x + self.get_width()/2) - (obj.pos.x + obj.get_width()/2))**2 +
+                                ((self.pos.y + self.get_height()/2) - (obj.pos.y + obj.get_height()/2))**2)
+                if distance > self.radius and distance > obj.radius:
+                    continue
+                # check for tags
+                valid : bool = False
+                if tags_to_check:
+                    for tag in tags_to_check:
+                        if tag in obj.tags:
+                            valid = True
+                            break
+                else:
+                    valid = False
+                #--------------
+                if valid:
+                    if self.is_colliding_with_body(obj):
+                        objs.append(obj)
+        perf.stop("collisions")
         return objs
 
     def collide(self, body: Object | None):
@@ -119,4 +156,9 @@ class Body(Object):
 
     def update(self):
         super().update()
+        perf.count("bodies_updated")
         self.apply_velocity()
+    
+    def destroy(self):
+        super().destroy()
+        bodies[self.side].remove(self)

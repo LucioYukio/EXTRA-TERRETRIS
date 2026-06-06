@@ -6,10 +6,9 @@ class Effect(Object):
         Object that dies once animation finishes.
         Always leave at least one empty frame at the end of the image.
         """
-        super().__init__(image, width, height, tabs, h_parts)
+        super().__init__(image, width, height, tabs, h_parts, z=2)
         self.set_total_frames(total_frames)
         self.frame_duration = total_duration/total_frames
-        self.z = 2
 
         self.queue_for_destruction : bool = False
     

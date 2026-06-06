@@ -1,8 +1,8 @@
 from body import Body
 from screen import Vector2, List
 class Projectile(Body):
-    def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 1):
-        super().__init__(image, width, height, tabs, h_parts)
+    def __init__(self, image: str, width: int, height: int, side: int, tabs: List[int], h_parts: int = 1):
+        super().__init__(image, width, height, side, tabs, h_parts)
         self.keep_in_bounds = False
         self.destroy_out_of_h_bounds = True
         self.destroy_out_of_v_bounds = True

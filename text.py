@@ -16,10 +16,9 @@ class Letter(Object):
             black = 0
             white = 1
         """
-        super().__init__("assets/images/letters_black_and_white.png", width, height, tabs)
+        super().__init__("assets/images/letters_black_and_white.png", width, height, tabs, z=6)
         # (95 simbolos) * (quantidade de cores)
         self.set_total_frames(95 * 2)
-        self.z = 6
         self.keep_in_bounds = False
         
         self.show_background : bool = background
@@ -29,11 +28,9 @@ class Letter(Object):
         self.color_index : int = color_index # black= 0, white= 1
         
         
-        self.background : Object = Object("assets/images/black_and_white_pixel.png", width, height, tabs)
+        self.background : Object = Object("assets/images/black_and_white_pixel.png", width, height, tabs, z=5)
         self.background.set_total_frames(2)
         self.background.playing = False
-        
-        self.background.z = 5
         
         self.playing = False
         
@@ -349,10 +346,9 @@ class DrawnText(Object):
     color = "white"
     font_name : str = "Arial"
     def __init__(self, tabs: List[int]):
-        super().__init__(EMPTY_PIXEL, 0, 0, tabs)
+        super().__init__(EMPTY_PIXEL, 0, 0, tabs, z=4)
         # serao desenhados em sequencia na tela
         self.texts : List = []
-        self.z = 4
         self.categorie = "UI"
     
     def get_text(self):

@@ -9,8 +9,8 @@ DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 83)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)
 
 class Bullet(Projectile):
-    def __init__(self, img: str, tabs: List[int]):
-        super().__init__(img, 18, 18, tabs)
+    def __init__(self, img: str, side: int, tabs: List[int]):
+        super().__init__(img, 18, 18, side, tabs)
         self.set_total_frames(4)
         self.frame_duration = 0.1
         
@@ -48,8 +48,8 @@ class Bullet(Projectile):
 class FollowingBullet(Bullet):
     """Follows the target, turning at turning speed.
     Keep turning speed between 0 and 1, or else it under/overshoots"""
-    def __init__(self, img: str, target: Object, turning_speed: float, tabs: List[int]):
-        super().__init__(img, tabs)
+    def __init__(self, img: str, side: int, target: Object, turning_speed: float, tabs: List[int]):
+        super().__init__(img, side, tabs)
         self.target : Object = target
         self.turning_speed : float = turning_speed
         self.following_duration : float = 3 # after this, bullet does not follow target
@@ -61,8 +61,8 @@ class FollowingBullet(Bullet):
         super().update()
         
 class NaveBullet(Bullet):
-    def __init__(self, img: str, tabs: List[int]):
-        super().__init__(img, tabs)
+    def __init__(self, img: str, side: int, tabs: List[int]):
+        super().__init__(img, side, tabs)
         self.tags.append("player_projectile")
         self.speed = 600
         self.direction.y = -1
@@ -96,7 +96,8 @@ class Rastro(Object):
                 int(self._width * i / rastros + 2),
                 int(self._height * i / rastros + 2),
                 tabs,
-                2
+                2,
+                z=1
             )
             rastro.destroy_out_of_h_bounds = False
             rastro.destroy_out_of_v_bounds = False
@@ -131,24 +132,19 @@ class Rastro(Object):
     
     def render(self):
         return
-    
-    def destroy(self):
-        for rastro in self.rastros:
-            rastro.wants_to_die = True
 
 class Nave(Body):
     
     rastro : Rastro
     
-    def __init__(self, image: str, width: int, height: int, tabs: List[int], h_parts: int = 2):
-        super().__init__(image, width, height, tabs, h_parts)
+    def __init__(self, image: str, width: int, height: int, side: int, tabs: List[int], h_parts: int = 2):
+        super().__init__(image, width, height, side, tabs, h_parts, z=1)
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile", "asteroid"}
         self.keyboard = get_screen().keyboard
         self.speed : float = 250
         self.direction : Vector2 = Vector2(0,0)
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
-        self.z = 1
         
         """Stats vars"""
         self.default_health : float = 5
@@ -192,7 +188,7 @@ class Nave(Body):
             self.bullets[-1].instance_counter = self.bullet_instance_counter
     
     def spawn_bullet(self):
-        self.bullets.append(NaveBullet(self.bullet_img, self.get_tabs()))
+        self.bullets.append(NaveBullet(self.bullet_img, self.side, self.get_tabs()))
         self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].pos.y = self.pos.y - self.bullets[-1].get_height() + 5
 
@@ -204,7 +200,6 @@ class Nave(Body):
             self.rastro.anchor = self.anchor
         for r in self.rastro.rastros:
             r.horizontal_bounds = self.horizontal_bounds
-            r.z = 1
         self.apply_rastro_offset()
     
     def apply_rastro_offset(self):
@@ -263,12 +258,12 @@ class Nave(Body):
         self.rastro.wants_to_die = True
     
     def destroy(self):
-        self.rastro.wants_to_die
-        for r in self.rastro.rastros:
-            r.wants_to_die = True
+        for rastro in self.rastro.rastros:
+            get_screen().remove_object_by_id(rastro.get_id())
+        get_screen().remove_object_by_id(self.rastro.get_id())
     
     def check_damage(self):
-        colliders = self.get_colliders()
+        colliders = self.get_colliders(self.damage_from_tags)
         for c in colliders:
             if isinstance(c, Projectile):
                 if self.damage_from_tags and not any(tag in c.tags for tag in self.damage_from_tags):

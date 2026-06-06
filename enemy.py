@@ -5,16 +5,16 @@ from screen import Object, List, Vector2
 
 
 class EnemyBullet(FollowingBullet):
-    def __init__(self, img: str, tabs: List[int], target: Object, turning_speed: float):
-        super().__init__(img, target, turning_speed, tabs)
+    def __init__(self, img: str, side: int, tabs: List[int], target: Object, turning_speed: float):
+        super().__init__(img, side, target, turning_speed, tabs)
         self.tags.append("enemy_projectile")
         self.speed = 200
         self.direction.y = 1
         
 
 class Enemy(Nave):
-    def __init__(self, img: str, width: int, height: int, target: Object, tabs: List[int]):
-        super().__init__(img, width, height, tabs)
+    def __init__(self, img: str, width: int, height: int, side: int, target: Object, tabs: List[int]):
+        super().__init__(img, width, height, side, tabs)
         if "player" in self.tags:
             self.tags.remove("player")
         self.tags.append("enemy")
@@ -55,7 +55,7 @@ class Enemy(Nave):
             self.shooting_cooldown = self.shooting_interval
             
     def spawn_bullet(self):
-        self.bullets.append(EnemyBullet(self.bullet_img, self.get_tabs(), self.target, self.bullet_turning_speed))
+        self.bullets.append(EnemyBullet(self.bullet_img, self.side, self.get_tabs(), self.target, self.bullet_turning_speed))
         self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].pos.y = self.pos.y + self.get_height() - 5
 
@@ -69,8 +69,8 @@ class Enemy(Nave):
 
 class EnemySin(Enemy):
     """Inimigo com um padrao de movimento horizontal seno"""
-    def __init__(self, img: str, width: int, height: int, target: Object, tabs: List[int]):
-        super().__init__(img, width, height, target, tabs)
+    def __init__(self, img: str, width: int, height: int, side: int, target: Object, tabs: List[int]):
+        super().__init__(img, width, height, side, target, tabs)
         self.sin_speed : float = 1
     
     def get_direction(self):

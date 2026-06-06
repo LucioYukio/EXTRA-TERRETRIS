@@ -14,9 +14,8 @@ WHITE_PIXEL : str = "assets/images/white_pixel.png"
 
 class Button(Object):
     def __init__(self, text: str, letter_size: Vector2, tabs: List[int]):
-        super().__init__(EMPTY_PIXEL, 0, 0, tabs)
+        super().__init__(EMPTY_PIXEL, 0, 0, tabs, z=4)
         self._tab = tabs
-        self.z = 4
  
         self.keep_in_bounds : bool = False
         
@@ -25,10 +24,8 @@ class Button(Object):
         self.text : Text = Text(text, letter_size, tabs)
         
         """Variaveis dos botoes"""
-        self.white_sprite : Object = Object(WHITE_PIXEL, 1, 1, tabs)
-        self.white_sprite.z = 3
-        self.black_sprite : Object = Object(BLACK_PIXEL, 1, 1, tabs)
-        self.black_sprite.z = 3
+        self.white_sprite : Object = Object(WHITE_PIXEL, 1, 1, tabs, z=3)
+        self.black_sprite : Object = Object(BLACK_PIXEL, 1, 1, tabs, z=3)
         self._margin_x : int = 16
         self._margin_y : int = 8
         self._border_width : int = 3

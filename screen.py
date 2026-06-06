@@ -3,6 +3,7 @@
 # as tabs tem um offset muito grande e sao desenhadas so quando selecionadas
 from typing import Dict, List
 
+import perf
 from pygame import Surface, image
 
 import pplay.window as w
@@ -79,7 +80,7 @@ class Object:
     out_of_h_bounds : bool = False
     ## precisa ser atualizado pela screen antes do update
     out_of_v_bounds : bool = False
-    def __init__(self, image : str, width : int, height: int, tabs: List[int], h_parts : int = 1, add_to_screen: bool = True):
+    def __init__(self, image : str, width : int, height: int, tabs: List[int], h_parts : int = 1, add_to_screen: bool = True, z: int = 0):
         self._mouse : Mouse = get_screen().mouse
         self._keyboard : k.Keyboard = get_screen().keyboard
 
@@ -95,7 +96,7 @@ class Object:
         self.pos : Vector2 = Vector2()
         # posicao no ultimo frame
         self.last_pos : Vector2 = Vector2()
-        self.z : int = 0 # ordem de desenho; camada; maior valor eh desenhado na frente
+        self._z : int = z # ordem de desenho; camada; maior valor eh desenhado na frente
         # multiplica os offsets contabilizados no apply_coords()
         self.offset_multiplier : float = 0 # quanto maior, mais perto da tela. Quanto mais proximo de 0, mais longe.
         # offset sera calculado em relacao a esse objeto.
@@ -140,9 +141,22 @@ class Object:
         self._id     : int      = 0
         
         self.wants_to_die : bool = False
+        self._initialized : bool = False
 
         if add_to_screen:
             get_screen().add_object(self)
+        self._initialized = True
+
+    @property
+    def z(self):
+        return self._z
+
+    @z.setter
+    def z(self, value):
+        if self._z != value:
+            self._z = value
+            if self._initialized:
+                get_screen().order_objs_by_z()
 
     def get_tabs(self):
         return self._tabs
@@ -360,7 +374,7 @@ class Screen:
     global res_scale
     def __init__(self, width : int, height : int):
         self.window      : w.Window     = w.Window(width, height)
-        self._objs       : List         = []
+        self._objs       : List[Object] = []
         self._tab        : int          = 0
         self.bg_image    : str          = ""
         self._id_counter : int          = 0
@@ -397,10 +411,26 @@ class Screen:
         self.window.set_title(title)
 
     def add_object(self, obj : Object):
+        # Keep z ordering to make rendering faster
         obj.set_id(self._id_counter)
         self._id_counter += 1
-        self._objs.append(obj)
-        return self._objs[-1]
+        
+        n : int = len(self._objs)
+        i : int = 0
+        inserted : bool = False
+        while i < n:
+            if self._objs[i].z > obj.z:
+                self._objs.insert(i, obj)
+                inserted = True
+                break
+            i += 1
+        if not inserted:
+            self._objs.append(obj)
+        
+        return obj
+    
+    def order_objs_by_z(self): # chamar toda vez q mudar o z de um objeto
+        self._objs.sort(key= lambda obj : obj.z)
     
     def remove_object_by_id(self, id: int):
         for obj in self._objs:
@@ -428,6 +458,13 @@ class Screen:
                     objs.append(obj)
         return objs
 
+    def get_objs_in_tab(self, tab):
+        objs : List[Object] = []
+        for obj in self._objs:
+            if isinstance(obj, Object) and tab in obj.get_tabs():
+                objs.append(obj)
+        return objs
+        
     def fps(self):
         if self.ticks == 0 or self.time_elapsed == 0:
             return 0
@@ -436,6 +473,16 @@ class Screen:
         #if abs(fps_atual - fps_medio) > 10: # se fps atual muito diferente de medio
         return fps_atual
         return fps_medio
+
+    def render(self):
+        # renderizar
+        perf.start("render")
+        
+        for obj in self._objs:
+            if obj.visible and self.get_tab() in obj.get_tabs():
+                obj.render()
+        
+        perf.stop("render")
 
     def update(self):
         if self.window.delta_time() > 0:
@@ -451,7 +498,9 @@ class Screen:
             self.bg.draw()
         
         # aplicar logica
+        perf.start("update")
         ids_to_remove : List[int] = []
+        perf.record("obj_count", len(self._objs))
         for obj in self._objs:
             if not isinstance(obj, Object):
                 continue
@@ -495,21 +544,12 @@ class Screen:
 
         for obj_id in ids_to_remove:
             self.remove_object_by_id(obj_id)
+        perf.stop("update")
         
-        # renderizar
-        layer : int = 0
-        render_buffer = self._objs.copy()
-        while len(render_buffer): # enquanto sobrarem elementos
-            for obj in render_buffer.copy():
-                if not isinstance(obj,Object):
-                    render_buffer.remove(obj)
-                if obj.z == layer:
-                    render_buffer.remove(obj)
-                    if self.get_tab() in obj.get_tabs():
-                        obj.render() # desenhar elementos dessa camada
-            layer += 1
+        self.render()
         
         self.window.update()
+        perf.frame_done()
 
 screen_instance : Screen | None = None
 

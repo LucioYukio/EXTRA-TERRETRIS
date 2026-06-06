@@ -11,6 +11,12 @@ class Vector2:
     def length(self):
         return math.sqrt(self.x**2 + self.y**2)
 
+    def distance(self, point):
+        if isinstance(point, Vector2):
+            return math.sqrt((point.x - self.x)**2 + (point.y - self.y)**2)
+        else:
+            return 0.0
+
     def normalize(self):
         length = self.length()
         if length == 0: return

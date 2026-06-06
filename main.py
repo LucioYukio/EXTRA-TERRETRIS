@@ -3,6 +3,7 @@ from copy import copy
 from random import randrange
 import time
 
+import perf
 from asteroid import Asteroid
 from background import Background
 from enemy import Enemy, EnemySin
@@ -99,6 +100,7 @@ def spawn_enemy(x: float, tabs: List[int], side: int, inimigo: Enemy | None = No
             img,
             int(DEFAULT_NAVE_SIZE.x),
             int(DEFAULT_NAVE_SIZE.y),
+            side,
             nave1 if side == 0 else nave2,
             tabs
         )
@@ -122,7 +124,7 @@ def spawn_enemy(x: float, tabs: List[int], side: int, inimigo: Enemy | None = No
         inimigo.points_list = auras
 
 def spawn_asteroid(x: float, size: int, health: float, tabs: List[int], side: int):
-    asteroid = Asteroid(size, size, health, tabs)
+    asteroid = Asteroid(size, size, side, health, tabs)
     asteroid.side = side
     asteroid.horizontal_bounds = copy(H_BOUNDS[side])
     asteroid.pos.x = x
@@ -155,13 +157,13 @@ nave1 : Nave = Nave(
     "assets/images/nave1.png",
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
+    0,
     [TAB_JOGO],
 )
 nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
 nave1.pos.y = TELA_H - nave1.get_height() - 8
 nave1.horizontal_bounds = copy(H_BOUNDS[0])
 nave1.UP, nave1.DOWN, nave1.LEFT, nave1.RIGHT, nave1.SHOOT, nave1.POWER = control_esquemes[1]
-nave1.z = 1
 nave1.bullet_img = "assets/images/bullet_purple.png"
 nave1.bullet_explosion_img = "assets/images/explosion_small_purple.png"
 nave1.side = 0
@@ -170,13 +172,13 @@ nave2 : Nave = Nave(
     "assets/images/nave2.png",
     int(DEFAULT_NAVE_SIZE.x),
     int(DEFAULT_NAVE_SIZE.y),
+    1,
     [TAB_JOGO],
 )
 nave2.pos.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
 nave2.pos.y = get_screen().window.height - nave2.get_height() - 8
 nave2.horizontal_bounds = H_BOUNDS[1]
 nave2.UP, nave2.DOWN, nave2.LEFT, nave2.RIGHT, nave2.SHOOT, nave2.POWER = control_esquemes[0]
-nave2.z = 1
 nave2.bullet_img = "assets/images/bullet_green.png"
 nave2.bullet_explosion_img = "assets/images/explosion_small_green.png"
 
@@ -265,17 +267,14 @@ aura1_text_value = aura_text.add_number(4)
 aura_text.add_text(" ")
 aura2_text_value = aura_text.add_number(4)
 
-sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
-sidepanel1.z = 3
+sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS], z=3)
 sidepanel1.categorie = "sidepanel"
 
-sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS])
-sidepanel2.z = 3
+sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS], z=3)
 sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
 
-divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [TAB_JOGO, TAB_TETRIS])
+divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [TAB_JOGO, TAB_TETRIS], z=3)
 divisao.pos.x = TELA_W/2 - divisao.get_width()/2
-divisao.z = 3
 
 # -----------
 
@@ -288,10 +287,13 @@ ticks = 0
 tempo = time.perf_counter()
 
 get_screen().set_tab(TAB_JOGO)
+perf.reset()
 while True:
-    #----------------------- Callback Dos Botoes ----------------------
-    # --------
-    
+    if get_screen().keyboard.key_pressed("p"):
+        perf.ENABLED = not perf.ENABLED
+        perf.reset()
+        print(f"PERF {'ON' if perf.ENABLED else 'OFF'}")
+
     if get_screen().get_tab() == TAB_JOGO:
         #----------------------- Enemy Spawn ------------------------------
         if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
