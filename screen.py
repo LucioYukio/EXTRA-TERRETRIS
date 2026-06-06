@@ -10,7 +10,7 @@ from pygame import Surface, image
 import pplay.window as w
 import pplay.gameobject as go
 import pplay.gameimage as gi
-import pplay.animation as a
+from betteranimation import Animation
 import pplay.keyboard as k
 import pplay.mouse as m
 import pplay.gameobject as go
@@ -90,7 +90,7 @@ class Object:
         self._keyboard : k.Keyboard = get_screen().keyboard
 
         self.image : str = image
-        self.sprites : List[a.Animation] = []
+        self.sprites : List[Animation] = []
         # how many horizontal parts the object has, used for rendering
         self.h_parts : int = h_parts
 
@@ -191,8 +191,7 @@ class Object:
         self.sprites.clear()
         for i in range(self.h_parts):
             # aqui ele le do disco para cada h_part
-            spr = a.Animation(EMPTY_PIXEL, self.total_frames)
-            spr.image = get_image(self.image)
+            spr = Animation(self.image, self.total_frames)
             spr.playing = False
             self.sprites.append(spr)
         if self.image != EMPTY_PIXEL:
