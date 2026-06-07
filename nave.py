@@ -186,6 +186,7 @@ class Nave(Body):
                 self.bullets[-1].anchor = self.anchor
             self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
             self.bullets[-1].instance_counter = self.bullet_instance_counter
+            self.bullet_instance_counter[0] += 1
     
     def spawn_bullet(self):
         self.bullets.append(NaveBullet(self.bullet_img, self.side, self.get_tabs()))

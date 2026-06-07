@@ -82,21 +82,20 @@ class TetrisGrid(Object):
         self.overlay.frame_duration = 0.16
         self.overlay.playing = True
     
-    def apply_coords(self, offset_x : float, offset_y : float):
-        offset : Vector2 = Vector2(offset_x, offset_y)
-        self.update_grid_position(self._empty_grid, offset)
-        self.update_grid_position(self._filled_grid, offset)
-        self.update_grid_position(self._blocked_grid, offset)
-        self.update_grid_position(self._marked_grid, offset)
-        self.overlay.apply_coords(offset_x, offset_y)
+    def apply_coords(self):
+        self.update_grid_position(self._empty_grid)
+        self.update_grid_position(self._filled_grid)
+        self.update_grid_position(self._blocked_grid)
+        self.update_grid_position(self._marked_grid)
+        self.overlay.apply_coords()
     
-    def update_grid_position(self, grid : List[List[gi.GameImage]], offset : Vector2):
+    def update_grid_position(self, grid : List[List[gi.GameImage]]):
         self.overlay.pos.x = self.pos.x
         self.overlay.pos.y = self.pos.y
         for i in range(int(self._lines)): # linhas
             for j in range(int(self._columns)): # colunas
-                grid[i][j].x = self.pos.x + offset.x + self._piece_size.x * j
-                grid[i][j].y = self.pos.y + offset.y + self._piece_size.y * i
+                grid[i][j].x = self.pos.x + self._piece_size.x * j
+                grid[i][j].y = self.pos.y + self._piece_size.y * i
     
     def animate(self):
         super().animate()

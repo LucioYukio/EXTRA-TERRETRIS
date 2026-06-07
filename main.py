@@ -45,8 +45,8 @@ control_esquemes = [
 
 enemy_spawn_interval : float = 1.5 # cuidado! nao botar o mesmo que o intervalo de tiro.
 enemy_spawn_cooldown : float = 0
-MAX_ENEMY_COUNT : int = 10 *2
-MAX_ENEMY_BULLET_COUNT : int = 10 *2
+MAX_ENEMY_COUNT : int = 15 *2
+MAX_ENEMY_BULLET_COUNT : int = 30
 
 TETRIS_LINES = 20
 TETRIS_COLUMNS = 10
@@ -68,6 +68,7 @@ ASTEROID_HEALTH_MULTIPLIER : float = 10
 ASTEROID_BASE_POINT_VALUE : float = 30
 
 auras : List[int] = [0, 0]
+points : List[int] = [0, 0]
 
 # counters
 # Eh uma lista para eu poder linkar em inimigos eh poder decrementar na morte
@@ -105,6 +106,7 @@ def spawn_enemy(x: float, tabs: List[int], side: int, inimigo: Enemy | None = No
             tabs
         )
         inimigo.instance_counter = enemy_counter
+        enemy_counter[0] += 1
         inimigo.bullet_instance_counter = enemy_bullet_counter
         inimigo.max_bullet_count = MAX_ENEMY_BULLET_COUNT
         
@@ -210,7 +212,7 @@ asteroid_bg2 : Background = Background(
 )
 asteroid_bg2.offset_multiplier = 0.2
 asteroid_bg2.pos.y = TELA_H - asteroid_bg2.get_height() + 200 # numero aleatorio para variar
-asteroid_bg2.pos.x = TELA_W/2 - 100
+asteroid_bg2.pos.x = TELA_W/2
 
 asteroids : List[Asteroid] = [
     spawn_asteroid(get_random_pos(0), 100, 1 * ASTEROID_HEALTH_MULTIPLIER, [TAB_JOGO], 0),
@@ -293,6 +295,11 @@ while True:
         perf.ENABLED = not perf.ENABLED
         perf.reset()
         print(f"PERF {'ON' if perf.ENABLED else 'OFF'}")
+        
+    if get_screen().keyboard.key_pressed("t"):
+        get_screen().set_tab(TAB_TETRIS)
+    if get_screen().keyboard.key_pressed("j"):
+        get_screen().set_tab(TAB_JOGO)
 
     if get_screen().get_tab() == TAB_JOGO:
         #----------------------- Enemy Spawn ------------------------------

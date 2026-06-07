@@ -342,9 +342,9 @@ class Tetris(Object):
         self.grid.update()
         self.handle_filled_lines()
     
-    def apply_coords(self, offset_x: float, offset_y: float):
-        super().apply_coords(offset_x, offset_y)
-        self.grid.apply_coords(offset_x, offset_y)
+    def apply_coords(self):
+        super().apply_coords()
+        self.grid.apply_coords()
 
     def check_collision_tiles(self, piece: Piece):
         """retorna se colidiu ou nao com algum tile"""

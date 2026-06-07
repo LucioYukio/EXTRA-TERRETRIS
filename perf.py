@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List
 
-ENABLED = True
+ENABLED = False
 LOG_INTERVAL = 60
 
 _counters: Dict[str, int] = {}

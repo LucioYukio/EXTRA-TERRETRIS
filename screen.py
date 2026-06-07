@@ -263,7 +263,7 @@ class Object:
             self.pos.y - self.last_pos.y
         )
 
-    def apply_coords(self, offset_x : float, offset_y : float):
+    def apply_coords(self):
         last_x : float = self.pos.x
         for i in range(self.h_parts):
             sprite = self.sprites[i]
@@ -502,45 +502,43 @@ class Screen:
         ids_to_remove : List[int] = []
         perf.record("obj_count", len(self._objs))
         for obj in self._objs:
-            if not isinstance(obj, Object):
+            if not isinstance(obj, Object) or get_screen().get_tab() not in obj.get_tabs() or not obj.enabled:
                 continue
             if obj.wants_to_die:
                 ids_to_remove.append(obj.get_id())
                 continue
-            # da pra jogar todos os objetos nao usados para o mesmo lugar no limbo, tambem...
-            tab_offset : float = 0
-            obj.apply_coords(tab_offset, tab_offset)
-            if obj.visible and tab_offset == 0 and obj:
-                # objeto ativo, atualizar
-                obj.delta_time = self.window.delta_time()
-                
-                h_bounds : Vector2 = Vector2(
-                    0 if obj.horizontal_bounds.x == -1 else obj.horizontal_bounds.x,
-                    self.window.width if obj.horizontal_bounds.y == -1 else obj.horizontal_bounds.y,
-                )
+            
+            obj.apply_coords()
+            
+            obj.delta_time = self.window.delta_time()
+            
+            h_bounds : Vector2 = Vector2(
+                0 if obj.horizontal_bounds.x == -1 else obj.horizontal_bounds.x,
+                self.window.width if obj.horizontal_bounds.y == -1 else obj.horizontal_bounds.y,
+            )
 
-                v_bounds : Vector2 = Vector2(
-                    0 if obj.vertical_bounds.x == -1 else obj.vertical_bounds.x,
-                    self.window.height if obj.vertical_bounds.y == -1 else obj.vertical_bounds.y,
-                )
-                
-                obj.update()
-                
-                if obj.keep_in_bounds:
-                    obj.pos.x = clamp(obj.pos.x, h_bounds.x, h_bounds.y - obj.get_width())
-                    obj.pos.y = clamp(obj.pos.y, v_bounds.x, v_bounds.y - obj.get_height())
-                else:
-                    obj.out_of_h_bounds = obj.pos.x > h_bounds.y or\
-                        obj.pos.x + obj.get_width() < h_bounds.x
-                    obj.out_of_v_bounds = obj.pos.y > v_bounds.y or\
-                        obj.pos.y + obj.get_height() < v_bounds.x
+            v_bounds : Vector2 = Vector2(
+                0 if obj.vertical_bounds.x == -1 else obj.vertical_bounds.x,
+                self.window.height if obj.vertical_bounds.y == -1 else obj.vertical_bounds.y,
+            )
+            
+            obj.update()
+            
+            if obj.keep_in_bounds:
+                obj.pos.x = clamp(obj.pos.x, h_bounds.x, h_bounds.y - obj.get_width())
+                obj.pos.y = clamp(obj.pos.y, v_bounds.x, v_bounds.y - obj.get_height())
+            else:
+                obj.out_of_h_bounds = obj.pos.x > h_bounds.y or\
+                    obj.pos.x + obj.get_width() < h_bounds.x
+                obj.out_of_v_bounds = obj.pos.y > v_bounds.y or\
+                    obj.pos.y + obj.get_height() < v_bounds.x
 
-                obj.out_of_screen = ((obj.pos.x + obj.get_width() < h_bounds.x) or (obj.pos.x > h_bounds.y)) or\
-                    ((obj.pos.y + obj.get_height() < v_bounds.x) or (obj.pos.y > v_bounds.y))
+            obj.out_of_screen = ((obj.pos.x + obj.get_width() < h_bounds.x) or (obj.pos.x > h_bounds.y)) or\
+                ((obj.pos.y + obj.get_height() < v_bounds.x) or (obj.pos.y > v_bounds.y))
 
-                if obj.out_of_h_bounds and obj.destroy_out_of_h_bounds or\
-                obj.out_of_v_bounds and obj.destroy_out_of_v_bounds:
-                    ids_to_remove.append(obj.get_id())
+            if obj.out_of_h_bounds and obj.destroy_out_of_h_bounds or\
+            obj.out_of_v_bounds and obj.destroy_out_of_v_bounds:
+                ids_to_remove.append(obj.get_id())
 
         for obj_id in ids_to_remove:
             self.remove_object_by_id(obj_id)

@@ -161,8 +161,8 @@ class Text(Object):
                 column = 0
                 line += 1
             i += 1
-    def apply_coords(self, offset_x: float, offset_y: float):
-        super().apply_coords(offset_x, offset_y)
+    def apply_coords(self):
+        super().apply_coords()
         self.apply_letter_position()
         
     
@@ -242,11 +242,11 @@ class TextField(Text):
                 self.letters[i].color_index = self.color_index
                 self.setinha_cima.pos.x = self.letters[i].get_center().x - self.setinha_cima.get_width()/2
                 self.setinha_cima.pos.y = self.letters[i].pos.y - self.setinha_cima.get_height() - 6
-                self.setinha_cima.apply_coords(0,0)
+                self.setinha_cima.apply_coords()
                 
                 self.setinha_baixo.pos.x = self.setinha_cima.pos.x
                 self.setinha_baixo.pos.y = self.letters[i].pos.y + self.get_height() + 6
-                self.setinha_baixo.apply_coords(0,0)
+                self.setinha_baixo.apply_coords()
 
     def walk_active_char(self, amount: int = 1):
         self.active_char = (self.active_char + amount) % self.digits
@@ -298,8 +298,8 @@ class CompositeText(Object):
                 last_coord.y += text.letter_size.y + self.newline_size
                 last_coord.x = self.pos.x
 
-    def apply_coords(self, offset_x: float, offset_y: float):
-        super().apply_coords(offset_x, offset_y)
+    def apply_coords(self):
+        super().apply_coords()
         self.apply_text_position()
             
     def add_text(self, text: str):

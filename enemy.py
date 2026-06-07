@@ -24,7 +24,8 @@ class Enemy(Nave):
         self.destroy_out_of_h_bounds = False
         self.destroy_out_of_v_bounds = True
         self.speed = 100
-        self.shooting_interval = 2
+        
+        self.shooting_interval = 1
         
         self.target : Object = target
         self.bullet_turning_speed : float = 3/1000
