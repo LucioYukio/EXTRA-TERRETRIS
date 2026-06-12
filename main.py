@@ -8,6 +8,7 @@ from asteroid import Asteroid
 from background import Background
 from enemy import Enemy, EnemySin
 from nave import DEFAULT_NAVE_SIZE, Nave
+from persondisplay import GreenAlienDisplay, PurpleAlienDisplay
 from screen import (List, Vector2, TELA_W, TELA_H, REF_RES, clamp,
                     get_screen, Object, update_res_scale)
 from tetris import Tetris
@@ -269,14 +270,22 @@ aura1_text_value = aura_text.add_number(4)
 aura_text.add_text(" ")
 aura2_text_value = aura_text.add_number(4)
 
+divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [TAB_JOGO, TAB_TETRIS], z=3)
+divisao.pos.x = TELA_W/2 - divisao.get_width()/2
+
 sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS], z=3)
 sidepanel1.categorie = "sidepanel"
+
+purple_alien_display : PurpleAlienDisplay = PurpleAlienDisplay(120, int(120 * 1.25), [TAB_JOGO, TAB_TETRIS])
+purple_alien_display.pos.x = sidepanel1.get_center().x - purple_alien_display.get_width()/2
+purple_alien_display.pos.y = TELA_H - purple_alien_display.get_height()
 
 sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [TAB_JOGO, TAB_TETRIS], z=3)
 sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
 
-divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [TAB_JOGO, TAB_TETRIS], z=3)
-divisao.pos.x = TELA_W/2 - divisao.get_width()/2
+green_alien_display : GreenAlienDisplay = GreenAlienDisplay(120, int(120 * 1.25), [TAB_JOGO, TAB_TETRIS])
+green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width()/2
+green_alien_display.pos.y = TELA_H - green_alien_display.get_height()
 
 # -----------
 
@@ -312,14 +321,17 @@ while True:
             if o.pos.y >= TELA_H and isinstance(o, Enemy):
                 reset_enemy(o)
         
+        if nave1.damage_cooldown > 0:
+            purple_alien_display.hurt()
+        if nave2.damage_cooldown > 0:
+            green_alien_display.hurt()
+        
         asteroid_bg1.pos.y += BG_VELOCITY
         if asteroid_bg1.pos.y >= -asteroid_bg1.get_height()/3:
             asteroid_bg1.pos.y -= asteroid_bg1.get_height()/3
         asteroid_bg2.pos.y += BG_VELOCITY
         if asteroid_bg2.pos.y >= -asteroid_bg2.get_height()/3:
             asteroid_bg2.pos.y -= asteroid_bg2.get_height()/3
-
-
         for asteroid in asteroids:
             if asteroid.pos.y >= TELA_H:
                 asteroid.pos.y = TELA_H * 2 # (necessariamente fora da tela)

@@ -35,6 +35,8 @@ class Enemy(Nave):
         self.default_health = 4
         self.health = 4
         
+        self.damage_interval = 0 # nao tem invencibilidade
+        
         self.hitbox = Vector2(-1,-1)
         
         self.points_value : int = 10 # pontos que player recebe ao matar esse inimigo

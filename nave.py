@@ -154,6 +154,11 @@ class Nave(Body):
         self.damage_interval : float = 1
         self.damage_cooldown : float = 0
         
+        """Invincibility vars"""
+        self.blinking : bool = False # changes from time to time
+        self.blinking_interval : float = 0.1
+        self.blinking_cooldown : float = 0
+        
         """Bullet vars"""
         self.bullet_img : str = "assets/images/bullet_white.png"
         self.bullet_explosion_img : str = "assets/images/explosion_small.png"
@@ -264,6 +269,8 @@ class Nave(Body):
         get_screen().remove_object_by_id(self.rastro.get_id())
     
     def check_damage(self):
+        if self.damage_cooldown > 0:
+            return
         colliders = self.get_colliders(self.damage_from_tags)
         for c in colliders:
             if isinstance(c, Projectile):
@@ -273,6 +280,7 @@ class Nave(Body):
                     continue
                 # receive damage
                 self.health -= c.get_damage()
+                self.damage_cooldown = self.damage_interval
                 c.wants_to_die = c.destroy_on_hit
                 if c.destroy_on_hit and isinstance(c, Bullet):
                     c.spawn_explosion()
@@ -312,6 +320,18 @@ class Nave(Body):
             anchor_movement = self.anchor.get_movement()
             for rastro in self.rastro.rastros:
                 rastro.pos -= (anchor_movement) * self.offset_multiplier
+        
+        if self.damage_cooldown > 0:
+            if self.blinking_cooldown <= 0:
+                self.blinking_cooldown = self.blinking_interval
+                self.blinking = not self.blinking
+            else:
+                self.blinking_cooldown -= self.delta_time
+            self.visible = self.blinking
+            
+            self.damage_cooldown -= self.delta_time
+        else:
+            self.visible = True
         
         self.rastro.pos.x = self.pos.x
         self.rastro.pos.y = self.pos.y

@@ -22,6 +22,7 @@
 [] Adicionar sons
     [] Funcaozinha de cache que toca som
     [] Musica de fundo
+[] Calibrar melhor os offset_multipliers
 
 #RESENHA------
 [] Inimigo que fica no bg e atira na direcao da tela
