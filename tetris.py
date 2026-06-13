@@ -218,7 +218,7 @@ class Tetris(Object):
         
         self.lines : int = linhas
         self.columns : int = colunas
-        self.points : int = 0
+        self.points : int = 0 # accumulated points. Flush this to the aura counter in the game loop!
         
         self.matrix : List[List[int]] = []
         self.build_matrix()
@@ -416,7 +416,6 @@ class Tetris(Object):
                 coluna = int(self.curr_piece.column) + j
 
                 self.matrix[linha][coluna] = 2
-
 
     def choice_piece(self):
         old_piece = self.curr_piece

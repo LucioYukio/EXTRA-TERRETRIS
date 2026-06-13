@@ -52,6 +52,8 @@ def play_game():
     enemy_spawn_cooldown : float = 0
     MAX_ENEMY_COUNT : int = 15 *2
     MAX_ENEMY_BULLET_COUNT : int = 30
+    
+    AURA_FOR_WINNER_NAVE = 100 # quantidade adicional de aura que a nave ganhadora ganha
 
     TETRIS_LINES = 20
     TETRIS_COLUMNS = 10
@@ -62,7 +64,7 @@ def play_game():
     SIDEPANEL_W = 120
     DIVISOR_W = 48
 
-    H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2 - DIVISOR_W/2), Vector2(TELA_W/2 + DIVISOR_W/2, TELA_W-SIDEPANEL_W)]
+    H_BOUNDS = [Vector2(SIDEPANEL_W - DEFAULT_NAVE_SIZE.x/2, TELA_W/2 - DIVISOR_W/2), Vector2(TELA_W/2 + DIVISOR_W/2, TELA_W - SIDEPANEL_W + DEFAULT_NAVE_SIZE.x/2)]
 
     # velocity in which the background descends
     BG_VELOCITY = 0.2
@@ -79,7 +81,6 @@ def play_game():
     # Eh uma lista para eu poder linkar em inimigos eh poder decrementar na morte
     enemy_counter        : List[int] = [0] 
     enemy_bullet_counter : List[int] = [0]
-    asteroid_counter     : List[int] = [0]
 
 
 
@@ -329,6 +330,13 @@ def play_game():
                 purple_alien_display.hurt()
             if nave2.damage_cooldown > 0:
                 green_alien_display.hurt()
+                
+            if nave1.wants_to_die and not nave1.dead:
+                auras[1] += AURA_FOR_WINNER_NAVE
+            if nave2.wants_to_die and not nave2.dead:
+                auras[0] += AURA_FOR_WINNER_NAVE
+            
+            
             
             asteroid_bg1.pos.y += BG_VELOCITY
             if asteroid_bg1.pos.y >= -asteroid_bg1.get_height()/3:
@@ -350,6 +358,14 @@ def play_game():
         if get_screen().get_tab() == tabs.TETRIS:
             tetris1.pos.x = divisao.pos.x - tetris1.get_width()
             tetris2.pos.x = divisao.pos.x + divisao.get_width()
+            
+            if tetris1.points > 0:
+                auras[0] += tetris1.points
+                tetris1.points = 0
+            if tetris2.points > 0:
+                auras[1] += tetris2.points
+                tetris2.points = 0
+            
             
         # --------
         

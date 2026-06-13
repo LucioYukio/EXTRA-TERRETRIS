@@ -141,6 +141,7 @@ class Object:
         self._id     : int      = 0
         
         self.wants_to_die : bool = False
+        self.dead : bool = False # when removed from screen
         self._initialized : bool = False
 
         if add_to_screen:
@@ -436,14 +437,15 @@ class Screen:
         for obj in self._objs:
             if obj.get_id() == id:
                 obj.destroy()
+                obj.dead = True
                 self._objs.remove(obj)
                 return
 
     def clear_tab(self, tab: int):
-        """Apagar todo objeto da tab passada"""
-        for obj in self._objs:
-            if tab in obj.get_tabs():
-                self.remove_object_by_id(obj.get_id())
+        """Remove all objects belonging to the given tab"""
+        ids_to_remove = [obj.get_id() for obj in self._objs if tab in obj.get_tabs()]
+        for obj_id in ids_to_remove:
+            self.remove_object_by_id(obj_id)
 
     def get_objs_with_tags(self, tags: List[str]):
         objs : List[Object] = []

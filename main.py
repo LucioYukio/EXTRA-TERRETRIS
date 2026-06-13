@@ -40,12 +40,6 @@ control_esquemes = [
 DEFAULT_LETTER_SIZE = Vector2(32,32)
 SMALL_LETTER_SIZE = Vector2(16,16)
 
-#--------------------------------- FUNCOES -------------------------------------------------
-
-def play_game():
-    gameplay.play_game()
-
-
 #--------------------------------------------------------------------------------------------
 
 # Menu principal
@@ -68,6 +62,8 @@ while True:
                 get_screen().set_tab(tabs.LOADING)
         case tabs.LOADING:
             print("na tab de loading")
-            play_game()
+            get_screen().clear_tab(tabs.NAVE)
+            get_screen().clear_tab(tabs.TETRIS)
+            gameplay.play_game()
             get_screen().set_tab(tabs.MENU_PRINCIPAL)
     get_screen().update()
