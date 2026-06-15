@@ -15,6 +15,9 @@ from tetris import Tetris
 from text import CompositeText
 import tabs
 
+from fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
+from preload import preload_images
+
 
 
 def play_game():
@@ -151,6 +154,8 @@ def play_game():
     #         if isinstance(obj, Enemy):
     #             count += 1
     #     return count
+
+    preload_images()
 
     #---------------- TABS -----------------
 
@@ -330,6 +335,12 @@ def play_game():
 
     get_screen().set_tab(tabs.NAVE)
     perf.reset()
+
+    # warm up fades so they don't stutter when used later
+    for fade_cls in (WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut):
+        fade = fade_cls([tabs.NAVE], total_duration=0.016)
+        fade.visible = False
+
     wants_to_quit : bool = False
     print("chegou antes do loop")
     while not wants_to_quit:
@@ -361,8 +372,12 @@ def play_game():
                 
             if nave1.wants_to_die and not nave1.dead:
                 auras[1] += AURA_FOR_WINNER_NAVE
+                fade = WhiteFadeOut([tabs.NAVE], total_duration=0.3, width=REF_RES[0]//2)
+                fade.pos.x = 0
             if nave2.wants_to_die and not nave2.dead:
                 auras[0] += AURA_FOR_WINNER_NAVE
+                fade = WhiteFadeOut([tabs.NAVE], total_duration=0.3, width=REF_RES[0]//2)
+                fade.pos.x = TELA_W//2
             
             
             
