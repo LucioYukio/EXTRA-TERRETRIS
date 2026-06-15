@@ -190,7 +190,7 @@ def play_game():
 
     nave2.side = 1
 
-    asteroid_bg1 : Background = Background(
+    asteroid_bg_far1: Background = Background(
         "assets/images/asteroids_bg_narrow.png",
         int(528 * BG_SCALE),
         int(2041 * BG_SCALE),
@@ -200,11 +200,24 @@ def play_game():
         nave1,
         Vector2(SIDEPANEL_W, TELA_W/2 - 16)
     )
-    asteroid_bg1.offset_multiplier = 0.2
+    asteroid_bg_far1.offset_multiplier = 0.1
+    
+    asteroid_bg1 : Background = Background(
+        "assets/images/asteroids_bg_narrow_close.png",
+        int(528 * BG_SCALE),
+        int(2041 * 3 * BG_SCALE),
+        [tabs.NAVE],
+        0,
+        32,
+        nave1,
+        Vector2(SIDEPANEL_W, TELA_W/2 - 16)
+    )
+    asteroid_bg1.offset_multiplier = 0.25
     asteroid_bg1.pos.y = TELA_H - asteroid_bg1.get_height()
     asteroid_bg1.pos.x = 30
+    
 
-    asteroid_bg2 : Background = Background(
+    asteroid_bg_far2 : Background = Background(
         "assets/images/asteroids_bg_narrow.png",
         int(528 * BG_SCALE),
         int(2041 * BG_SCALE),
@@ -214,7 +227,21 @@ def play_game():
         nave2,
         Vector2(TELA_W/2, TELA_W)
     )
-    asteroid_bg2.offset_multiplier = 0.2
+    asteroid_bg_far2.offset_multiplier = 0.1
+    asteroid_bg_far2.pos.y = TELA_H - asteroid_bg_far2.get_height() + 200 # numero aleatorio para variar
+    asteroid_bg_far2.pos.x = TELA_W/2
+
+    asteroid_bg2 : Background = Background(
+        "assets/images/asteroids_bg_narrow_close.png",
+        int(528 * BG_SCALE),
+        int(2041 * 3 * BG_SCALE),
+        [tabs.NAVE],
+        1,
+        32,
+        nave2,
+        Vector2(TELA_W/2, TELA_W)
+    )
+    asteroid_bg2.offset_multiplier = 0.25
     asteroid_bg2.pos.y = TELA_H - asteroid_bg2.get_height() + 200 # numero aleatorio para variar
     asteroid_bg2.pos.x = TELA_W/2
 
