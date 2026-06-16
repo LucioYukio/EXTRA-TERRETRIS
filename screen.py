@@ -1,16 +1,16 @@
 # usar cada tab como se fosse uma janela
 # da pra trocar de tab facilmente
 # as tabs tem um offset muito grande e sao desenhadas so quando selecionadas
-from typing import Dict, List
+from typing import List
 
 import perf
-from pygame import Surface, image
 
 import pplay.window as w
 import pplay.gameimage as gi
 from betteranimation import Animation
 import pplay.keyboard as k
 import pygame.transform
+from imagecache import get_image
 from mouse import Mouse
 from vector2 import Vector2
 
@@ -48,25 +48,6 @@ def get_text_size(text: str, font_name: str, size_pt: int):
     return font.size(text)
 
 
-#------------------------ IMAGE CACHE -----------------------
-# tive que fazer aqui e nao em um outro modulo pois pygame precisa estar iniciado
-images: Dict[str, Surface] = {}
-def get_image(filepath: str):
-    """
-    Checa de a imagem ja existe no cache.
-    Se existe, retorna uma copia da surface respectiva.
-    Se nao, adiciona no cache e retorna a surface.
-    Isso eh necessario porque pesa muito pegar do disco toda vez.
-    """
-    img : Surface | None = images.get(filepath, None)
-    
-    if img == None:
-        images[filepath] = image.load(filepath).convert_alpha()
-        return images[filepath]
-    else:
-        return img
-#---------------------------------------------------------------
-
 
 
 class Object:
@@ -102,13 +83,13 @@ class Object:
         # offset sera calculado em relacao a esse objeto.
         self.anchor : Object = self
 
-        """Tamanho local"""
-        self.set_width(width)
-        self.set_height(height)
-
         """variaveis de animacao"""
         self.frame_duration : float = 1 # em segundos, maior que 0
         self.total_frames : int = 1
+
+        """Tamanho local"""
+        self.set_width(width)
+        self.set_height(height)
 
         self.build_sprites()
 
@@ -178,15 +159,17 @@ class Object:
         return self._width
 
     def set_width(self, width: float):
-        self._width = int(width * res_scale[0])
-        self.update_sprites()
+        if self._width != width:
+            self._width = int(width * res_scale[0])
+            self.update_sprites()
 
     def get_height(self):
         return self._height
 
     def set_height(self, height: float):
-        self._height = int(height * res_scale[1])
-        self.update_sprites()
+        if self._height != height:
+            self._height = int(height * res_scale[1])
+            self.update_sprites()
 
     def set_total_frames(self, total_frames: int):
         self.total_frames = total_frames
@@ -197,6 +180,7 @@ class Object:
         return Vector2(self.pos.x + self.get_width()/2, self.pos.y + self.get_height()/2)
 
     def build_sprites(self):
+        print("build sprites")
         self.sprites.clear()
         for i in range(self.h_parts):
             # aqui ele le do disco para cada h_part
@@ -313,15 +297,16 @@ class Object:
         width e height
             grow_a_bit: if to make each part a little larger
         """
-        # TODO corrigir pedacinho da direita nao aparecendo
+        if not self.sprites:
+            return
+        print("update sprite")
+        width = int(self.get_width() * self.total_frames)
+        height = int(self.get_height())
         i : int = 0
         for spr in self.sprites:
-            width = self.get_width() * self.total_frames
-            #width = (self.get_width() + self.h_parts * grow_a_bit) * self.total_frames
-            spr.image = pygame.transform.scale(spr.image, (width, self.get_height()))
-            spr.width = int(self.get_width()/self.h_parts)
-            #spr.width += 1
-            spr.height = int(self.get_height())
+            spr.image = get_image(self.image, width, height)
+            spr.width = int(self.get_width() / self.h_parts)
+            spr.height = height
             spr.curr_frame = i
             i += 1
         if self.sprites:

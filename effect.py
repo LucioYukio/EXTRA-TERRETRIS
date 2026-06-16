@@ -1,7 +1,7 @@
 from screen import Object, List
 
 class Effect(Object):
-    def __init__(self, image: str, total_frames: int, total_duration: float, width: int, height: int, tabs: List[int], h_parts: int = 8):
+    def __init__(self, image: str, total_frames: int, total_duration: float, width: int, height: int, tabs: List[int], h_parts: int = 2):
         """
         Object that dies once animation finishes.
         Always leave at least one empty frame at the end of the image.

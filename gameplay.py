@@ -52,9 +52,9 @@ def play_game():
     ]
 
     ENEMY_WAIT_TIME : float = 5 # segundos antes dos inimigos comecarem a spawnar
-    enemy_spawn_interval : float = 1.5 # cuidado! nao botar o mesmo que o intervalo de tiro.
+    enemy_spawn_interval : float = 2 # cuidado! nao botar o mesmo que o intervalo de tiro.
     enemy_spawn_cooldown : float = ENEMY_WAIT_TIME
-    MAX_ENEMY_COUNT : int = 15 *2
+    MAX_ENEMY_COUNT : int = 10 *2
     MAX_ENEMY_BULLET_COUNT : int = 15 *2
     
     AURA_FOR_WINNER_NAVE = 100 # quantidade adicional de aura que a nave ganhadora ganha

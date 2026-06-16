@@ -18,12 +18,16 @@
 [] Dificuldade aumenta com o tempo
     [] No tetris
     [] Na navinha
-[] Tela de loading antes de carregar tudo
 [] Adicionar sons
     [] Funcaozinha de cache que toca som
     [] Musica de fundo
-[] Calibrar melhor os offset_multipliers
 [] Botao nao tem background
+    [] Bordas dos botoes somem com res_scales menores, consertar isso.
+[] Inimigos aparentemente nao spawnam mais depois de um tempo
+[] Ver o quanto pode diminuir qualidade de assets pra melhorar performance, principalmente rastros
+[] Texts, custom Hitboxes e afins devem levar res_scale em conta!!!
+[] TRAZER AS MELHORIAS DE SPACE INVADERS PRA CA, TA LISO
+[] ImageCache guardar imagens resized tbm
 
 #RESENHA------
 [] Inimigo que fica no bg e atira na direcao da tela

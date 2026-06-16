@@ -14,6 +14,8 @@ class Bullet(Projectile):
         self.set_total_frames(4)
         self.frame_duration = 0.1
         
+        self.destroy_out_of_h_bounds = False
+        
         self.explosion_info : Dict = {
             "img" : "assets/images/explosion_small.png",
             "frames" : 8,
@@ -81,7 +83,7 @@ class Rastro(Object):
         
         self.offset : Vector2 = Vector2(0,0)
         
-        self.interval : float = 0.075 # interval between rastros changing position
+        self.interval : float = 0.15 # interval between rastros changing position
         self.cooldown : float = 0 # changing rastros cooldown
         
         self.destroy_out_of_h_bounds = False
@@ -142,7 +144,7 @@ class Nave(Body):
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile", "asteroid"}
         self.keyboard = get_screen().keyboard
-        self.speed : float = 250
+        self.speed : float = 200
         self.direction : Vector2 = Vector2(0,0)
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
         
@@ -199,7 +201,7 @@ class Nave(Body):
         self.bullets[-1].pos.y = self.pos.y - self.bullets[-1].get_height() + 5
 
     def spawn_rastro(self):
-        self.rastro : Rastro = Rastro(self.get_tabs(), 8)
+        self.rastro : Rastro = Rastro(self.get_tabs(), 4)
         self.rastro.speed = 400
         self.rastro.horizontal_bounds = self.horizontal_bounds
         if self.rastro.anchor != self:
@@ -264,6 +266,7 @@ class Nave(Body):
         self.rastro.wants_to_die = True
     
     def destroy(self):
+        super().destroy()
         for rastro in self.rastro.rastros:
             get_screen().remove_object_by_id(rastro.get_id())
         get_screen().remove_object_by_id(self.rastro.get_id())

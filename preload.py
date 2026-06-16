@@ -1,4 +1,4 @@
-from screen import get_image
+from imagecache import get_image
 
 HEAVY_IMAGES = [
     "assets/images/double_bg.png",

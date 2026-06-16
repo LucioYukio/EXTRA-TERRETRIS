@@ -8,7 +8,7 @@ class EnemyBullet(FollowingBullet):
     def __init__(self, img: str, side: int, tabs: List[int], target: Object, turning_speed: float):
         super().__init__(img, side, target, turning_speed, tabs)
         self.tags.append("enemy_projectile")
-        self.speed = 200
+        self.speed = 150
         self.direction.y = 1
         
 
@@ -23,7 +23,7 @@ class Enemy(Nave):
         self.keep_in_bounds = False
         self.destroy_out_of_h_bounds = False
         self.destroy_out_of_v_bounds = True
-        self.speed = 100
+        self.speed = 200
         
         self.shooting_interval = 1
         
