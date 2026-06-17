@@ -28,7 +28,7 @@ class Enemy(Nave):
         self.shooting_interval = 1
         
         self.target : Object = target
-        self.bullet_turning_speed : float = 3/1000
+        self.bullet_turning_speed : float = 3/100
         
         self.offset_multiplier = 1
         

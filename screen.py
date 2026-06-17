@@ -180,7 +180,6 @@ class Object:
         return Vector2(self.pos.x + self.get_width()/2, self.pos.y + self.get_height()/2)
 
     def build_sprites(self):
-        print("build sprites")
         self.sprites.clear()
         for i in range(self.h_parts):
             # aqui ele le do disco para cada h_part
@@ -299,7 +298,6 @@ class Object:
         """
         if not self.sprites:
             return
-        print("update sprite")
         width = int(self.get_width() * self.total_frames)
         height = int(self.get_height())
         i : int = 0

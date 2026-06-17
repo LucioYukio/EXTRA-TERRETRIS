@@ -249,11 +249,28 @@ class Tetris(Object):
         self.SPIN  : str = "space"
         self.POWER : str = "alt"
         
+        self.lost : bool = False
+
         self.choice_piece()
 
     def build_matrix(self):
         self.matrix = [[0] * self.columns for _ in range(self.lines)]
         self.grid.build_grids()
+
+    def check_loss(self):
+        for tile in self.matrix[0]:
+            if tile != 0:
+                self.lost = True
+                return True
+        return False
+
+    def reset(self):
+        self.lost = False
+        self.points = 0
+        self.gravity_speed = 1
+        self.gravity_increment_cooldown = self.gravity_increment_interval
+        self.build_matrix()
+        self.choice_piece()
 
     def handle_filled_lines(self):
         # checa se alguma linha esta cheia.

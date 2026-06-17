@@ -17,6 +17,7 @@ import tabs
 
 from fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
 from preload import preload_images
+from winlosescreens import LoseScreen, WinScreen
 
 
 
@@ -220,7 +221,7 @@ def play_game():
     )
     asteroid_bg1.offset_multiplier = 0.25
     asteroid_bg1.pos.y = TELA_H - asteroid_bg1.get_height()
-    asteroid_bg1.pos.x = 30
+    asteroid_bg1.pos.x = 60
     
 
     asteroid_bg_far2 : Background = Background(
@@ -323,7 +324,72 @@ def play_game():
     green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width()/2
     green_alien_display.pos.y = TELA_H - green_alien_display.get_height()
 
+    # win and lose screens
+    
+    lose_screens : List[LoseScreen] = [
+        LoseScreen(
+            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            REF_RES[1], 
+            [tabs.NAVE, tabs.TETRIS]),
+        LoseScreen(
+            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            REF_RES[1], 
+            [tabs.NAVE, tabs.TETRIS]),
+        ]
+    lose_screens[0].pos.x = sidepanel1.get_width()
+    lose_screens[1].pos.x = divisao.pos.x + divisao.get_width()
+    
+    win_screens : List[WinScreen] = [
+        WinScreen(
+            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            REF_RES[1], 
+            [tabs.NAVE, tabs.TETRIS]),
+        WinScreen(
+            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            REF_RES[1], 
+            [tabs.NAVE, tabs.TETRIS]),
+        ]
+    win_screens[0].pos.x = sidepanel1.get_width()
+    win_screens[1].pos.x = divisao.pos.x + divisao.get_width()
+    
+    
+    
     # -----------
+
+    # ------------------------- Reset ----------------------------
+
+    def reset_game():
+        nonlocal enemy_spawn_cooldown
+        tetris1.reset()
+        tetris2.reset()
+        tetris1.enabled = True
+        tetris2.enabled = True
+        for nave in (nave1, nave2):
+            nave.health = nave.default_health
+            nave.wants_to_die = False
+            nave.dead = False
+            nave.enabled = True
+            nave.damage_cooldown = 0
+            nave.shooting_cooldown = 0
+            nave.blinking = False
+            nave.visible = True
+            nave.pressing_both = Vector2(0, 0)
+            for bullet in nave.bullets:
+                bullet.wants_to_die = True
+            nave.bullets.clear()
+        nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
+        nave1.pos.y = TELA_H - nave1.get_height() - 8
+        nave2.pos.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
+        nave2.pos.y = get_screen().window.height - nave2.get_height() - 8
+        for obj in get_screen()._objs:
+            if isinstance(obj, Enemy):
+                reset_enemy(obj)
+            elif obj.categorie in ('bullet', 'nave bullet', 'debri', 'projectile'):
+                obj.wants_to_die = True
+        for asteroid in asteroids:
+            asteroid.pos.y = TELA_H * 2
+            asteroid.health = asteroid.total_health
+        enemy_spawn_cooldown = ENEMY_WAIT_TIME
 
     # ------------------------- Game Loop ----------------------------
 
@@ -342,6 +408,8 @@ def play_game():
         fade.visible = False
 
     wants_to_quit : bool = False
+    switch_cooldown = 0.0
+    switch_target = -1
     print("chegou antes do loop")
     while not wants_to_quit:
         if get_screen().keyboard.key_pressed("p"):
@@ -349,12 +417,13 @@ def play_game():
             perf.reset()
             print(f"PERF {'ON' if perf.ENABLED else 'OFF'}")
             
-        if get_screen().keyboard.key_pressed("t"):
-            get_screen().set_tab(tabs.TETRIS)
-        if get_screen().keyboard.key_pressed("j"):
-            get_screen().set_tab(tabs.NAVE)
+        if switch_cooldown <= 0:
+            if get_screen().keyboard.key_pressed("t"):
+                get_screen().set_tab(tabs.TETRIS)
+            if get_screen().keyboard.key_pressed("j"):
+                get_screen().set_tab(tabs.NAVE)
 
-        if get_screen().get_tab() == tabs.NAVE:
+        if get_screen().get_tab() == tabs.NAVE and switch_cooldown <= 0:
             #----------------------- Enemy Spawn ------------------------------
             if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
                 spawn_enemy(get_random_pos(0), [tabs.NAVE], 0)
@@ -372,12 +441,18 @@ def play_game():
                 
             if nave1.wants_to_die and not nave1.dead:
                 auras[1] += AURA_FOR_WINNER_NAVE
-                fade = WhiteFadeOut([tabs.NAVE], total_duration=0.3, width=REF_RES[0]//2)
-                fade.pos.x = 0
+                lose_screens[0].show(3)
+                win_screens[1].show(3)
+                nave1.enabled = False
+                switch_cooldown = 3
+                switch_target = tabs.TETRIS
             if nave2.wants_to_die and not nave2.dead:
                 auras[0] += AURA_FOR_WINNER_NAVE
-                fade = WhiteFadeOut([tabs.NAVE], total_duration=0.3, width=REF_RES[0]//2)
-                fade.pos.x = TELA_W//2
+                lose_screens[1].show(3)
+                win_screens[0].show(3)
+                nave2.enabled = False
+                switch_cooldown = 3
+                switch_target = tabs.TETRIS
             
             
             
@@ -398,10 +473,27 @@ def play_game():
             fps_text.pos.x = SIDEPANEL_W
             
         #-------------------------------------------------
-        if get_screen().get_tab() == tabs.TETRIS:
+        if get_screen().get_tab() == tabs.TETRIS and switch_cooldown <= 0:
             tetris1.pos.x = divisao.pos.x - tetris1.get_width()
             tetris2.pos.x = divisao.pos.x + divisao.get_width()
             
+            if tetris1.check_loss():
+                auras[1] += AURA_FOR_WINNER_NAVE
+                lose_screens[0].show(3)
+                win_screens[1].show(3)
+                tetris1.enabled = False
+                tetris2.enabled = False
+                switch_cooldown = 3
+                switch_target = tabs.NAVE
+            if tetris2.check_loss():
+                auras[0] += AURA_FOR_WINNER_NAVE
+                lose_screens[1].show(3)
+                win_screens[0].show(3)
+                tetris1.enabled = False
+                tetris2.enabled = False
+                switch_cooldown = 3
+                switch_target = tabs.NAVE
+
             if tetris1.points > 0:
                 auras[0] += tetris1.points
                 tetris1.points = 0
@@ -420,6 +512,13 @@ def play_game():
         aura_text.pos.y = TELA_H - aura_text.get_height()
         aura1_text_value.value = auras[0]
         aura2_text_value.value = auras[1]
+        
+        if switch_cooldown > 0:
+            switch_cooldown -= get_screen().window.delta_time()
+            if switch_cooldown <= 0 and switch_target >= 0:
+                reset_game()
+                get_screen().set_tab(switch_target)
+                switch_target = -1
         
         if get_screen().keyboard.key_pressed("esc"):
             wants_to_quit = True

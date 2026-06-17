@@ -4,7 +4,7 @@ from effect import Effect
 
 class Fade(Effect):
     def __init__(self, image: str, tabs: List[int], total_duration: float = 1, width: int = REF_RES[0], height: int = REF_RES[1]):
-        super().__init__(image, 32, total_duration, width, height, tabs, h_parts=1)
+        super().__init__(image, 16, total_duration, width, height, tabs, h_parts=1)
         self.z = 100
 
 

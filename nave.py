@@ -54,7 +54,7 @@ class FollowingBullet(Bullet):
         super().__init__(img, side, tabs)
         self.target : Object = target
         self.turning_speed : float = turning_speed
-        self.following_duration : float = 3 # after this, bullet does not follow target
+        self.following_duration : float = .5 # after this, bullet does not follow target
         
     def update(self):
         if self.time_elapsed < self.following_duration:
