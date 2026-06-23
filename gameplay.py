@@ -1,6 +1,6 @@
 from copy import copy
 from random import randrange, uniform
-import time
+import asyncio
 from typing import List
 
 from config import sounds
@@ -24,15 +24,9 @@ from ui.persondisplay import GreenAlienDisplay, PurpleAlienDisplay
 from ui.text import CompositeText, NumberText, Text
 
 
-def play_game(dificuldade: str = "normal", win_points: int = 3):
+async def play_game(dificuldade: str = "normal", win_points: int = 3):
     #-------------------------------------------------------------------
     #------------------------- Variaveis ---------------------------------------------------------
-
-    ## se o fps for menor que isso, tomar algumas medidas, como nao spawnar novos inimigos
-    ## apenas uma medida preventiva, o fps pode acabar sendo menos que o target.
-    FPS_TARGET: float = 0
-    fps : float = 0
-    last_average_fps : float = 9999
 
     difficulty_mult = {"lento": 0.5, "normal": 1, "frenetico": 3}.get(dificuldade, 1)
 
@@ -273,11 +267,6 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
         asteroid.points_list = auras
         asteroid.points_value = int(ASTEROID_BASE_POINT_VALUE * (i + 1))
         i = (i + 1) % total
-
-
-    fps_text = CompositeText(SMALL_LETTER_SIZE, [tabs.NAVE], color_index=1, background=True)
-    fps_text.add_text("FPS:")
-    fps_text_value = fps_text.add_number(3)
 
 
     piece_size = Vector2(REF_RES[1]/TETRIS_LINES, REF_RES[1]/TETRIS_LINES)
@@ -578,12 +567,6 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
 
     # ------------------------- Game Loop ----------------------------
 
-    # quando a diferenca do perf counter do frame for maior do q MAX,
-    # tempo = tempo do frame e ticks = 0
-    MAX_TEMPO_PASSADO = 2
-    ticks = 0
-    tempo = time.perf_counter()
-
     get_screen().set_tab(tabs.NAVE)
 
     # warm up fades so they don't stutter when used later
@@ -610,7 +593,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
 
         if get_screen().get_tab() == tabs.NAVE and switch_cooldown <= 0:
             #----------------------- Enemy Spawn ------------------------------
-            if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
+            if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT:
                 spawn_enemy(get_random_pos(0), [tabs.NAVE], 0)
                 spawn_enemy(get_random_pos(1), [tabs.NAVE], 1)
                 enemy_spawn_cooldown = enemy_spawn_interval + uniform(-0.5, 0.5)
@@ -693,8 +676,6 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                     # reset asteroid
                     asteroid.pos.y = -asteroid.get_height() 
                     asteroid.pos.x = get_random_pos(asteroid.side)
-            
-            fps_text.pos.x = SIDEPANEL_W
             
         #-------------------------------------------------
         if get_screen().get_tab() == tabs.TETRIS and switch_cooldown <= 0:
@@ -806,6 +787,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
 
                     while not get_screen().keyboard.key_pressed("esc"):
                         get_screen().update()
+                        await asyncio.sleep(0)
 
                     get_screen().clear_tab(tabs.WIN)
                     wants_to_quit = True
@@ -819,14 +801,5 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
             print("Wants to quit")
 
         get_screen().update()
-        
-        intervalo = time.perf_counter() - tempo
-        if intervalo < MAX_TEMPO_PASSADO:
-            ticks += 1
-            fps = ticks/intervalo
-            fps_text_value.value = int(fps)
-        else:
-            tempo = time.perf_counter()
-            ticks = 0
-            last_average_fps = fps
+        await asyncio.sleep(0)
     wants_to_quit = False
