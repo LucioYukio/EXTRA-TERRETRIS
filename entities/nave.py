@@ -80,7 +80,7 @@ class Nave(Body):
         self.tags.append("player")
         self.damage_from_tags = {"enemy_projectile", "asteroid"}
         self.keyboard = get_screen().keyboard
-        self.speed = 200
+        self.speed : float = 200
         self.direction = Vector2(0, 0)
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
 
@@ -112,6 +112,12 @@ class Nave(Body):
         self.categorie = "nave"
         self.bullet_instance_counter: List[int] = [0]
         self.max_bullet_count = -1
+
+        shield_size = int(max(width, height))
+        self.shield = Object("assets/images/shield.png", shield_size, shield_size, tabs, 1, z=2)
+        self.shield.set_total_frames(4)
+        self.shield.frame_duration = 0.01
+        self.shield.visible = False
 
     def shoot(self):
         if self.max_bullet_count == -1 or self.bullet_instance_counter[0] < self.max_bullet_count:
@@ -196,6 +202,13 @@ class Nave(Body):
         for rastro in self.rastro.rastros:
             get_screen().remove_object_by_id(rastro.get_id())
         get_screen().remove_object_by_id(self.rastro.get_id())
+        self.shield.wants_to_die = True
+
+    def activate_shield(self):
+        self.shield.visible = True
+
+    def deactivate_shield(self):
+        self.shield.visible = False
 
     def check_damage(self):
         if self.damage_cooldown > 0:
@@ -266,3 +279,6 @@ class Nave(Body):
         self.rastro.pos.y = self.pos.y
         self.rastro.delta_time = self.delta_time
         self.rastro.update()
+
+        self.shield.pos.x = self.pos.x + (self.get_width() - self.shield.get_width()) / 2
+        self.shield.pos.y = self.pos.y + (self.get_height() - self.shield.get_height()) / 2

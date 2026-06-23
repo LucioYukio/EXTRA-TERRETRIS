@@ -11,7 +11,8 @@ from engine.object import Object
 from engine.vector2 import Vector2
 from entities.asteroid import Asteroid
 from entities.background import Background
-from entities.enemy import Enemy, EnemySin
+from entities.body import Body
+from entities.enemy import Enemy, EnemyBullet, EnemySin
 from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
 from entities.nave import DEFAULT_NAVE_SIZE, Nave
 from entities.powerstack import PowerStack
@@ -407,6 +408,132 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
             asteroid.pos.y = TELA_H * 2
             asteroid.health = asteroid.total_health
         enemy_spawn_cooldown = ENEMY_WAIT_TIME
+        
+    # --------------------------- FUNCOES PODERES ------------------------
+    
+    def cura(side: int, amount: int = 1):
+        if side == 0:
+            nave1.health += amount
+        else:
+            nave2.health += amount
+    
+    NAVE_SPEED_INCREASE : float = 2
+    # quando nave inimiga acaba de levar dano e speed_increased = True,
+    # dividir por NAVE_SPEED_INCREASE
+    speed_increased1 : bool = False
+    speed_increased2 : bool = False
+    def increase_speed(side: int):
+        nonlocal speed_increased1, speed_increased2
+        if side == 0:
+            if not speed_increased1:
+                nave1.speed *= NAVE_SPEED_INCREASE
+                speed_increased1 = True
+        else:
+            if not speed_increased2:
+                nave2.speed *= NAVE_SPEED_INCREASE
+                speed_increased2 = True
+   
+    ENEMY_SPEED_DECREASE : float = 0.75
+    # quando voce leva dano e enemy_speed_decreased = True,
+    # dividir por ENEMY_SPEED_DECREASE a velocidade do seu inimigo
+    enemy_speed_decreased1 : bool = False
+    enemy_speed_decreased2 : bool = False
+    def decrease_enemy_speed(side: int):
+        nonlocal enemy_speed_decreased1, enemy_speed_decreased2
+        if side == 0:
+            if not enemy_speed_decreased1:
+                nave2.speed *= ENEMY_SPEED_DECREASE
+                enemy_speed_decreased1 = True
+        else:
+            if not enemy_speed_decreased2:
+                nave1.speed *= ENEMY_SPEED_DECREASE
+                enemy_speed_decreased2 = True
+    
+    def side_shoot(side: int):
+        b : EnemyBullet = EnemyBullet("assets/images/bullet_red.png", 1-side, [tabs.NAVE], nave1 if side else nave2, 0.01)
+        b.direction = Vector2(1-side,0)
+        b.pos = nave1.pos.copy() if side == 0 else nave2.pos.copy()
+        b.set_width(48)
+        b.set_height(48)
+        b.z = 6
+        b.horizontal_bounds = Vector2(-1,-1)
+    
+    def kill_all(side: int):
+        for obj in get_screen().get_objs_in_tab(tabs.NAVE):
+            if isinstance(obj, Enemy) and obj.side == side:
+                obj.wants_to_die = True
+            if isinstance(obj, EnemyBullet) and obj.side == side:
+                obj.wants_to_die = True
+        fade = WhiteFadeOut([tabs.NAVE], 0.2, int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), REF_RES[1])
+        fade.pos.x = SIDEPANEL_W
+    
+    SHIELD_UP_DURATION : float = 5
+    def shield_up(side: int):
+        if side == 0:
+            nave1.damage_cooldown = SHIELD_UP_DURATION
+            nave1.activate_shield()
+        else:
+            nave2.damage_cooldown = SHIELD_UP_DURATION
+            nave2.activate_shield()
+
+    # --------------------------- PODERES TETRIS ------------------------
+
+    def add_blocked_bar(side: int):
+        if side == 0:
+            tetris2.add_blocked_line_bellow()
+        else:
+            tetris1.add_blocked_line_bellow()
+
+    def erase_bottom(side: int):
+        target = tetris1 if side == 0 else tetris2
+        for i in range(target.lines - 1, -1, -1):
+            row = target.matrix[i]
+            if any(t == 2 for t in row):
+                target.matrix[i] = [0] * target.columns
+                break
+
+    def new_piece(side: int):
+        if side == 0:
+            tetris1.choice_piece()
+        else:
+            tetris2.choice_piece()
+
+    TETRIS_GRAVITY_INCREASE: float = 2
+    tetris_gravity_increased1: bool = False
+    tetris_gravity_increased2: bool = False
+    def increase_enemy_gravity(side: int):
+        nonlocal tetris_gravity_increased1, tetris_gravity_increased2
+        if side == 0:
+            if not tetris_gravity_increased1:
+                tetris2.gravity_speed *= TETRIS_GRAVITY_INCREASE
+                tetris_gravity_increased1 = True
+        else:
+            if not tetris_gravity_increased2:
+                tetris1.gravity_speed *= TETRIS_GRAVITY_INCREASE
+                tetris_gravity_increased2 = True
+
+    TETRIS_GRAVITY_DECREASE: float = 0.5
+    tetris_gravity_decreased1: bool = False
+    tetris_gravity_decreased2: bool = False
+    def decrease_your_gravity(side: int):
+        nonlocal tetris_gravity_decreased1, tetris_gravity_decreased2
+        if side == 0:
+            if not tetris_gravity_decreased1:
+                tetris1.gravity_speed *= TETRIS_GRAVITY_DECREASE
+                tetris_gravity_decreased1 = True
+        else:
+            if not tetris_gravity_decreased2:
+                tetris2.gravity_speed *= TETRIS_GRAVITY_DECREASE
+                tetris_gravity_decreased2 = True
+
+    def clear_grid(side: int):
+        if side == 0:
+            tetris1.build_matrix()
+        else:
+            tetris2.build_matrix()
+
+    #----------------    
+    
 
     # ------------------------- Game Loop ----------------------------
 
@@ -441,6 +568,10 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 get_screen().set_tab(tabs.NAVE)
 
         if get_screen().get_tab() == tabs.NAVE and switch_cooldown <= 0:
+            
+            if get_screen().keyboard.key_pressed("l"):
+                kill_all(0)
+            
             #----------------------- Enemy Spawn ------------------------------
             if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
                 spawn_enemy(get_random_pos(0), [tabs.NAVE], 0)
@@ -452,9 +583,28 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                     reset_enemy(o)
             
             if nave1.damage_cooldown > 0:
+                # nave1 acabou de levar dano
                 purple_alien_display.hurt()
+                
+                if speed_increased2:
+                    nave2.speed /= NAVE_SPEED_INCREASE
+                    speed_increased2 = False
+                    
+                if enemy_speed_decreased1:
+                    nave2.speed /= ENEMY_SPEED_DECREASE
+                    enemy_speed_decreased1 = False
+                    
             if nave2.damage_cooldown > 0:
+                # nave2 acabou de levar dano
                 green_alien_display.hurt()
+                
+                if speed_increased1:
+                    nave1.speed /= NAVE_SPEED_INCREASE
+                    speed_increased1 = False
+                
+                if enemy_speed_decreased2:
+                    nave1.speed /= ENEMY_SPEED_DECREASE
+                    enemy_speed_decreased2 = False
                 
             if nave1.wants_to_die and not nave1.dead:
                 auras[1] += AURA_FOR_WINNER_NAVE

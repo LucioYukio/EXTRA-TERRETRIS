@@ -30,7 +30,7 @@ class Object:
         self._z = z
         self.offset_multiplier = 0
         self.anchor = self
-        self.frame_duration = 1
+        self.frame_duration : float = 1
         self.total_frames = 1
 
         self.set_width(width)
