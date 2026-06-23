@@ -1,23 +1,24 @@
 from copy import copy
 from random import randrange, uniform
 import time
+from typing import List
 
-from asteroid import Asteroid
-from background import Background
-from enemy import Enemy, EnemySin
-from nave import DEFAULT_NAVE_SIZE, Nave
-from persondisplay import GreenAlienDisplay, PurpleAlienDisplay
-from screen import (List, Vector2, TELA_W, TELA_H, REF_RES, clamp,
-                    get_screen, Object, update_res_scale)
-import sounds
-from tetris import Tetris
-from text import CompositeText, NumberText
-import tabs
-
-from fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
-from preload import preload_images
-from winlosescreens import LoseScreen, WinScreen
-from powerstack import PowerStack
+from config import sounds
+from config import tabs
+from config.preload import preload_images
+from engine.const import TELA_W, TELA_H, REF_RES, clamp, update_res_scale, get_screen
+from engine.object import Object
+from engine.vector2 import Vector2
+from entities.asteroid import Asteroid
+from entities.background import Background
+from entities.enemy import Enemy, EnemySin
+from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
+from entities.nave import DEFAULT_NAVE_SIZE, Nave
+from entities.powerstack import PowerStack
+from entities.winlosescreens import LoseScreen, WinScreen
+from tetris.tetris import Tetris
+from ui.persondisplay import GreenAlienDisplay, PurpleAlienDisplay
+from ui.text import CompositeText, NumberText
 
 
 def play_game(dificuldade: str = "normal", win_points: int = 3):

@@ -1,9 +1,11 @@
-from button import Button
-import sounds
-import tabs
-from screen import (List, Vector2, TELA_W, TELA_H, REF_RES,
-                    get_screen, update_res_scale)
-from text import Text
+from typing import List
+
+from config import sounds
+from config import tabs
+from engine.const import TELA_W, TELA_H, REF_RES, get_screen, update_res_scale
+from engine.vector2 import Vector2
+from ui.button import Button
+from ui.text import Text
 import gameplay
 
 #------------------------- CONSTANTES ---------------------------------------------------------
