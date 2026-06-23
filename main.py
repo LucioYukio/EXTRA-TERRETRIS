@@ -3,6 +3,7 @@ from typing import List
 from config import sounds
 from config import tabs
 from engine.const import TELA_W, TELA_H, REF_RES, get_screen, update_res_scale
+from engine.object import Object
 from engine.vector2 import Vector2
 from ui.button import Button
 from ui.text import Text
@@ -19,7 +20,9 @@ DEFAULT_LETTER_SIZE = Vector2(32,32)
 
 # Menu principal
 
-difficulty_names = ["lento", "normal", "frenetico"]
+title : Object = Object("assets/images/title_card_white.png", REF_RES[0], REF_RES[1], [tabs.MENU_PRINCIPAL])
+
+difficulty_names = ["lento", "normal", "ultra-sonico"]
 difficulty_buttons : List[Button] = []
 for name in difficulty_names:
     difficulty_buttons.append(Button(name, DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL]))
@@ -49,45 +52,55 @@ while True:
         sounds.MUSICA.stop()
     match get_screen().get_tab():
         case tabs.MENU_PRINCIPAL:
-            # position and update difficulty buttons
-            label_text = "Dificuldade: " + difficulty_names[selected_difficulty]
+            center_x = [TELA_W // 8, TELA_W // 2 + 200, TELA_W * 7 // 8]
+            bottom_y = TELA_H - 20
+
+            # Difficulty group (anchored from bottom, growing up)
+            difficulty_label.pos.x = center_x[0] - difficulty_label.get_width() // 2
+            difficulty_label.pos.y = bottom_y - 194
+
+            label_text = "Velocidade: " + difficulty_names[selected_difficulty]
             if difficulty_label.text != label_text:
                 difficulty_label.text = label_text
                 difficulty_label.build_text()
-            difficulty_label.pos.x = TELA_W/2 - difficulty_label.get_width()/2
-            difficulty_label.pos.y = TELA_H/2 - 135
 
             for i, btn in enumerate(difficulty_buttons):
-                btn.pos.y = TELA_H/2 - 70 + i * 48
-                btn.pos.x = TELA_W/2 - btn.get_width()/2
+                btn.pos.x = center_x[0] - btn.get_width() // 2
+                btn.pos.y = bottom_y - 140 + i * 48
                 if btn.is_just_pressed():
                     selected_difficulty = i
                 btn.text.set_color_index(1 if i == selected_difficulty else 0)
 
-            # position and update points buttons
+            # Rounds group (anchored from bottom, growing up)
+            points_label.pos.x = center_x[1] - points_label.get_width() // 2
+            points_label.pos.y = bottom_y - 194
+
             pts_label_text = "Pontos: " + str(points_values[selected_points])
             if points_label.text != pts_label_text:
                 points_label.text = pts_label_text
                 points_label.build_text()
-            points_label.pos.x = TELA_W/2 - points_label.get_width()/2
-            points_label.pos.y = difficulty_buttons[-1].pos.y + difficulty_buttons[-1].get_height() + 20
 
             for i, btn in enumerate(points_buttons):
-                btn.pos.y = points_label.pos.y + points_label.get_height() + 5 + i * 48
-                btn.pos.x = TELA_W/2 - btn.get_width()/2
+                btn.pos.x = center_x[1] - btn.get_width() // 2
+                btn.pos.y = bottom_y - 140 + i * 48
                 if btn.is_just_pressed():
                     selected_points = i
                 btn.text.set_color_index(1 if i == selected_points else 0)
 
-            start_button.pos.y = points_buttons[-1].pos.y + points_buttons[-1].get_height() + 30
-            start_button.pos.x = TELA_W/2 - start_button.get_width()/2
+            # Start group
+            start_button.pos.x = center_x[2] - start_button.get_width() // 2
+            start_button.pos.y = bottom_y - 90
 
             if start_button.is_just_pressed():
                 get_screen().set_tab(tabs.LOADING)
         case tabs.LOADING:
+            loading_text.pos.x = TELA_W // 2 - loading_text.get_width() // 2
+            loading_text.pos.y = TELA_H // 2 - loading_text.get_height() // 2
             print("na tab de loading")
             get_screen().clear_tab(tabs.NAVE)
+            get_screen().clear_tab(tabs.NAVE_LOJA)
             get_screen().clear_tab(tabs.TETRIS)
+            get_screen().clear_tab(tabs.TETRIS_LOJA)
             gameplay.play_game(difficulty_names[selected_difficulty], points_values[selected_points])
             get_screen().set_tab(tabs.MENU_PRINCIPAL)
     get_screen().update()

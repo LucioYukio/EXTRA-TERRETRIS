@@ -1,5 +1,8 @@
 """Documento que guarda tabs, como um enum"""
 NAVE = 0
-TETRIS = 1
-MENU_PRINCIPAL = 2
-LOADING = 3
+NAVE_LOJA = 1
+TETRIS = 2
+TETRIS_LOJA = 3
+MENU_PRINCIPAL = 4
+LOADING = 5
+WIN = 6

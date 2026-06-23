@@ -255,6 +255,8 @@ class Nave(Body):
         self.rastro.propagate_bounds()
 
     def update(self):
+        if not self.enabled:
+            return
         super().update()
         if self.rastro.horizontal_bounds != self.horizontal_bounds:
             self.propagate_bounds()
@@ -293,6 +295,7 @@ class Nave(Body):
             self.damage_cooldown -= self.delta_time
         else:
             self.visible = True
+            self.deactivate_shield()
 
         self.rastro.pos.x = self.pos.x
         self.rastro.pos.y = self.pos.y

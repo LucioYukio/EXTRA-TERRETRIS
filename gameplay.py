@@ -16,11 +16,12 @@ from entities.enemy import Enemy, EnemyBullet, EnemySin
 from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
 from entities.nave import DEFAULT_NAVE_SIZE, Nave
 from entities.powerstack import PowerStack
+from entities.powerstores import NavePowerStore, TetrisPowerStore
 from entities.winlosescreens import LoseScreen, WinScreen
 from entities import powers
 from tetris.tetris import Tetris
 from ui.persondisplay import GreenAlienDisplay, PurpleAlienDisplay
-from ui.text import CompositeText, NumberText
+from ui.text import CompositeText, NumberText, Text
 
 
 def play_game(dificuldade: str = "normal", win_points: int = 3):
@@ -33,7 +34,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     fps : float = 0
     last_average_fps : float = 9999
 
-    difficulty_mult = {"lento": 0.5, "normal": 1, "frenetico": 2}.get(dificuldade, 1)
+    difficulty_mult = {"lento": 0.5, "normal": 1, "frenetico": 3}.get(dificuldade, 1)
 
     update_res_scale([TELA_W, TELA_H])
     screen = get_screen()
@@ -55,7 +56,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     MAX_ENEMY_COUNT : int = 10 *2
     MAX_ENEMY_BULLET_COUNT : int = 15 *2
     
-    AURA_FOR_WINNER_NAVE = 100 # quantidade adicional de aura que a nave ganhadora ganha
+    AURA_REWARD_MULTIPLIER = 10
 
     TETRIS_LINES = 20
     TETRIS_COLUMNS = 10
@@ -76,7 +77,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     ASTEROID_HEALTH_MULTIPLIER : float = 10
     ASTEROID_BASE_POINT_VALUE : float = 30
     
-    TETRIS_POINTS_MULTIPLIER : float = 20 # cada ponto em tetris vale isso
+    TETRIS_POINTS_MULTIPLIER : float = 5 # cada ponto em tetris vale isso
 
     auras : List[int] = [0, 0]
     points : List[int] = [0, 0]
@@ -162,9 +163,10 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
 
     #---------------- TABS -----------------
 
-    tabs.NAVE = 0
-
     get_screen().bg_imgs[tabs.NAVE] = "assets/images/double_bg.png"
+    get_screen().bg_imgs[tabs.TETRIS] = "assets/images/black_pixel.png"
+    get_screen().bg_imgs[tabs.NAVE_LOJA] = "assets/images/white_circuit_background.png"
+    get_screen().bg_imgs[tabs.TETRIS_LOJA] = "assets/images/white_circuit_background.png"
 
 
 
@@ -278,8 +280,6 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     fps_text_value = fps_text.add_number(3)
 
 
-    tabs.TETRIS = 1
-
     piece_size = Vector2(REF_RES[1]/TETRIS_LINES, REF_RES[1]/TETRIS_LINES)
 
     tetris1 : Tetris = Tetris(
@@ -302,20 +302,30 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     tetris2.grid.overlay_img = "assets/images/tech_background_green_animated.png"
     tetris2.grid.build_grids()
 
-    tetris_powers1: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS], z=5,
+    tetris_powers1: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS, tabs.TETRIS_LOJA], z=5,
                                             image="assets/images/powers_tetris.png")
     tetris_powers1.values = tetris1.powers
     tetris_powers1.pos.x = SIDEPANEL_W/2 - tetris_powers1.get_width()/2
     tetris_powers1.pos.y = 176
 
-    tetris_powers2: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS], z=5,
+    tetris_powers2: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS, tabs.TETRIS_LOJA], z=5,
                                             image="assets/images/powers_tetris.png")
     tetris_powers2.values = tetris2.powers
     tetris_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - tetris_powers2.get_width()/2
     tetris_powers2.pos.y = 176
 
+    nave_store: NavePowerStore = NavePowerStore(
+        [nave1.powers, nave2.powers], auras,
+        [tabs.NAVE_LOJA], [control_esquemes[1], control_esquemes[0]],
+    )
+
+    tetris_store: TetrisPowerStore = TetrisPowerStore(
+        [tetris1.powers, tetris2.powers], auras,
+        [tabs.TETRIS_LOJA], [control_esquemes[1], control_esquemes[0]],
+    )
+
     # general
-    aura_text : CompositeText = CompositeText(DEFAULT_LETTER_SIZE, [tabs.NAVE, tabs.TETRIS], color_index=1, background=True)
+    aura_text : CompositeText = CompositeText(DEFAULT_LETTER_SIZE, [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], color_index=1, background=True)
     aura1_text_value = aura_text.add_number(4)
     aura_text.add_text(" ")
     aura2_text_value = aura_text.add_number(4)
@@ -323,32 +333,32 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [tabs.NAVE, tabs.TETRIS], z=3)
     divisao.pos.x = TELA_W/2 - divisao.get_width()/2
 
-    sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.TETRIS], z=3)
+    sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3)
     sidepanel1.categorie = "sidepanel"
     
-    points_text1 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.TETRIS], 1, True)
+    points_text1 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True)
 
-    purple_alien_display : PurpleAlienDisplay = PurpleAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.TETRIS])
+    purple_alien_display : PurpleAlienDisplay = PurpleAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], lambda: (nave1.health, nave1.default_health))
     purple_alien_display.pos.x = sidepanel1.get_center().x - purple_alien_display.get_width()/2
     purple_alien_display.pos.y = TELA_H - purple_alien_display.get_height()
 
-    nave_powers1 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE], z=5)
+    nave_powers1 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
     nave_powers1.values = nave1.powers
     nave_powers1.pos.x = SIDEPANEL_W/2 - nave_powers1.get_width()/2
     nave_powers1.pos.y = 176
 
     #--------
-    sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.TETRIS], z=3)
+    sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3)
     sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
     
-    points_text2 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.TETRIS], 1, True)
+    points_text2 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True)
     points_text2.pos.x = TELA_W - SIDEPANEL_W
 
-    green_alien_display : GreenAlienDisplay = GreenAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.TETRIS])
+    green_alien_display : GreenAlienDisplay = GreenAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], lambda: (nave2.health, nave2.default_health))
     green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width()/2
     green_alien_display.pos.y = TELA_H - green_alien_display.get_height()
     
-    nave_powers2 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE], z=5)
+    nave_powers2 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
     nave_powers2.values = nave2.powers
     nave_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - nave_powers2.get_width()/2
     nave_powers2.pos.y = 176
@@ -384,11 +394,13 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     
     
     # -----------
+    round_over = False
 
     # ------------------------- Reset ----------------------------
 
     def reset_game():
-        nonlocal enemy_spawn_cooldown
+        nonlocal enemy_spawn_cooldown, round_over
+        round_over = False
         tetris1.reset()
         tetris2.reset()
         tetris1.enabled = True
@@ -476,7 +488,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
             if isinstance(obj, EnemyBullet) and obj.side == side:
                 obj.wants_to_die = True
         fade = WhiteFadeOut([tabs.NAVE], 0.2, int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), REF_RES[1])
-        fade.pos.x = SIDEPANEL_W
+        fade.pos.x = SIDEPANEL_W if side == 0 else TELA_W/2 + DIVISOR_W/2
     
     SHIELD_UP_DURATION : float = 5
     def shield_up(side: int):
@@ -499,8 +511,9 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
         target = tetris1 if side == 0 else tetris2
         for i in range(target.lines - 1, -1, -1):
             row = target.matrix[i]
-            if any(t == 2 for t in row):
-                target.matrix[i] = [0] * target.columns
+            if any(t != 0 for t in row):
+                target.matrix.pop(i)
+                target.matrix.insert(0, [0] * target.columns)
                 break
 
     def new_piece(side: int):
@@ -636,35 +649,37 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 nave_use_power(power, 0)
                 nave1.wants_to_power = False
             
-            if nave1.wants_to_die and not nave1.dead:
-                auras[1] += AURA_FOR_WINNER_NAVE
+            if nave1.wants_to_die and not nave1.dead and not round_over:
+                auras[1] += int(nave2.health * AURA_REWARD_MULTIPLIER)
                 lose_screens[0].show(3)
                 win_screens[1].show(3)
                 nave1.dead = True
                 nave1.enabled = False
+                round_over = True
                 switch_cooldown = 3
-                switch_target = tabs.TETRIS
+                switch_target = tabs.TETRIS_LOJA
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
-                sounds.ROUND_END.play()
+                sounds.SABOTAGE_INCOMING.play()
                 points[1] += 1
             if nave2.wants_to_power:
                 power = nave2.pop_power()
                 nave_use_power(power, 1)
                 nave2.wants_to_power = False
             
-            if nave2.wants_to_die and not nave2.dead:
-                auras[0] += AURA_FOR_WINNER_NAVE
+            if nave2.wants_to_die and not nave2.dead and not round_over:
+                auras[0] += int(nave1.health * AURA_REWARD_MULTIPLIER)
                 lose_screens[1].show(3)
                 win_screens[0].show(3)
                 nave2.dead = True
                 nave2.enabled = False
+                round_over = True
                 switch_cooldown = 3
-                switch_target = tabs.TETRIS
+                switch_target = tabs.TETRIS_LOJA
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
-                sounds.ROUND_END.play()
+                sounds.SABOTAGE_INCOMING.play()
                 points[0] += 1
-            
-            
+
+
             asteroid_bg1.pos.y += BG_VELOCITY
             if asteroid_bg1.pos.y >= -asteroid_bg1.get_height()/3:
                 asteroid_bg1.pos.y -= asteroid_bg1.get_height()/3
@@ -687,24 +702,24 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
             tetris2.pos.x = (TELA_W/2 + DIVISOR_W/2 + TELA_W - SIDEPANEL_W)/2 - tetris2.get_width()/2
             
             if tetris1.check_loss():
-                auras[1] += AURA_FOR_WINNER_NAVE
+                auras[1] += int(nave2.health * AURA_REWARD_MULTIPLIER)
                 lose_screens[0].show(3)
                 win_screens[1].show(3)
                 tetris1.enabled = False
                 tetris2.enabled = False
                 switch_cooldown = 3
-                switch_target = tabs.NAVE
+                switch_target = tabs.NAVE_LOJA
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
                 points[1] += 1
             if tetris2.check_loss():
-                auras[0] += AURA_FOR_WINNER_NAVE
+                auras[0] += int(nave1.health * AURA_REWARD_MULTIPLIER)
                 lose_screens[1].show(3)
                 win_screens[0].show(3)
                 tetris1.enabled = False
                 tetris2.enabled = False
                 switch_cooldown = 3
-                switch_target = tabs.NAVE
+                switch_target = tabs.NAVE_LOJA
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
                 points[0] += 1
@@ -727,6 +742,26 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 tetris2.points = 0
 
 
+        if get_screen().get_tab() == tabs.TETRIS_LOJA and switch_cooldown <= 0:
+            tetris_store.pos.x = TELA_W / 2 - tetris_store.get_width() / 2
+            tetris_store.pos.y = TELA_H / 2 - tetris_store.get_height() / 2
+            tetris_store.update()
+            if tetris_store.ready:
+                reset_game()
+                get_screen().set_tab(tabs.TETRIS)
+                tetris_store.reset()
+                enemy_spawn_cooldown = ENEMY_WAIT_TIME
+
+        if get_screen().get_tab() == tabs.NAVE_LOJA and switch_cooldown <= 0:
+            nave_store.pos.x = TELA_W / 2 - nave_store.get_width() / 2
+            nave_store.pos.y = TELA_H / 2 - nave_store.get_height() / 2
+            nave_store.update()
+            if nave_store.ready:
+                reset_game()
+                get_screen().set_tab(tabs.NAVE)
+                nave_store.reset()
+                enemy_spawn_cooldown = ENEMY_WAIT_TIME
+
         # --------
         
         # drain cooldowns
@@ -746,6 +781,33 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
             if switch_cooldown <= 0 and switch_target >= 0:
                 reset_game()
                 if points[0] >= win_points or points[1] >= win_points:
+                    winner = 0 if points[0] >= win_points else 1
+                    winner_name = "Purple" if winner == 0 else "Green"
+                    alien_img = "assets/images/alien_purple_idle.png" if winner == 0 else "assets/images/alien_green_idle.png"
+
+                    Object("assets/images/black_pixel.png", TELA_W, TELA_H, [tabs.WIN], 0)
+
+                    win_text = Text(f"{winner_name} took over the galaxy!", DEFAULT_LETTER_SIZE, [tabs.WIN], color_index=1)
+                    win_text.pos.x = int(TELA_W/2 - win_text.get_width()/2)
+                    win_text.pos.y = int(TELA_H/2 - 200)
+
+                    alien = Object(alien_img, 200, 250, [tabs.WIN], 1)
+                    alien.set_total_frames(67 if winner == 1 else 40)
+                    alien.frame_duration = 0.05
+                    alien.pos.x = int(TELA_W/2 - alien.get_width()/2)
+                    alien.pos.y = int(TELA_H/2 - 50)
+
+                    esc_text = Text("Press ESC to return", SMALL_LETTER_SIZE, [tabs.WIN], color_index=1)
+                    esc_text.pos.x = int(TELA_W/2 - esc_text.get_width()/2)
+                    esc_text.pos.y = int(TELA_H - 100)
+
+                    switch_target = -1
+                    get_screen().set_tab(tabs.WIN)
+
+                    while not get_screen().keyboard.key_pressed("esc"):
+                        get_screen().update()
+
+                    get_screen().clear_tab(tabs.WIN)
                     wants_to_quit = True
                 else:
                     get_screen().set_tab(switch_target)
