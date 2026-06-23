@@ -3,6 +3,7 @@ import random
 
 from screen import Object, Vector2, List, EMPTY_PIXEL, get_screen
 from typing import Tuple
+import sounds
 from tetrisgrid import TetrisGrid
 
 # Dica(?): recomendo evitar usar vector2 aqui pois
@@ -50,6 +51,9 @@ class Piece:
         center = self.get_form().center
         self.line -= center[0]
         self.column -= center[1]
+        
+        sounds.TETRIS_RODAR.stop()
+        sounds.TETRIS_RODAR.play()
     
     def get_form(self):
         if self.forms:
@@ -286,6 +290,9 @@ class Tetris(Object):
                 self.matrix.insert(0, [0] * self.columns)
                 self.points += 1 + sequencia
                 sequencia += 1
+                
+                sounds.TETRIS_LIMPA_LINHA.stop()
+                sounds.TETRIS_LIMPA_LINHA.play()
 
 
     ## preenche a ultima posicao livre
@@ -433,6 +440,9 @@ class Tetris(Object):
                 coluna = int(self.curr_piece.column) + j
 
                 self.matrix[linha][coluna] = 2
+            
+        sounds.TETRIS_COLAR.stop()
+        sounds.TETRIS_COLAR.play()
 
     def choice_piece(self):
         old_piece = self.curr_piece

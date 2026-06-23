@@ -15,3 +15,5 @@ TETRIS_COLAR       = Sound("assets/sounds/tetris_glue.ogg"      )
 
 # geral
 ROUND_END          = Sound("assets/sounds/next_confront.ogg")
+ROUND_END.set_volume(100)
+BUTTON             = Sound("assets/sounds/button.ogg"       )

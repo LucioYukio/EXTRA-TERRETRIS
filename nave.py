@@ -4,6 +4,7 @@ from body import Body
 from effect import Effect
 from projectile import Projectile
 from screen import Vector2, Object, List, get_screen, EMPTY_PIXEL
+import sounds
 
 DEFAULT_NAVE_SIZE : Vector2 = Vector2(69, 83)
 DEFAULT_NAVE_HITBOX : Vector2 = Vector2(20, 30)
@@ -25,6 +26,10 @@ class Bullet(Projectile):
         }
         
         self.categorie = "bullet"
+        
+        # tocar som de bala disparada
+        sounds.TIRO.stop()
+        sounds.TIRO.play()
     
     def update(self):
         super().update()
@@ -46,6 +51,10 @@ class Bullet(Projectile):
         
         explosion.pos.x = target_coords.x
         explosion.pos.y = target_coords.y
+        
+        # tocar som de bala destruida
+        sounds.ACERTO.stop()
+        sounds.ACERTO.play()
 
 class FollowingBullet(Bullet):
     """Follows the target, turning at turning speed.
@@ -149,7 +158,7 @@ class Nave(Body):
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
         
         """Stats vars"""
-        self.default_health : float = 100
+        self.default_health : float = 5
         self.health : float = self.default_health
         self.score : int = 0
         # tempo ate poder levar dano de novo

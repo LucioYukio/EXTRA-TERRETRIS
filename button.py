@@ -7,6 +7,7 @@
 # so eh acessivel por funcao
 
 from screen import Object, Vector2, List, Mouse, get_screen, EMPTY_PIXEL, res_scale
+import sounds
 from text import Text
 
 BLACK_PIXEL : str = "assets/images/black_pixel.png"
@@ -91,6 +92,11 @@ class Button(Object):
             
     def update(self):
         super().update()
+        
+        if self.is_just_pressed():
+            sounds.BUTTON.stop()
+            sounds.BUTTON.play()
+            
         self.black_sprite.pos.x = self.pos.x
         self.black_sprite.pos.y = self.pos.y
         self.white_sprite.pos.x = self.black_sprite.pos.x - self._border_width
@@ -103,3 +109,4 @@ class Button(Object):
         self.white_sprite.visible = self.is_hovered()
         self.black_sprite.visible =  not self.is_pressed()
         self.text.set_color_index(not self.is_pressed())
+        

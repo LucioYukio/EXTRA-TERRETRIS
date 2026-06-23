@@ -409,6 +409,8 @@ def play_game():
     
     # tocar musica
     sounds.MUSICA.loop = True
+    sounds.MUSICA.set_volume(20)
+    sounds.MUSICA.stop()
     sounds.MUSICA.play()
     
     while not wants_to_quit:
@@ -441,6 +443,8 @@ def play_game():
                 nave1.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.TETRIS
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.ROUND_END.play()
             if nave2.wants_to_die and not nave2.dead:
                 auras[0] += AURA_FOR_WINNER_NAVE
                 lose_screens[1].show(3)
@@ -448,6 +452,8 @@ def play_game():
                 nave2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.TETRIS
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.ROUND_END.play()
             
             
             
@@ -480,6 +486,8 @@ def play_game():
                 tetris2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.NAVE
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.ROUND_END.play()
             if tetris2.check_loss():
                 auras[0] += AURA_FOR_WINNER_NAVE
                 lose_screens[1].show(3)
@@ -488,6 +496,8 @@ def play_game():
                 tetris2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.NAVE
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.ROUND_END.play()
 
             if tetris1.points > 0:
                 auras[0] += tetris1.points
@@ -514,6 +524,7 @@ def play_game():
                 reset_game()
                 get_screen().set_tab(switch_target)
                 switch_target = -1
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume*2)
         
         if get_screen().keyboard.key_pressed("esc"):
             wants_to_quit = True

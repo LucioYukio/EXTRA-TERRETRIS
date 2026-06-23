@@ -3,6 +3,7 @@ from typing import Dict, Set
 
 from effect import Effect
 from screen import Object, List, Vector2, get_screen, res_scale
+import sounds
 
 # side : List[body]
 bodies : Dict = {
@@ -144,6 +145,9 @@ class Body(Object):
         if self.anchor != self:
             explosion.anchor = self.anchor
             explosion.offset_multiplier = self.offset_multiplier
+
+        sounds.EXPLOSAO.stop()
+        sounds.EXPLOSAO.play()
 
     def update(self):
         super().update()

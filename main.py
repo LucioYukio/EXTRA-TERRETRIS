@@ -4,6 +4,7 @@ from random import randrange
 import time
 
 from button import Button
+import sounds
 import tabs
 from asteroid import Asteroid
 from background import Background
@@ -53,6 +54,8 @@ loading_text : Text = Text("Carregando...", DEFAULT_LETTER_SIZE, [tabs.LOADING],
 
 get_screen().set_tab(tabs.MENU_PRINCIPAL)
 while True:
+    if sounds.MUSICA.is_playing():
+        sounds.MUSICA.stop()
     match get_screen().get_tab():
         case tabs.MENU_PRINCIPAL:
             if start_button.is_just_pressed():

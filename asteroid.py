@@ -2,6 +2,7 @@ from effect import Effect
 from nave import Bullet
 from projectile import Projectile
 from screen import Vector2, List, TELA_H
+import sounds
 
 class Debri(Projectile):
     def __init__(self, image, width: int, height: int, side: int, total_health: float, tabs: List[int]):
@@ -101,31 +102,15 @@ class Asteroid(Projectile):
         self.pos.y = TELA_H
         self.health = self.total_health
         self.points_list[self.side] += self.points_value
-        
     
     def spawn_explosion(self):
-        explosion : Effect = Effect(
-            self.explosion_info["img"],
-            self.explosion_info["frames"],
-            self.explosion_info["duration"],
-            self.explosion_info["width"],
-            self.explosion_info["height"],
-            self.get_tabs()
-        )
-        
-        target_coords : Vector2 = self.get_center()
-        target_coords.x -= explosion.get_width()/2
-        target_coords.y -= explosion.get_height()/2
-        
-        explosion.pos.x = target_coords.x
-        explosion.pos.y = target_coords.y
-        if self.anchor != self:
-            explosion.anchor = self.anchor
-            explosion.offset_multiplier = self.offset_multiplier
+        super().spawn_explosion()
+        sounds.ASTEROIDE.stop()
+        sounds.ASTEROIDE.play()
     
     def spawn_debri(self,image: str, direction: Vector2):
         w, h = self.get_width()//2, self.get_height()//2
-        debri : Debri = Debri(image, w, h, self.side, self.total_health//4, self.get_tabs())
+        debri : Debri = Debri(image, int(w), int(h), self.side, self.total_health//4, self.get_tabs())
         direction.normalize()
         debri.direction = direction
         debri.speed = self.speed*2
