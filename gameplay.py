@@ -17,7 +17,7 @@ import tabs
 from fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
 from preload import preload_images
 from winlosescreens import LoseScreen, WinScreen
-
+from powerstack import PowerStack
 
 
 def play_game(dificuldade: str = "normal", win_points: int = 3):
@@ -319,6 +319,12 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     purple_alien_display.pos.x = sidepanel1.get_center().x - purple_alien_display.get_width()/2
     purple_alien_display.pos.y = TELA_H - purple_alien_display.get_height()
 
+    nave_powers1 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE], z=5)
+    nave_powers1.values = [0, 1, 2, 3, 1, 3]
+    nave_powers1.pos.x = SIDEPANEL_W/2 - nave_powers1.get_width()/2
+    nave_powers1.pos.y = 176
+
+    #--------
     sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.TETRIS], z=3)
     sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
     
@@ -328,6 +334,11 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     green_alien_display : GreenAlienDisplay = GreenAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.TETRIS])
     green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width()/2
     green_alien_display.pos.y = TELA_H - green_alien_display.get_height()
+    
+    nave_powers2 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE], z=5)
+    nave_powers2.values = [0, 1, 2, 3, 1, 3]
+    nave_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - nave_powers2.get_width()/2
+    nave_powers2.pos.y = 176
 
     # win and lose screens
     
