@@ -9,6 +9,7 @@ from nave import DEFAULT_NAVE_SIZE, Nave
 from persondisplay import GreenAlienDisplay, PurpleAlienDisplay
 from screen import (List, Vector2, TELA_W, TELA_H, REF_RES, clamp,
                     get_screen, Object, update_res_scale)
+import sounds
 from tetris import Tetris
 from text import CompositeText
 import tabs
@@ -405,7 +406,11 @@ def play_game():
     wants_to_quit : bool = False
     switch_cooldown = 0.0
     switch_target = -1
-    print("chegou antes do loop")
+    
+    # tocar musica
+    sounds.MUSICA.loop = True
+    sounds.MUSICA.play()
+    
     while not wants_to_quit:
         if switch_cooldown <= 0:
             if get_screen().keyboard.key_pressed("t"):
