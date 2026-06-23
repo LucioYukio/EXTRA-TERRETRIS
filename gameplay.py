@@ -11,7 +11,7 @@ from screen import (List, Vector2, TELA_W, TELA_H, REF_RES, clamp,
                     get_screen, Object, update_res_scale)
 import sounds
 from tetris import Tetris
-from text import CompositeText
+from text import CompositeText, NumberText
 import tabs
 
 from fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
@@ -312,6 +312,8 @@ def play_game():
 
     sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.TETRIS], z=3)
     sidepanel1.categorie = "sidepanel"
+    
+    points_text1 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.TETRIS], 1, True)
 
     purple_alien_display : PurpleAlienDisplay = PurpleAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.TETRIS])
     purple_alien_display.pos.x = sidepanel1.get_center().x - purple_alien_display.get_width()/2
@@ -319,6 +321,9 @@ def play_game():
 
     sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.TETRIS], z=3)
     sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
+    
+    points_text2 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.TETRIS], 1, True)
+    points_text2.pos.x = TELA_W - SIDEPANEL_W
 
     green_alien_display : GreenAlienDisplay = GreenAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.TETRIS])
     green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width()/2
@@ -448,6 +453,7 @@ def play_game():
                 switch_target = tabs.TETRIS
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
+                points[1] += 1
             if nave2.wants_to_die and not nave2.dead:
                 auras[0] += AURA_FOR_WINNER_NAVE
                 lose_screens[1].show(3)
@@ -457,7 +463,7 @@ def play_game():
                 switch_target = tabs.TETRIS
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
-            
+                points[0] += 1
             
             
             asteroid_bg1.pos.y += BG_VELOCITY
@@ -478,8 +484,8 @@ def play_game():
             
         #-------------------------------------------------
         if get_screen().get_tab() == tabs.TETRIS and switch_cooldown <= 0:
-            tetris1.pos.x = divisao.pos.x - tetris1.get_width()
-            tetris2.pos.x = divisao.pos.x + divisao.get_width()
+            tetris1.pos.x = (SIDEPANEL_W + TELA_W/2 - DIVISOR_W/2)/2 - tetris1.get_width()/2
+            tetris2.pos.x = (TELA_W/2 + DIVISOR_W/2 + TELA_W - SIDEPANEL_W)/2 - tetris2.get_width()/2
             
             if tetris1.check_loss():
                 auras[1] += AURA_FOR_WINNER_NAVE
@@ -491,6 +497,7 @@ def play_game():
                 switch_target = tabs.NAVE
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
+                points[1] += 1
             if tetris2.check_loss():
                 auras[0] += AURA_FOR_WINNER_NAVE
                 lose_screens[1].show(3)
@@ -501,6 +508,7 @@ def play_game():
                 switch_target = tabs.NAVE
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
+                points[0] += 1
 
             if tetris1.points > 0:
                 auras[0] += tetris1.points * TETRIS_POINTS_MULTIPLIER
@@ -520,6 +528,9 @@ def play_game():
         aura_text.pos.y = TELA_H - aura_text.get_height()
         aura1_text_value.value = auras[0]
         aura2_text_value.value = auras[1]
+        
+        points_text1.value = points[0]
+        points_text2.value = points[1]
         
         if switch_cooldown > 0:
             switch_cooldown -= get_screen().window.delta_time()
