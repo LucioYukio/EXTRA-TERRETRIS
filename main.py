@@ -4,7 +4,6 @@ from random import randrange
 import time
 
 from button import Button
-import perf
 import tabs
 from asteroid import Asteroid
 from background import Background

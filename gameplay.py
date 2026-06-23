@@ -1,9 +1,7 @@
-import csv
 from copy import copy
 from random import randrange
 import time
 
-import perf
 from asteroid import Asteroid
 from background import Background
 from enemy import Enemy, EnemySin
@@ -25,8 +23,6 @@ def play_game():
     #-------------------------------------------------------------------
     #------------------------- Variaveis ---------------------------------------------------------
 
-    LOG_PERFORMANCE = True
-    performance_log : List[List[float]] = []
     ## se o fps for menor que isso, tomar algumas medidas, como nao spawnar novos inimigos
     ## apenas uma medida preventiva, o fps pode acabar sendo menos que o target.
     FPS_TARGET: float = 0
@@ -400,7 +396,6 @@ def play_game():
     tempo = time.perf_counter()
 
     get_screen().set_tab(tabs.NAVE)
-    perf.reset()
 
     # warm up fades so they don't stutter when used later
     for fade_cls in (WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut):
@@ -412,11 +407,6 @@ def play_game():
     switch_target = -1
     print("chegou antes do loop")
     while not wants_to_quit:
-        if get_screen().keyboard.key_pressed("p"):
-            perf.ENABLED = not perf.ENABLED
-            perf.reset()
-            print(f"PERF {'ON' if perf.ENABLED else 'OFF'}")
-            
         if switch_cooldown <= 0:
             if get_screen().keyboard.key_pressed("t"):
                 get_screen().set_tab(tabs.TETRIS)
@@ -526,21 +516,12 @@ def play_game():
 
         get_screen().update()
         
-        # qtd_text.texts[-1] = len(get_screen()._objs)
-        
         intervalo = time.perf_counter() - tempo
         if intervalo < MAX_TEMPO_PASSADO:
             ticks += 1
             fps = ticks/intervalo
             fps_text_value.value = int(fps)
         else:
-            # save in a file for profiling
-            performance_log.append([len(get_screen()._objs), ticks/intervalo])
-            if LOG_PERFORMANCE and get_screen().keyboard.key_pressed("l"):
-                with open("performance.csv", "w") as file:
-                    w = csv.writer(file)
-                    w.writerow(["quantidade de objs", "fps"])
-                    w.writerows(performance_log)
             tempo = time.perf_counter()
             ticks = 0
             last_average_fps = fps

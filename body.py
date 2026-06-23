@@ -1,7 +1,6 @@
 from math import sqrt
 from typing import Dict, Set
 
-import perf
 from effect import Effect
 from screen import Object, List, Vector2, get_screen, res_scale
 
@@ -48,7 +47,6 @@ class Body(Object):
         return Vector2(self.get_width()/2, self.get_height()/2)
 
     def is_colliding_with_body(self, body: Object):
-        perf.count("collision_checks")
         if isinstance(body, Body):
             if self.side != body.side:
                 return False
@@ -78,18 +76,12 @@ class Body(Object):
         )
 
     def get_collider(self):
-        perf.count("get_collider_calls")
-        perf.start("collision")
         for obj in bodies[self.side]:
             if self.is_colliding_with_body(obj):
-                perf.stop("collision")
                 return obj
-        perf.stop("collision")
         return None
 
     def get_colliders(self, tags_to_check: Set[str]):
-        perf.count("get_colliders_calls")
-        perf.start("collisions")
         objs = []
         for obj in bodies[self.side]:
             if isinstance(obj, Body):
@@ -111,7 +103,6 @@ class Body(Object):
                 if valid:
                     if self.is_colliding_with_body(obj):
                         objs.append(obj)
-        perf.stop("collisions")
         return objs
 
     def collide(self, body: Object | None):
@@ -156,7 +147,6 @@ class Body(Object):
 
     def update(self):
         super().update()
-        perf.count("bodies_updated")
         self.apply_velocity()
     
     def destroy(self):

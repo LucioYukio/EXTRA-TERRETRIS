@@ -3,8 +3,6 @@
 # as tabs tem um offset muito grande e sao desenhadas so quando selecionadas
 from typing import List
 
-import perf
-
 import pplay.window as w
 import pplay.gameimage as gi
 from betteranimation import Animation
@@ -461,13 +459,10 @@ class Screen:
 
     def render(self):
         # renderizar
-        perf.start("render")
         
         for obj in self._objs:
             if obj.visible and self.get_tab() in obj.get_tabs():
                 obj.render()
-        
-        perf.stop("render")
 
     def update(self):
         if self.window.delta_time() > 0:
@@ -483,9 +478,7 @@ class Screen:
             self.bg.draw()
         
         # aplicar logica
-        perf.start("update")
         ids_to_remove : List[int] = []
-        perf.record("obj_count", len(self._objs))
         for obj in self._objs:
             if not isinstance(obj, Object) or get_screen().get_tab() not in obj.get_tabs() or not obj.enabled:
                 continue
@@ -527,12 +520,10 @@ class Screen:
 
         for obj_id in ids_to_remove:
             self.remove_object_by_id(obj_id)
-        perf.stop("update")
         
         self.render()
         
         self.window.update()
-        perf.frame_done()
 
 screen_instance : Screen | None = None
 
