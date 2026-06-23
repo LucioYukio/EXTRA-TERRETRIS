@@ -1,6 +1,6 @@
 from typing import List
 
-from fades import BlackFadeOut
+from fades import BlackFadeOut, WhiteFadeOut
 from screen import Object, res_scale
 
 class StatusScreen(Object):
@@ -14,6 +14,8 @@ class StatusScreen(Object):
     def show(self, seconds: float):
         """mostra essa tela por algum tempo"""
         self.show_timer = seconds
+        fade = WhiteFadeOut(self.get_tabs(), 0.3, int(self.get_width()/res_scale[0]), int(self.get_height()/res_scale[1]))
+        fade.pos = self.pos
     
     def update(self):
         super().update()

@@ -49,6 +49,7 @@ def play_game():
         ["w", "s", "a", "d", "space", "alt"]
     ]
 
+    from random import uniform
     ENEMY_WAIT_TIME : float = 5 # segundos antes dos inimigos comecarem a spawnar
     enemy_spawn_interval : float = 2 # cuidado! nao botar o mesmo que o intervalo de tiro.
     enemy_spawn_cooldown : float = ENEMY_WAIT_TIME
@@ -75,6 +76,8 @@ def play_game():
     ASTEROID_RESET_INTERVAL : float = 5 # intervalo para esse asteroid voltar la pra cima depois de sair da tela
     ASTEROID_HEALTH_MULTIPLIER : float = 10
     ASTEROID_BASE_POINT_VALUE : float = 30
+    
+    TETRIS_POINTS_MULTIPLIER : float = 20 # cada ponto em tetris vale isso
 
     auras : List[int] = [0, 0]
     points : List[int] = [0, 0]
@@ -425,7 +428,7 @@ def play_game():
             if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
                 spawn_enemy(get_random_pos(0), [tabs.NAVE], 0)
                 spawn_enemy(get_random_pos(1), [tabs.NAVE], 1)
-                enemy_spawn_cooldown = enemy_spawn_interval
+                enemy_spawn_cooldown = enemy_spawn_interval + uniform(-0.5, 0.5)
             
             for o in get_screen()._objs:
                 if o.pos.y >= TELA_H and isinstance(o, Enemy):
@@ -443,7 +446,7 @@ def play_game():
                 nave1.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.TETRIS
-                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
             if nave2.wants_to_die and not nave2.dead:
                 auras[0] += AURA_FOR_WINNER_NAVE
@@ -452,7 +455,7 @@ def play_game():
                 nave2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.TETRIS
-                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
             
             
@@ -486,7 +489,7 @@ def play_game():
                 tetris2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.NAVE
-                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
             if tetris2.check_loss():
                 auras[0] += AURA_FOR_WINNER_NAVE
@@ -496,14 +499,14 @@ def play_game():
                 tetris2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.NAVE
-                sounds.MUSICA.set_volume(sounds.MUSICA.volume/2)
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
 
             if tetris1.points > 0:
-                auras[0] += tetris1.points
+                auras[0] += tetris1.points * TETRIS_POINTS_MULTIPLIER
                 tetris1.points = 0
             if tetris2.points > 0:
-                auras[1] += tetris2.points
+                auras[1] += tetris2.points * TETRIS_POINTS_MULTIPLIER
                 tetris2.points = 0
             
             
@@ -524,7 +527,7 @@ def play_game():
                 reset_game()
                 get_screen().set_tab(switch_target)
                 switch_target = -1
-                sounds.MUSICA.set_volume(sounds.MUSICA.volume*2)
+                sounds.MUSICA.set_volume(sounds.MUSICA.volume*1.5)
         
         if get_screen().keyboard.key_pressed("esc"):
             wants_to_quit = True
