@@ -149,7 +149,7 @@ class Nave(Body):
         self.hitbox = DEFAULT_NAVE_HITBOX.copy()
         
         """Stats vars"""
-        self.default_health : float = 5
+        self.default_health : float = 100
         self.health : float = self.default_health
         self.score : int = 0
         # tempo ate poder levar dano de novo

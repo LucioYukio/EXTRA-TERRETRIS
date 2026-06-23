@@ -23,7 +23,7 @@ class StatusScreen(Object):
             self.visible = True
             if self.show_timer <= 0:
                 # fade out
-                fade = BlackFadeOut(self.get_tabs(), 1, int(self.get_width()*res_scale[0]), int(self.get_height()*res_scale[1]))
+                fade = BlackFadeOut(self.get_tabs(), 1, int(self.get_width()/res_scale[0]), int(self.get_height()/res_scale[1]))
                 fade.pos = self.pos
         else:
             self.visible = False

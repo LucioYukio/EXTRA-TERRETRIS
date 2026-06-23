@@ -69,7 +69,7 @@ def play_game():
     SIDEPANEL_W = 120
     DIVISOR_W = 48
 
-    H_BOUNDS = [Vector2(SIDEPANEL_W - DEFAULT_NAVE_SIZE.x/2, TELA_W/2 - DIVISOR_W/2), Vector2(TELA_W/2 + DIVISOR_W/2, TELA_W - SIDEPANEL_W + DEFAULT_NAVE_SIZE.x/2)]
+    H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2 - DIVISOR_W/2), Vector2(TELA_W/2 + DIVISOR_W/2, TELA_W - SIDEPANEL_W)]
 
     # velocity in which the background descends
     BG_VELOCITY = 0.2
@@ -328,29 +328,29 @@ def play_game():
     
     lose_screens : List[LoseScreen] = [
         LoseScreen(
-            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), 
             REF_RES[1], 
             [tabs.NAVE, tabs.TETRIS]),
         LoseScreen(
-            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), 
             REF_RES[1], 
             [tabs.NAVE, tabs.TETRIS]),
         ]
-    lose_screens[0].pos.x = sidepanel1.get_width()
-    lose_screens[1].pos.x = divisao.pos.x + divisao.get_width()
+    lose_screens[0].pos.x = SIDEPANEL_W
+    lose_screens[1].pos.x = TELA_W/2 + DIVISOR_W/2
     
     win_screens : List[WinScreen] = [
         WinScreen(
-            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), 
             REF_RES[1], 
             [tabs.NAVE, tabs.TETRIS]),
         WinScreen(
-            int(REF_RES[0]/2 - sidepanel1.get_width() - divisao.get_width()), 
+            int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), 
             REF_RES[1], 
             [tabs.NAVE, tabs.TETRIS]),
         ]
-    win_screens[0].pos.x = sidepanel1.get_width()
-    win_screens[1].pos.x = divisao.pos.x + divisao.get_width()
+    win_screens[0].pos.x = SIDEPANEL_W
+    win_screens[1].pos.x = TELA_W/2 + DIVISOR_W/2
     
     
     

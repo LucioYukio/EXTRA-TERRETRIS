@@ -19,8 +19,8 @@ from vector2 import Vector2
 REF_RES = (1600, 900) # tamanhos seram calculados em relacao a essa variavel
 res_scale : List[float] = [1,1]
 
-TELA_W = 1280
-TELA_H = 720
+TELA_W = 1600
+TELA_H = 900
 
 EMPTY_PIXEL = "assets/images/empty_pixel.png"
 
@@ -156,7 +156,7 @@ class Object:
         self._id = id
 
     def get_width(self):
-        return self._width
+        return self._width/res_scale[0]
 
     def set_width(self, width: float):
         if self._width != width:
@@ -164,7 +164,7 @@ class Object:
             self.update_sprites()
 
     def get_height(self):
-        return self._height
+        return self._height/res_scale[1]
 
     def set_height(self, height: float):
         if self._height != height:
