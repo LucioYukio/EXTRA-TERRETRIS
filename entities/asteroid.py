@@ -4,7 +4,7 @@ from config.sounds import ASTEROIDE
 from entities.bullets import Bullet
 from entities.effect import Effect
 from entities.projectile import Projectile
-from engine.const import TELA_H
+from engine.const import REF_RES
 from engine.vector2 import Vector2
 
 
@@ -99,7 +99,7 @@ class Asteroid(Projectile):
     def die(self):
         self.spawn_explosion()
         self.spawn_debris()
-        self.pos.y = TELA_H
+        self.pos.y = REF_RES[1]
         self.health = self.total_health
         self.points_list[self.side] += self.points_value
 
@@ -126,7 +126,7 @@ class Asteroid(Projectile):
     def update(self):
         super().update()
         self.check_damage()
-        if self.pos.y >= TELA_H:
+        if self.pos.y >= REF_RES[1]:
             self.reset_timer += self.delta_time
         else:
             self.reset_timer = 0

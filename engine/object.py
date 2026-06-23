@@ -47,7 +47,7 @@ class Object:
         self.vertical_bounds = Vector2(-1, -1)
         self.out_of_h_bounds = False
         self.out_of_v_bounds = False
-        self.screen_size = Vector2(1600, 900)
+        self.screen_size = Vector2(REF_RES[0], REF_RES[1])
         self.keep_in_bounds = True
         self.destroy_out_of_h_bounds = False
         self.destroy_out_of_v_bounds = False
@@ -90,19 +90,19 @@ class Object:
         self._id = id
 
     def get_width(self):
-        return self._width / res_scale[0]
+        return self._width
 
     def set_width(self, width: float):
         if self._width != width:
-            self._width = int(width * res_scale[0])
+            self._width = int(width)
             self.update_sprites()
 
     def get_height(self):
-        return self._height / res_scale[1]
+        return self._height
 
     def set_height(self, height: float):
         if self._height != height:
-            self._height = int(height * res_scale[1])
+            self._height = int(height)
             self.update_sprites()
 
     def set_total_frames(self, total_frames: int):
@@ -148,7 +148,7 @@ class Object:
         if self.vertical_bounds.y != -1:
             v_bounds.append(self.vertical_bounds.y)
         else:
-            v_bounds.append(self.screen_size.x)
+            v_bounds.append(self.screen_size.y)
 
         return v_bounds
 
@@ -176,11 +176,11 @@ class Object:
         )
 
     def apply_coords(self):
-        last_x = self.pos.x
+        last_x = self.pos.x * res_scale[0]
         for i in range(self.h_parts):
             sprite = self.sprites[i]
             sprite.x = last_x
-            sprite.y = self.pos.y
+            sprite.y = self.pos.y * res_scale[1]
             last_x = sprite.x + sprite.width
 
     def set_curr_frame(self, curr_frame: int):
@@ -189,18 +189,17 @@ class Object:
             full = self.sprites[0].image
         if full is None:
             return
+        tile_w = int(self._width / self.h_parts * res_scale[0])
+        phys_frame_w = tile_w * self.h_parts
+        phys_h = int(self._height * res_scale[1])
         for i in range(self.h_parts):
             spr = self.sprites[i]
-            frame_w = self.get_width()
-            slice_start = int(curr_frame * frame_w + i * frame_w / self.h_parts)
-            if i < self.h_parts - 1:
-                slice_end = int(curr_frame * frame_w + (i + 1) * frame_w / self.h_parts)
-            else:
-                slice_end = (curr_frame + 1) * frame_w
+            slice_start = int(curr_frame * phys_frame_w + i * tile_w)
+            slice_end = int(curr_frame * phys_frame_w + (i + 1) * tile_w)
             w = slice_end - slice_start
             if w <= 0:
                 continue
-            spr.image = full.subsurface(pygame.Rect(slice_start, 0, w, self.get_height()))
+            spr.image = full.subsurface(pygame.Rect(slice_start, 0, w, phys_h))
             spr.width = w
             spr.curr_frame = 0
 
@@ -219,12 +218,13 @@ class Object:
     def update_sprites(self, grow_a_bit: bool = False):
         if not self.sprites:
             return
-        width = int(self.get_width() * self.total_frames)
-        height = int(self.get_height())
+        tile_w = int(self._width / self.h_parts * res_scale[0])
+        phys_w = tile_w * self.h_parts * self.total_frames
+        phys_h = int(self._height * res_scale[1])
         for i, spr in enumerate(self.sprites):
-            spr.image = get_image(self.image, width, height)
-            spr.width = int(self.get_width() / self.h_parts)
-            spr.height = height
+            spr.image = get_image(self.image, phys_w, phys_h)
+            spr.width = tile_w
+            spr.height = phys_h
             spr.curr_frame = i
         if self.sprites:
             self._full_image = self.sprites[0].image.copy()
@@ -236,8 +236,8 @@ class Object:
         self.delta_time = get_screen().window.delta_time()
         self.time_elapsed += self.delta_time
 
-        self.screen_size.x = REF_RES[0] * res_scale[0]
-        self.screen_size.y = REF_RES[1] * res_scale[1]
+        self.screen_size.x = REF_RES[0]
+        self.screen_size.y = REF_RES[1]
 
         if self.total_frames == 1 and self.playing:
             self.playing = False
@@ -259,7 +259,9 @@ class Object:
             return False
 
         mouse_pos = Vector2()
-        mouse_pos.x, mouse_pos.y = self._mouse.get_position()
+        mx, my = self._mouse.get_position()
+        mouse_pos.x = mx / res_scale[0]
+        mouse_pos.y = my / res_scale[1]
 
         if mouse_pos.x >= self.pos.x and mouse_pos.x <= self.pos.x + self.get_width() and \
                 mouse_pos.y >= self.pos.y and mouse_pos.y <= self.pos.y + self.get_height():

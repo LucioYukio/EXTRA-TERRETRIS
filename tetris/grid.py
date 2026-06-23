@@ -12,8 +12,7 @@ class TetrisGrid(Object):
     CHAMAR BUILD GRIDS APOS CRIAR / MEXER NAS PROPRIEDADES"""
     def __init__(self, piece_size : Vector2, linhas : int, colunas : int, tabs: List[int]):
         super().__init__(EMPTY_PIXEL, 1, 1, tabs)
-        self._piece_size : Vector2 = Vector2(piece_size.x * res_scale[0], piece_size.y * res_scale[1])
-        #self._piece_size : Vector2 = piece_size
+        self._piece_size : Vector2 = piece_size
         ## quantidade de pecas
         self._lines : int = linhas
         self._columns : int = colunas
@@ -60,7 +59,7 @@ class TetrisGrid(Object):
                 # adicionar tile
                 linha.append(gi.GameImage(img))
                 # redimensionar tile
-                linha[-1].image = pygame.transform.scale(linha[-1].image, (self._piece_size.x, self._piece_size.y))
+                linha[-1].image = pygame.transform.scale(linha[-1].image, (int(self._piece_size.x * res_scale[0]), int(self._piece_size.y * res_scale[1])))
             grid.append(linha)
     
     def build_grids(self):
@@ -76,8 +75,8 @@ class TetrisGrid(Object):
         self.overlay.wants_to_die = True
         self.overlay = Object(
             self.overlay_img,
-            int(self._columns * self._piece_size.x / res_scale[0]),
-            int(self._lines * self._piece_size.y / res_scale[1]),
+            int(self._columns * self._piece_size.x),
+            int(self._lines * self._piece_size.y),
             self.get_tabs(),
             add_to_screen=False)
         self.overlay.set_total_frames(29)
@@ -96,8 +95,8 @@ class TetrisGrid(Object):
         self.overlay.pos.y = self.pos.y
         for i in range(int(self._lines)): # linhas
             for j in range(int(self._columns)): # colunas
-                grid[i][j].x = self.pos.x + self._piece_size.x * j
-                grid[i][j].y = self.pos.y + self._piece_size.y * i
+                grid[i][j].x = int((self.pos.x + self._piece_size.x * j) * res_scale[0])
+                grid[i][j].y = int((self.pos.y + self._piece_size.y * i) * res_scale[1])
     
     def animate(self):
         super().animate()

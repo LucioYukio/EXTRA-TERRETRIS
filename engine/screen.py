@@ -4,7 +4,7 @@ import pplay.window as w
 import pplay.gameimage as gi
 import pplay.keyboard as k
 import pygame.transform
-from engine.const import EMPTY_PIXEL, clamp, get_screen
+from engine.const import REF_RES, EMPTY_PIXEL, clamp, get_screen
 from engine.mouse import Mouse
 from engine.object import Object
 from engine.vector2 import Vector2
@@ -103,12 +103,6 @@ class Screen:
                 objs.append(obj)
         return objs
 
-    def fps(self):
-        if self.ticks == 0 or self.time_elapsed == 0:
-            return 0
-        fps_atual = 1 / self.window.delta_time()
-        return fps_atual
-
     def render(self):
         for obj in self._objs:
             if obj.visible and self.get_tab() in obj.get_tabs():
@@ -141,12 +135,12 @@ class Screen:
 
             h_bounds = Vector2(
                 0 if obj.horizontal_bounds.x == -1 else obj.horizontal_bounds.x,
-                self.window.width if obj.horizontal_bounds.y == -1 else obj.horizontal_bounds.y,
+                REF_RES[0] if obj.horizontal_bounds.y == -1 else obj.horizontal_bounds.y,
             )
 
             v_bounds = Vector2(
                 0 if obj.vertical_bounds.x == -1 else obj.vertical_bounds.x,
-                self.window.height if obj.vertical_bounds.y == -1 else obj.vertical_bounds.y,
+                REF_RES[1] if obj.vertical_bounds.y == -1 else obj.vertical_bounds.y,
             )
 
             obj.update()

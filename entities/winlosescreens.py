@@ -1,7 +1,6 @@
 from typing import List
 
 from entities.fades import BlackFadeOut, WhiteFadeOut
-from engine.const import res_scale
 from engine.object import Object
 
 
@@ -14,7 +13,7 @@ class StatusScreen(Object):
 
     def show(self, seconds: float):
         self.show_timer = seconds
-        fade = WhiteFadeOut(self.get_tabs(), 0.3, int(self.get_width() / res_scale[0]), int(self.get_height() / res_scale[1]))
+        fade = WhiteFadeOut(self.get_tabs(), 0.3, self.get_width(), self.get_height())
         fade.pos = self.pos
 
     def update(self):
@@ -24,7 +23,7 @@ class StatusScreen(Object):
             self.show_timer -= self.delta_time
             self.visible = True
             if self.show_timer <= 0:
-                fade = BlackFadeOut(self.get_tabs(), 1, int(self.get_width() / res_scale[0]), int(self.get_height() / res_scale[1]))
+                fade = BlackFadeOut(self.get_tabs(), 1, self.get_width(), self.get_height())
                 fade.pos = self.pos
         else:
             self.visible = False

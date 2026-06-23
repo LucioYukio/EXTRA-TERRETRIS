@@ -1,6 +1,5 @@
 from copy import copy
 from random import randrange, uniform
-import asyncio
 from typing import List
 
 from config import sounds
@@ -24,7 +23,7 @@ from ui.persondisplay import GreenAlienDisplay, PurpleAlienDisplay
 from ui.text import CompositeText, NumberText, Text
 
 
-async def play_game(dificuldade: str = "normal", win_points: int = 3):
+def play_game(dificuldade: str = "normal", win_points: int = 3):
     #-------------------------------------------------------------------
     #------------------------- Variaveis ---------------------------------------------------------
 
@@ -61,7 +60,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
     SIDEPANEL_W = 120
     DIVISOR_W = 48
 
-    H_BOUNDS = [Vector2(SIDEPANEL_W, TELA_W/2 - DIVISOR_W/2), Vector2(TELA_W/2 + DIVISOR_W/2, TELA_W - SIDEPANEL_W)]
+    H_BOUNDS = [Vector2(SIDEPANEL_W, REF_RES[0]/2 - DIVISOR_W/2), Vector2(REF_RES[0]/2 + DIVISOR_W/2, REF_RES[0] - SIDEPANEL_W)]
 
     # velocity in which the background descends
     BG_VELOCITY = 0.2
@@ -86,10 +85,10 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
     #---------------- FUNCOES ---------------------------
 
     def get_random_pos(side: int):
-        if side == 0: # esquerda
-            return randrange(0, TELA_W//2)
+        if side == 0:
+            return randrange(0, REF_RES[0]//2)
         else:
-            return randrange(TELA_W//2, TELA_W)
+            return randrange(REF_RES[0]//2, REF_RES[0])
 
     def reset_enemy(enemy: Enemy):
         enemy.pos.x = get_random_pos(enemy.side)
@@ -113,7 +112,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             inimigo.max_bullet_count = MAX_ENEMY_BULLET_COUNT
             
         if isinstance(inimigo, Enemy):
-            x = clamp(x, 0, get_screen().window.width - inimigo.get_width())
+            x = clamp(x, 0, REF_RES[0] - inimigo.get_width())
             inimigo.pos.x = x
             inimigo.pos.y = -inimigo.get_height() + 1
             inimigo.horizontal_bounds = copy(H_BOUNDS[side])
@@ -121,7 +120,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
                 inimigo.anchor = nave1
             else:
                 inimigo.anchor = nave2
-            inimigo.vertical_bounds = Vector2(-inimigo.get_height(), get_screen().window.height + inimigo.get_height())
+            inimigo.vertical_bounds = Vector2(-inimigo.get_height(), REF_RES[1] + inimigo.get_height())
             inimigo.bullet_img = "assets/images/bullet_green.png" if side == 0  else "assets/images/bullet_purple.png"
             inimigo.bullet_explosion_img = "assets/images/explosion_small_green.png" if side == 0  else "assets/images/explosion_small_purple.png"
             inimigo.side = side
@@ -171,8 +170,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         0,
         [tabs.NAVE],
     )
-    nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
-    nave1.pos.y = TELA_H - nave1.get_height() - 8
+    nave1.pos.x = REF_RES[0]/4 - nave1.get_width()/2
+    nave1.pos.y = REF_RES[1] - nave1.get_height() - 8
     nave1.horizontal_bounds = copy(H_BOUNDS[0])
     nave1.UP, nave1.DOWN, nave1.LEFT, nave1.RIGHT, nave1.SHOOT, nave1.POWER = control_esquemes[1]
     nave1.bullet_img = "assets/images/bullet_purple.png"
@@ -186,8 +185,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         1,
         [tabs.NAVE],
     )
-    nave2.pos.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
-    nave2.pos.y = get_screen().window.height - nave2.get_height() - 8
+    nave2.pos.x = REF_RES[0]/4 + REF_RES[0]/2 - nave2.get_width()/2
+    nave2.pos.y = REF_RES[1] - nave2.get_height() - 8
     nave2.horizontal_bounds = H_BOUNDS[1]
     nave2.UP, nave2.DOWN, nave2.LEFT, nave2.RIGHT, nave2.SHOOT, nave2.POWER = control_esquemes[0]
     nave2.bullet_img = "assets/images/bullet_green.png"
@@ -203,7 +202,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         0,
         32,
         nave1,
-        Vector2(SIDEPANEL_W, TELA_W/2 - 16)
+        Vector2(SIDEPANEL_W, REF_RES[0]/2 - 16)
     )
     asteroid_bg_far1.offset_multiplier = 0.1
     
@@ -215,10 +214,10 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         0,
         32,
         nave1,
-        Vector2(SIDEPANEL_W, TELA_W/2 - 16)
+        Vector2(SIDEPANEL_W, REF_RES[0]/2 - 16)
     )
     asteroid_bg1.offset_multiplier = 0.25
-    asteroid_bg1.pos.y = TELA_H - asteroid_bg1.get_height()
+    asteroid_bg1.pos.y = REF_RES[1] - asteroid_bg1.get_height()
     asteroid_bg1.pos.x = 60
     
 
@@ -230,11 +229,11 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         1,
         32,
         nave2,
-        Vector2(TELA_W/2, TELA_W)
+        Vector2(REF_RES[0]/2, REF_RES[0])
     )
     asteroid_bg_far2.offset_multiplier = 0.1
-    asteroid_bg_far2.pos.y = TELA_H - asteroid_bg_far2.get_height() + 200 # numero aleatorio para variar
-    asteroid_bg_far2.pos.x = TELA_W/2
+    asteroid_bg_far2.pos.y = REF_RES[1] - asteroid_bg_far2.get_height() + 200
+    asteroid_bg_far2.pos.x = REF_RES[0]/2
 
     asteroid_bg2 : Background = Background(
         "assets/images/asteroids_bg_narrow_close.png",
@@ -244,11 +243,11 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         1,
         32,
         nave2,
-        Vector2(TELA_W/2, TELA_W)
+        Vector2(REF_RES[0]/2, REF_RES[0])
     )
     asteroid_bg2.offset_multiplier = 0.25
-    asteroid_bg2.pos.y = TELA_H - asteroid_bg2.get_height() + 200 # numero aleatorio para variar
-    asteroid_bg2.pos.x = TELA_W/2
+    asteroid_bg2.pos.y = REF_RES[1] - asteroid_bg2.get_height() + 200
+    asteroid_bg2.pos.x = REF_RES[0]/2
 
     asteroids : List[Asteroid] = [
         spawn_asteroid(get_random_pos(0), 100, 1 * ASTEROID_HEALTH_MULTIPLIER, [tabs.NAVE], 0),
@@ -261,7 +260,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
     i = 0
     total = len(asteroids)//2
     for asteroid in asteroids:
-        asteroid.pos.y = -(TELA_H * (i + 1)) *2
+        asteroid.pos.y = -(REF_RES[1] * (i + 1)) * 2
         asteroid.speed = 150 * (total - i+1)/total
         asteroid.damage = i
         asteroid.points_list = auras
@@ -300,7 +299,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
     tetris_powers2: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS, tabs.TETRIS_LOJA], z=5,
                                             image="assets/images/powers_tetris.png")
     tetris_powers2.values = tetris2.powers
-    tetris_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - tetris_powers2.get_width()/2
+    tetris_powers2.pos.x = REF_RES[0] - SIDEPANEL_W/2 - tetris_powers2.get_width()/2
     tetris_powers2.pos.y = 176
 
     nave_store: NavePowerStore = NavePowerStore(
@@ -320,16 +319,16 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
     aura2_text_value = aura_text.add_number(4)
 
     divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [tabs.NAVE, tabs.TETRIS], z=3)
-    divisao.pos.x = TELA_W/2 - divisao.get_width()/2
+    divisao.pos.x = REF_RES[0]/2 - divisao.get_width()/2
 
-    sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3)
+    sidepanel1 : Object = Object("assets/images/sidepanel_background_purple.png", SIDEPANEL_W, REF_RES[1], [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3)
     sidepanel1.categorie = "sidepanel"
     
     points_text1 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True)
 
     purple_alien_display : PurpleAlienDisplay = PurpleAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], lambda: (nave1.health, nave1.default_health))
     purple_alien_display.pos.x = sidepanel1.get_center().x - purple_alien_display.get_width()/2
-    purple_alien_display.pos.y = TELA_H - purple_alien_display.get_height()
+    purple_alien_display.pos.y = REF_RES[1] - purple_alien_display.get_height()
 
     nave_powers1 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
     nave_powers1.values = nave1.powers
@@ -337,19 +336,19 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
     nave_powers1.pos.y = 176
 
     #--------
-    sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, 900, [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3)
-    sidepanel2.pos.x = TELA_W - sidepanel2.get_width()
+    sidepanel2 : Object = Object("assets/images/sidepanel_background_green.png", SIDEPANEL_W, REF_RES[1], [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3)
+    sidepanel2.pos.x = REF_RES[0] - sidepanel2.get_width()
     
     points_text2 : NumberText = NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True)
-    points_text2.pos.x = TELA_W - SIDEPANEL_W
+    points_text2.pos.x = REF_RES[0] - SIDEPANEL_W
 
     green_alien_display : GreenAlienDisplay = GreenAlienDisplay(120, int(120 * 1.25), [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], lambda: (nave2.health, nave2.default_health))
     green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width()/2
-    green_alien_display.pos.y = TELA_H - green_alien_display.get_height()
+    green_alien_display.pos.y = REF_RES[1] - green_alien_display.get_height()
     
     nave_powers2 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
     nave_powers2.values = nave2.powers
-    nave_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - nave_powers2.get_width()/2
+    nave_powers2.pos.x = REF_RES[0] - SIDEPANEL_W/2 - nave_powers2.get_width()/2
     nave_powers2.pos.y = 176
 
     # win and lose screens
@@ -365,7 +364,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             [tabs.NAVE, tabs.TETRIS]),
         ]
     lose_screens[0].pos.x = SIDEPANEL_W
-    lose_screens[1].pos.x = TELA_W/2 + DIVISOR_W/2
+    lose_screens[1].pos.x = REF_RES[0]/2 + DIVISOR_W/2
     
     win_screens : List[WinScreen] = [
         WinScreen(
@@ -378,7 +377,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             [tabs.NAVE, tabs.TETRIS]),
         ]
     win_screens[0].pos.x = SIDEPANEL_W
-    win_screens[1].pos.x = TELA_W/2 + DIVISOR_W/2
+    win_screens[1].pos.x = REF_RES[0]/2 + DIVISOR_W/2
     
     
     
@@ -407,17 +406,17 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             for bullet in nave.bullets:
                 bullet.wants_to_die = True
             nave.bullets.clear()
-        nave1.pos.x = get_screen().window.width/4 - nave1.get_width()/2
-        nave1.pos.y = TELA_H - nave1.get_height() - 8
-        nave2.pos.x = get_screen().window.width/4 + get_screen().window.width/2 - nave2.get_width()/2
-        nave2.pos.y = get_screen().window.height - nave2.get_height() - 8
+        nave1.pos.x = REF_RES[0]/4 - nave1.get_width()/2
+        nave1.pos.y = REF_RES[1] - nave1.get_height() - 8
+        nave2.pos.x = REF_RES[0]/4 + REF_RES[0]/2 - nave2.get_width()/2
+        nave2.pos.y = REF_RES[1] - nave2.get_height() - 8
         for obj in get_screen()._objs:
             if isinstance(obj, Enemy):
                 reset_enemy(obj)
             elif obj.categorie in ('bullet', 'nave bullet', 'debri', 'projectile'):
                 obj.wants_to_die = True
         for asteroid in asteroids:
-            asteroid.pos.y = TELA_H * 2
+            asteroid.pos.y = REF_RES[1] * 2
             asteroid.health = asteroid.total_health
         enemy_spawn_cooldown = ENEMY_WAIT_TIME
         
@@ -477,7 +476,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             if isinstance(obj, EnemyBullet) and obj.side == side:
                 obj.wants_to_die = True
         fade = WhiteFadeOut([tabs.NAVE], 0.2, int(REF_RES[0]/2 - SIDEPANEL_W - DIVISOR_W/2), REF_RES[1])
-        fade.pos.x = SIDEPANEL_W if side == 0 else TELA_W/2 + DIVISOR_W/2
+        fade.pos.x = SIDEPANEL_W if side == 0 else REF_RES[0]/2 + DIVISOR_W/2
     
     SHIELD_UP_DURATION : float = 5
     def shield_up(side: int):
@@ -599,7 +598,7 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
                 enemy_spawn_cooldown = enemy_spawn_interval + uniform(-0.5, 0.5)
             
             for o in get_screen()._objs:
-                if o.pos.y >= TELA_H and isinstance(o, Enemy):
+                if o.pos.y >= REF_RES[1] and isinstance(o, Enemy):
                     reset_enemy(o)
             #----
             
@@ -670,8 +669,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             if asteroid_bg2.pos.y >= -asteroid_bg2.get_height()/3:
                 asteroid_bg2.pos.y -= asteroid_bg2.get_height()/3
             for asteroid in asteroids:
-                if asteroid.pos.y >= TELA_H:
-                    asteroid.pos.y = TELA_H * 2 # (necessariamente fora da tela)
+                if asteroid.pos.y >= REF_RES[1]:
+                    asteroid.pos.y = REF_RES[1] * 2
                 if asteroid.reset_timer >= ASTEROID_RESET_INTERVAL:
                     # reset asteroid
                     asteroid.pos.y = -asteroid.get_height() 
@@ -679,8 +678,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             
         #-------------------------------------------------
         if get_screen().get_tab() == tabs.TETRIS and switch_cooldown <= 0:
-            tetris1.pos.x = (SIDEPANEL_W + TELA_W/2 - DIVISOR_W/2)/2 - tetris1.get_width()/2
-            tetris2.pos.x = (TELA_W/2 + DIVISOR_W/2 + TELA_W - SIDEPANEL_W)/2 - tetris2.get_width()/2
+            tetris1.pos.x = (SIDEPANEL_W + REF_RES[0]/2 - DIVISOR_W/2)/2 - tetris1.get_width()/2
+            tetris2.pos.x = (REF_RES[0]/2 + DIVISOR_W/2 + REF_RES[0] - SIDEPANEL_W)/2 - tetris2.get_width()/2
             
             if tetris1.check_loss():
                 auras[1] += int(nave2.health * AURA_REWARD_MULTIPLIER)
@@ -724,8 +723,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
 
 
         if get_screen().get_tab() == tabs.TETRIS_LOJA and switch_cooldown <= 0:
-            tetris_store.pos.x = TELA_W / 2 - tetris_store.get_width() / 2
-            tetris_store.pos.y = TELA_H / 2 - tetris_store.get_height() / 2
+            tetris_store.pos.x = REF_RES[0] / 2 - tetris_store.get_width() / 2
+            tetris_store.pos.y = REF_RES[1] / 2 - tetris_store.get_height() / 2
             tetris_store.update()
             if tetris_store.ready:
                 reset_game()
@@ -734,8 +733,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
                 enemy_spawn_cooldown = ENEMY_WAIT_TIME
 
         if get_screen().get_tab() == tabs.NAVE_LOJA and switch_cooldown <= 0:
-            nave_store.pos.x = TELA_W / 2 - nave_store.get_width() / 2
-            nave_store.pos.y = TELA_H / 2 - nave_store.get_height() / 2
+            nave_store.pos.x = REF_RES[0] / 2 - nave_store.get_width() / 2
+            nave_store.pos.y = REF_RES[1] / 2 - nave_store.get_height() / 2
             nave_store.update()
             if nave_store.ready:
                 reset_game()
@@ -749,8 +748,8 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
         enemy_spawn_cooldown = max(enemy_spawn_cooldown - get_screen().window.delta_time(), 0)
         
         # update UI
-        aura_text.pos.x = TELA_W/2 - aura_text.get_width()/2
-        aura_text.pos.y = TELA_H - aura_text.get_height()
+        aura_text.pos.x = REF_RES[0]/2 - aura_text.get_width()/2
+        aura_text.pos.y = REF_RES[1] - aura_text.get_height()
         aura1_text_value.value = auras[0]
         aura2_text_value.value = auras[1]
         
@@ -766,28 +765,27 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
                     winner_name = "Purple" if winner == 0 else "Green"
                     alien_img = "assets/images/alien_purple_idle.png" if winner == 0 else "assets/images/alien_green_idle.png"
 
-                    Object("assets/images/black_pixel.png", TELA_W, TELA_H, [tabs.WIN], 0)
+                    Object("assets/images/black_pixel.png", REF_RES[0], REF_RES[1], [tabs.WIN], 0)
 
                     win_text = Text(f"{winner_name} took over the galaxy!", DEFAULT_LETTER_SIZE, [tabs.WIN], color_index=1)
-                    win_text.pos.x = int(TELA_W/2 - win_text.get_width()/2)
-                    win_text.pos.y = int(TELA_H/2 - 200)
+                    win_text.pos.x = int(REF_RES[0]/2 - win_text.get_width()/2)
+                    win_text.pos.y = int(REF_RES[1]/2 - 200)
 
                     alien = Object(alien_img, 200, 250, [tabs.WIN], 1)
                     alien.set_total_frames(67 if winner == 1 else 40)
                     alien.frame_duration = 0.05
-                    alien.pos.x = int(TELA_W/2 - alien.get_width()/2)
-                    alien.pos.y = int(TELA_H/2 - 50)
+                    alien.pos.x = int(REF_RES[0]/2 - alien.get_width()/2)
+                    alien.pos.y = int(REF_RES[1]/2 - 50)
 
                     esc_text = Text("Press ESC to return", SMALL_LETTER_SIZE, [tabs.WIN], color_index=1)
-                    esc_text.pos.x = int(TELA_W/2 - esc_text.get_width()/2)
-                    esc_text.pos.y = int(TELA_H - 100)
+                    esc_text.pos.x = int(REF_RES[0]/2 - esc_text.get_width()/2)
+                    esc_text.pos.y = int(REF_RES[1] - 100)
 
                     switch_target = -1
                     get_screen().set_tab(tabs.WIN)
 
                     while not get_screen().keyboard.key_pressed("esc"):
                         get_screen().update()
-                        await asyncio.sleep(0)
 
                     get_screen().clear_tab(tabs.WIN)
                     wants_to_quit = True
@@ -801,5 +799,4 @@ async def play_game(dificuldade: str = "normal", win_points: int = 3):
             print("Wants to quit")
 
         get_screen().update()
-        await asyncio.sleep(0)
     wants_to_quit = False

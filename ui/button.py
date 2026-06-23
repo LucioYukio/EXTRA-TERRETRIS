@@ -8,7 +8,7 @@
 
 from engine.screen import Object, Vector2, get_screen
 from engine.mouse import Mouse
-from engine.const import EMPTY_PIXEL, res_scale
+from engine.const import EMPTY_PIXEL
 from config.sounds import BUTTON
 from typing import List
 from ui.text import Text
@@ -74,19 +74,12 @@ class Button(Object):
 
         txt_s = self.get_text_size()
         
-        # txt_s is already in screen-pixel units (affected by res_scale),
-        # so scale margins/borders too, then set _width/_height directly.
-        mx = int(self._margin_x * res_scale[0])
-        my = int(self._margin_y * res_scale[1])
-        bw = int(self._border_width * res_scale[0])
-        bh = int(self._border_width * res_scale[1])
-        
-        self.black_sprite._width = txt_s.x + mx * 2
-        self.black_sprite._height = txt_s.y + my * 2
+        self.black_sprite._width = txt_s.x + self._margin_x * 2
+        self.black_sprite._height = txt_s.y + self._margin_y * 2
         self.black_sprite.update_sprites()
         
-        self.white_sprite._width = txt_s.x + (mx + bw) * 2
-        self.white_sprite._height = txt_s.y + (my + bh) * 2
+        self.white_sprite._width = txt_s.x + (self._margin_x + self._border_width) * 2
+        self.white_sprite._height = txt_s.y + (self._margin_y + self._border_width) * 2
         self.white_sprite.update_sprites()
         # print("black_sprite width:",  self.black_sprite.get_width())
         # print("black_sprite height:", self.black_sprite.get_height())

@@ -3,7 +3,7 @@ from typing import Dict, List, Set
 
 from config.sounds import EXPLOSAO
 from entities.effect import Effect
-from engine.const import res_scale
+
 from engine.object import Object
 from engine.screen import get_screen
 from engine.vector2 import Vector2
@@ -112,8 +112,8 @@ class Body(Object):
         if self.velocity.x == 0 and self.velocity.y == 0:
             return
         x, y = self.pos.x, self.pos.y
-        self.pos.x += self.velocity.x * self.delta_time * res_scale[0]
-        self.pos.y += self.velocity.y * self.delta_time * res_scale[1]
+        self.pos.x += self.velocity.x * self.delta_time
+        self.pos.y += self.velocity.y * self.delta_time
         if self.get_collider() and self.stop_on_collision:
             self.pos.x = x
             self.pos.y = y
