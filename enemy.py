@@ -42,6 +42,8 @@ class Enemy(Nave):
         self.points_value : int = 10 # pontos que player recebe ao matar esse inimigo
         self.points_list : List[int] = [0,0] # linkar (=) lista de pontos (aura) usado
         
+        self.bullet_speed_mult : float = 1
+        
     def get_direction(self):
         self.direction.y = 1
 
@@ -61,6 +63,7 @@ class Enemy(Nave):
         self.bullets.append(EnemyBullet(self.bullet_img, self.side, self.get_tabs(), self.target, self.bullet_turning_speed))
         self.bullets[-1].pos.x = self.pos.x + self.get_width()/2 - self.bullets[-1].get_width()/2
         self.bullets[-1].pos.y = self.pos.y + self.get_height() - 5
+        self.bullets[-1].speed *= self.bullet_speed_mult
 
     def spawn_rastro(self):
         super().spawn_rastro()

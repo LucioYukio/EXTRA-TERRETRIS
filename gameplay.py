@@ -1,5 +1,5 @@
 from copy import copy
-from random import randrange
+from random import randrange, uniform
 import time
 
 from asteroid import Asteroid
@@ -20,7 +20,7 @@ from winlosescreens import LoseScreen, WinScreen
 
 
 
-def play_game():
+def play_game(dificuldade: str = "normal", win_points: int = 3):
     #-------------------------------------------------------------------
     #------------------------- Variaveis ---------------------------------------------------------
 
@@ -30,6 +30,8 @@ def play_game():
     fps : float = 0
     last_average_fps : float = 9999
 
+    difficulty_mult = {"lento": 0.5, "normal": 1, "frenetico": 2}.get(dificuldade, 1)
+
     update_res_scale([TELA_W, TELA_H])
     screen = get_screen()
     screen.set_title("Extraterretris")
@@ -38,20 +40,14 @@ def play_game():
     botoes_gap  = 20
     botoes_size = 45
 
-    DIF_FACIL   = 0.5
-    DIF_MEDIO   = 1
-    DIF_DIFICIL = 2
-    dificuldade = DIF_MEDIO
-
     # cima, baixo, esquerda, direita, tiro, poder
     control_esquemes = [
         ["up", "down", "left", "right", "n", "m"], 
         ["w", "s", "a", "d", "space", "alt"]
     ]
 
-    from random import uniform
-    ENEMY_WAIT_TIME : float = 5 # segundos antes dos inimigos comecarem a spawnar
-    enemy_spawn_interval : float = 2 # cuidado! nao botar o mesmo que o intervalo de tiro.
+    ENEMY_WAIT_TIME : float = 5 / difficulty_mult # segundos antes dos inimigos comecarem a spawnar
+    enemy_spawn_interval : float = 2 / difficulty_mult # cuidado! nao botar o mesmo que o intervalo de tiro.
     enemy_spawn_cooldown : float = ENEMY_WAIT_TIME
     MAX_ENEMY_COUNT : int = 10 *2
     MAX_ENEMY_BULLET_COUNT : int = 15 *2
@@ -133,6 +129,9 @@ def play_game():
             inimigo.bullet_explosion_img = "assets/images/explosion_small_green.png" if side == 0  else "assets/images/explosion_small_purple.png"
             inimigo.side = side
             inimigo.points_list = auras
+            inimigo.speed = 200 * difficulty_mult
+            inimigo.shooting_interval = 1 / difficulty_mult
+            inimigo.bullet_speed_mult = difficulty_mult
 
     def spawn_asteroid(x: float, size: int, health: float, tabs: List[int], side: int):
         asteroid = Asteroid(size, size, side, health, tabs)
@@ -146,6 +145,7 @@ def play_game():
         else:
             asteroid.anchor = nave2
             asteroid.horizontal_bounds.y
+        asteroid.speed = 200 * difficulty_mult
         return asteroid
         
 
@@ -448,6 +448,7 @@ def play_game():
                 auras[1] += AURA_FOR_WINNER_NAVE
                 lose_screens[0].show(3)
                 win_screens[1].show(3)
+                nave1.dead = True
                 nave1.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.TETRIS
@@ -458,6 +459,7 @@ def play_game():
                 auras[0] += AURA_FOR_WINNER_NAVE
                 lose_screens[1].show(3)
                 win_screens[0].show(3)
+                nave2.dead = True
                 nave2.enabled = False
                 switch_cooldown = 3
                 switch_target = tabs.TETRIS
@@ -536,9 +538,12 @@ def play_game():
             switch_cooldown -= get_screen().window.delta_time()
             if switch_cooldown <= 0 and switch_target >= 0:
                 reset_game()
-                get_screen().set_tab(switch_target)
-                switch_target = -1
-                sounds.MUSICA.set_volume(sounds.MUSICA.volume*1.5)
+                if points[0] >= win_points or points[1] >= win_points:
+                    wants_to_quit = True
+                else:
+                    get_screen().set_tab(switch_target)
+                    switch_target = -1
+                    sounds.MUSICA.set_volume(sounds.MUSICA.volume*1.5)
         
         if get_screen().keyboard.key_pressed("esc"):
             wants_to_quit = True
