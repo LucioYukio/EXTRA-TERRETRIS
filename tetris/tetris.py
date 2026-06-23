@@ -254,6 +254,11 @@ class Tetris(Object):
         self.SPIN  : str = "space"
         self.POWER : str = "alt"
         
+        self.powers : List[int] = []
+        self.power_interval : float = 1
+        self.power_cooldown : float = self.power_interval
+        self.wants_to_power : bool = False
+        
         self.lost : bool = False
 
         self.choice_piece()
@@ -276,6 +281,17 @@ class Tetris(Object):
         self.gravity_increment_cooldown = self.gravity_increment_interval
         self.build_matrix()
         self.choice_piece()
+
+    def add_power(self, power: int):
+        self.powers.append(power)
+
+    def pop_power(self):
+        return self.powers.pop(0)
+
+    def check_power(self):
+        if get_screen().keyboard.key_pressed(self.POWER) and self.power_cooldown <= 0 and self.powers:
+            self.wants_to_power = True
+            self.power_cooldown = self.power_interval
 
     def handle_filled_lines(self):
         # checa se alguma linha esta cheia.
@@ -363,6 +379,9 @@ class Tetris(Object):
             self.gravity_increment_cooldown = self.gravity_increment_interval
         else:
             self.gravity_increment_cooldown -= self.delta_time
+
+        self.check_power()
+        self.power_cooldown = max(self.power_cooldown - self.delta_time, 0)
 
         self.grid.update()
         self.handle_filled_lines()

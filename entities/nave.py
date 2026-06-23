@@ -118,6 +118,11 @@ class Nave(Body):
         self.shield.set_total_frames(4)
         self.shield.frame_duration = 0.01
         self.shield.visible = False
+        
+        self.powers : List[int] = []
+        self.power_interval : float = 1
+        self.power_cooldown : float = self.power_interval
+        self.wants_to_power : bool = False # if this nave wants to use a power
 
     def shoot(self):
         if self.max_bullet_count == -1 or self.bullet_instance_counter[0] < self.max_bullet_count:
@@ -160,6 +165,12 @@ class Nave(Body):
         super().set_width(width)
         self.apply_rastro_offset()
 
+    def add_power(self, power: int):
+        self.powers.append(power)
+    
+    def pop_power(self):
+        return self.powers.pop(0)
+    
     def get_direction(self):
         direction_x = self.keyboard.key_pressed(self.RIGHT) - self.keyboard.key_pressed(self.LEFT)
         if self.keyboard.key_pressed(self.RIGHT) and self.keyboard.key_pressed(self.LEFT):
@@ -191,6 +202,11 @@ class Nave(Body):
         if self.keyboard.key_pressed(self.SHOOT) and self.shooting_cooldown <= 0:
             self.shoot()
             self.shooting_cooldown = self.shooting_interval
+
+    def check_power(self):
+        if self.keyboard.key_pressed(self.POWER) and self.power_cooldown <= 0 and self.powers:
+            self.wants_to_power = True
+            self.power_cooldown = self.power_interval
 
     def destroy_rastro(self):
         if not hasattr(self, "rastro"):
@@ -250,6 +266,7 @@ class Nave(Body):
         self.velocity.y = self.direction.y * self.speed
 
         self.check_shoot()
+        self.check_power()
         self.check_damage()
 
         for b in self.bullets:
@@ -257,6 +274,8 @@ class Nave(Body):
                 self.destroy_bullet(b)
 
         self.shooting_cooldown = max(self.shooting_cooldown - self.delta_time, 0)
+        
+        self.power_cooldown = max(self.power_cooldown - self.delta_time, 0)
 
         if self.anchor != self:
             anchor_movement = self.anchor.get_movement()

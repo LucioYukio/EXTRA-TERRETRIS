@@ -17,6 +17,7 @@ from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
 from entities.nave import DEFAULT_NAVE_SIZE, Nave
 from entities.powerstack import PowerStack
 from entities.winlosescreens import LoseScreen, WinScreen
+from entities import powers
 from tetris.tetris import Tetris
 from ui.persondisplay import GreenAlienDisplay, PurpleAlienDisplay
 from ui.text import CompositeText, NumberText
@@ -45,7 +46,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     # cima, baixo, esquerda, direita, tiro, poder
     control_esquemes = [
         ["up", "down", "left", "right", "n", "m"], 
-        ["w", "s", "a", "d", "space", "alt"]
+        ["w", "s", "a", "d", "space", "left_shift"]
     ]
 
     ENEMY_WAIT_TIME : float = 5 / difficulty_mult # segundos antes dos inimigos comecarem a spawnar
@@ -84,8 +85,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     # Eh uma lista para eu poder linkar em inimigos eh poder decrementar na morte
     enemy_counter        : List[int] = [0] 
     enemy_bullet_counter : List[int] = [0]
-
-
+    
 
 
     #---------------- FUNCOES ---------------------------
@@ -302,6 +302,17 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     tetris2.grid.overlay_img = "assets/images/tech_background_green_animated.png"
     tetris2.grid.build_grids()
 
+    tetris_powers1: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS], z=5,
+                                            image="assets/images/powers_tetris.png")
+    tetris_powers1.values = tetris1.powers
+    tetris_powers1.pos.x = SIDEPANEL_W/2 - tetris_powers1.get_width()/2
+    tetris_powers1.pos.y = 176
+
+    tetris_powers2: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.TETRIS], z=5,
+                                            image="assets/images/powers_tetris.png")
+    tetris_powers2.values = tetris2.powers
+    tetris_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - tetris_powers2.get_width()/2
+    tetris_powers2.pos.y = 176
 
     # general
     aura_text : CompositeText = CompositeText(DEFAULT_LETTER_SIZE, [tabs.NAVE, tabs.TETRIS], color_index=1, background=True)
@@ -322,7 +333,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     purple_alien_display.pos.y = TELA_H - purple_alien_display.get_height()
 
     nave_powers1 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE], z=5)
-    nave_powers1.values = [0, 1, 2, 3, 1, 3]
+    nave_powers1.values = nave1.powers
     nave_powers1.pos.x = SIDEPANEL_W/2 - nave_powers1.get_width()/2
     nave_powers1.pos.y = 176
 
@@ -338,7 +349,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
     green_alien_display.pos.y = TELA_H - green_alien_display.get_height()
     
     nave_powers2 : PowerStack = PowerStack(Vector2(64,64), 6, 18, [tabs.NAVE], z=5)
-    nave_powers2.values = [0, 1, 2, 3, 1, 3]
+    nave_powers2.values = nave2.powers
     nave_powers2.pos.x = TELA_W - SIDEPANEL_W/2 - nave_powers2.get_width()/2
     nave_powers2.pos.y = 176
 
@@ -411,7 +422,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
         
     # --------------------------- FUNCOES PODERES ------------------------
     
-    def cura(side: int, amount: int = 1):
+    def heal(side: int, amount: int = 1):
         if side == 0:
             nave1.health += amount
         else:
@@ -532,8 +543,25 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
         else:
             tetris2.build_matrix()
 
-    #----------------    
+    #----------------
     
+    def nave_use_power(power: int, side: int):
+        match power:
+            case powers.DECREASE_ENEMY_SPEED: decrease_enemy_speed(side)
+            case powers.HEAL: heal(side)
+            case powers.KILL_ALL: kill_all(side)
+            case powers.SIDE_SHOT: side_shoot(side)
+            case powers.INCREASE_SPEED: increase_speed(side)
+            case powers.SHIELD_UP: shield_up(side)
+
+    def tetris_use_power(power: int, side: int):
+        match power:
+            case powers.BLOCKED_BAR: add_blocked_bar(side)
+            case powers.ERASE_BOTTOM: erase_bottom(side)
+            case powers.NEW_PIECE: new_piece(side)
+            case powers.DECREASE_GRAVITY: decrease_your_gravity(side)
+            case powers.INCREASE_ENEMY_GRAVITY: increase_enemy_gravity(side)
+            case powers.CLEAR_GRID: clear_grid(side)
 
     # ------------------------- Game Loop ----------------------------
 
@@ -568,10 +596,6 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 get_screen().set_tab(tabs.NAVE)
 
         if get_screen().get_tab() == tabs.NAVE and switch_cooldown <= 0:
-            
-            if get_screen().keyboard.key_pressed("l"):
-                kill_all(0)
-            
             #----------------------- Enemy Spawn ------------------------------
             if enemy_spawn_cooldown <= 0 and enemy_counter[0] + 2 <= MAX_ENEMY_COUNT and last_average_fps > FPS_TARGET:
                 spawn_enemy(get_random_pos(0), [tabs.NAVE], 0)
@@ -581,6 +605,7 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
             for o in get_screen()._objs:
                 if o.pos.y >= TELA_H and isinstance(o, Enemy):
                     reset_enemy(o)
+            #----
             
             if nave1.damage_cooldown > 0:
                 # nave1 acabou de levar dano
@@ -605,7 +630,12 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 if enemy_speed_decreased2:
                     nave1.speed /= ENEMY_SPEED_DECREASE
                     enemy_speed_decreased2 = False
-                
+            
+            if nave1.wants_to_power:
+                power = nave1.pop_power()
+                nave_use_power(power, 0)
+                nave1.wants_to_power = False
+            
             if nave1.wants_to_die and not nave1.dead:
                 auras[1] += AURA_FOR_WINNER_NAVE
                 lose_screens[0].show(3)
@@ -617,6 +647,11 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 sounds.MUSICA.set_volume(sounds.MUSICA.volume/1.5)
                 sounds.ROUND_END.play()
                 points[1] += 1
+            if nave2.wants_to_power:
+                power = nave2.pop_power()
+                nave_use_power(power, 1)
+                nave2.wants_to_power = False
+            
             if nave2.wants_to_die and not nave2.dead:
                 auras[0] += AURA_FOR_WINNER_NAVE
                 lose_screens[1].show(3)
@@ -674,14 +709,24 @@ def play_game(dificuldade: str = "normal", win_points: int = 3):
                 sounds.ROUND_END.play()
                 points[0] += 1
 
+            if tetris1.wants_to_power:
+                power = tetris1.pop_power()
+                tetris_use_power(power, 0)
+                tetris1.wants_to_power = False
+            
+            if tetris2.wants_to_power:
+                power = tetris2.pop_power()
+                tetris_use_power(power, 1)
+                tetris2.wants_to_power = False
+
             if tetris1.points > 0:
                 auras[0] += tetris1.points * TETRIS_POINTS_MULTIPLIER
                 tetris1.points = 0
             if tetris2.points > 0:
                 auras[1] += tetris2.points * TETRIS_POINTS_MULTIPLIER
                 tetris2.points = 0
-            
-            
+
+
         # --------
         
         # drain cooldowns
