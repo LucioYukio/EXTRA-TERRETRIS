@@ -45,6 +45,8 @@ selected_points : int = 0
 # Tela de Loading
 
 loading_text : Text = Text("Carregando...", DEFAULT_LETTER_SIZE, [tabs.LOADING], 1)
+loading_text.pos.x = REF_RES[0] // 2 - loading_text.get_width() // 2
+loading_text.pos.y = REF_RES[1] // 2 - loading_text.get_height() // 2
 
 get_screen().set_tab(tabs.MENU_PRINCIPAL)
 while True:
@@ -52,6 +54,9 @@ while True:
         sounds.MUSICA.stop()
     match get_screen().get_tab():
         case tabs.MENU_PRINCIPAL:
+            if get_screen().keyboard.key_pressed("esc"):
+                exit()
+            
             center_x = [REF_RES[0] // 8, REF_RES[0] // 2 + 200, REF_RES[0] * 7 // 8]
             bottom_y = REF_RES[1] - 20
 

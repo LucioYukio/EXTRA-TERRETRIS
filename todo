@@ -1,36 +1,16 @@
-[] TIRAR O PERFILAMENTO ANTES DE LANCAR, DIMINUI BASTANTE O FPS !!!!!!!!!!
+Algumas naves explodem em detritos
+Dificuldade aumenta com o tempo
+    No tetris
+    Na navinha
+Balancear os poderes
+Inimigo que fica atirando tiros em quatro direcoes
+    [] Aparece
+Arquivo para salvar e carregar resolucao ao abrir o jogo
+Imagem de ajuda explicando como o jogo funciona
 
-[] Contador de pontos (totalmente funcional)
-[] Contador de aura (totalmente funcional)
-[] Poderes
-[] Menu principal
-[] Loja de poderes
-    [] Navinha
-    [] Tetris
-[] Indicador de poderes do lado
-    [] Fila, ordem de usar poderes eh a mesma que foram comprados
-    [] Indicador na esquerda
-[] Algumas naves explodem em detritos
-[] Naves voltam laaaa para cima ao inves de morrer (talves??)
-[] Outra camada de background
-[] Transicao nave para tetris quando alguem morre
-[] Transicao Tetris para nave quando alguem perde
-[] Dificuldade aumenta com o tempo
-    [] No tetris
-    [] Na navinha
-[] Adicionar sons
-    [] Funcaozinha de cache que toca som
-    [] Musica de fundo
-[] Botao nao tem background
-    [] Bordas dos botoes somem com res_scales menores, consertar isso.
-[] Inimigos aparentemente nao spawnam mais depois de um tempo
-[] Ver o quanto pode diminuir qualidade de assets pra melhorar performance, principalmente rastros
-[] Texts, custom Hitboxes e afins devem levar res_scale em conta!!!
-[] TRAZER AS MELHORIAS DE SPACE INVADERS PRA CA, TA LISO
-[] ImageCache guardar imagens resized tbm
 
 #RESENHA------
-[] Inimigo que fica no bg e atira na direcao da tela
+Inimigo que fica no bg e atira na direcao da tela
     [] Tiro comeca pequeno e escuro e aumenta e fica claro
     [] Z do tiro vai indo de algum valor para outro, interpolando
     [] .offset_multiplier vai aumentando tambem
