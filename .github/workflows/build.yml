@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            artifact_name: ExtraTerretris.exe
+            asset_name: ExtraTerretris-windows.exe
+          - os: ubuntu-latest
+            artifact_name: ExtraTerretris
+            asset_name: ExtraTerretris-linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update && sudo apt-get install -y libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.0-0
+        shell: bash
+      - name: Build executable
+        run: python build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.artifact_name }}
