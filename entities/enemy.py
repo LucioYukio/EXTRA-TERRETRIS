@@ -26,7 +26,7 @@ class FollowingEnemyBullet(FollowingBullet):
 class SpinningEnemyBullet(Bullet):
     def __init__(self, side: int, tabs: List[int]):
         super().__init__(
-            f"assets/images/spinning_bullet_{"green" if side == 0 else "purple"}.png", 
+            f"assets/images/spinning_bullet_{'green' if side == 0 else 'purple'}.png", 
             side, tabs)
         self.tags.append("enemy_projectile")
         self.set_total_frames(8)    
@@ -37,7 +37,7 @@ class SpinningEnemyBullet(Bullet):
 
 class Enemy(Nave):
     def __init__(self, width: int, height: int, side: int, target: Object, tabs: List[int], image: str = ""):
-        super().__init__(f"assets/images/nave_inimiga_{"verde" if side == 0 else "roxa"}.png" if image == "" else image, width, height, side, tabs)
+        super().__init__(f"assets/images/nave_inimiga_{'verde' if side == 0 else 'roxa'}.png" if image == "" else image, width, height, side, tabs)
         if "player" in self.tags:
             self.tags.remove("player")
             
@@ -122,7 +122,7 @@ class EnemySin(Enemy):
 
 class SpinEnemy(Enemy):
     def __init__(self, width: int, height: int, side: int, target: Object, tabs: List[int]):
-        super().__init__(width, height, side, target, tabs, f"assets/images/spin_enemy_{"green" if side == 0 else "purple"}.png")
+        super().__init__(width, height, side, target, tabs, f"assets/images/spin_enemy_{'green' if side == 0 else 'purple'}.png")
         self.set_total_frames(8)
         # chance de atirar a cada mudanca de frame
         self.last_curr_frame : int = 0 # se diferente de curr_sprite, ver se atira
