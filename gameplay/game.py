@@ -1,5 +1,5 @@
 from copy import copy
-from random import randrange, uniform
+from random import choice, randrange, uniform
 from typing import List, Tuple
 
 from config import sounds
@@ -8,14 +8,16 @@ from config.preload import preload_images
 from engine.const import REF_RES, clamp, get_screen
 from engine.object import Object
 from engine.vector2 import Vector2
-from entities.enemy import Enemy, EnemyBullet, EnemySin
+from entities.bullets import Bullet
+from entities.enemy import Enemy, EnemyBullet, EnemySin, FollowingEnemyBullet, SpinEnemy
 from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
-from entities.nave import DEFAULT_NAVE_SIZE, Nave
+from entities.nave import DEFAULT_ENEMY_SIZE, DEFAULT_NAVE_SIZE, Nave
 from entities import powers
 from tetris.tetris import Tetris
 from ui.text import Text
 
 from .config import (
+    ENEMY_POOL,
     SIDEPANEL_W,
     DIVISOR_W,
     H_BOUNDS,
@@ -65,7 +67,7 @@ class Game:
         self.switch_cooldown = 0.0
         self.switch_target = -1
 
-        self.enemy_spawn_interval = 2 / self.difficulty_mult
+        self.enemy_spawn_interval = 5 / self.difficulty_mult
         self.enemy_spawn_cooldown = 5 / self.difficulty_mult
 
         preload_images()
@@ -104,14 +106,36 @@ class Game:
 
     def spawn_enemy(self, x: float, side: int):
         img = "assets/images/nave_inimiga_verde.png" if side == 0 else "assets/images/nave_inimiga_roxa.png"
-        inimigo = EnemySin(
-            img,
-            int(DEFAULT_NAVE_SIZE.x),
-            int(DEFAULT_NAVE_SIZE.y),
-            side,
-            self.naves[side],
-            [tabs.NAVE],
-        )
+        
+        # escolher inimigo da enemy pool
+        inimigo : Enemy | None = None
+        enemy_type = choice(ENEMY_POOL)
+        match enemy_type:
+            case "EnemySin":
+                inimigo = EnemySin(
+                    int(DEFAULT_ENEMY_SIZE.x),
+                    int(DEFAULT_ENEMY_SIZE.y),
+                    side,
+                    self.naves[side],
+                    [tabs.NAVE])
+            case "SpinEnemy":
+                inimigo = SpinEnemy(
+                    int(DEFAULT_ENEMY_SIZE.x),
+                    int(DEFAULT_ENEMY_SIZE.x),
+                    side,
+                    self.naves[side],
+                    [tabs.NAVE]
+                )
+            case _:
+                inimigo = Enemy(
+                    int(DEFAULT_ENEMY_SIZE.x),
+                    int(DEFAULT_ENEMY_SIZE.y),
+                    side,
+                    self.naves[side],
+                    [tabs.NAVE])
+        
+        if not inimigo: return
+        
         inimigo.instance_counter = self.enemy_counter
         self.enemy_counter[0] += 1
         inimigo.bullet_instance_counter = self.enemy_bullet_counter
@@ -127,7 +151,7 @@ class Game:
         inimigo.bullet_explosion_img = "assets/images/explosion_small_green.png" if side == 0 else "assets/images/explosion_small_purple.png"
         inimigo.side = side
         inimigo.points_list = self.auras
-        inimigo.speed = 200 * self.difficulty_mult
+        inimigo.speed *= self.difficulty_mult
         inimigo.shooting_interval = 1 / self.difficulty_mult
         inimigo.bullet_speed_mult = self.difficulty_mult
 
@@ -145,6 +169,7 @@ class Game:
             nave.enabled = True
             nave.damage_cooldown = 0
             nave.shooting_cooldown = 0
+            nave.power_cooldown = nave.power_interval
             nave.blinking = False
             nave.visible = True
             nave.pressing_both = Vector2(0, 0)
@@ -184,7 +209,7 @@ class Game:
 
     def side_shoot(self, side: int):
         sounds.SIDE_SHOT.play()
-        b: EnemyBullet = EnemyBullet(
+        b: Bullet = FollowingEnemyBullet(
             "assets/images/bullet_red.png", 1 - side, [tabs.NAVE],
             self.naves[1 - side], 0.01,
         )

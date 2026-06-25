@@ -10,6 +10,8 @@ from engine.vector2 import Vector2
 DEFAULT_NAVE_SIZE = Vector2(69, 83)
 DEFAULT_NAVE_HITBOX = Vector2(20, 30)
 
+DEFAULT_ENEMY_SIZE = Vector2(86, 83)
+
 
 class Rastro(Object):
     def __init__(self, tabs: List[int], rastros: int):
@@ -246,6 +248,10 @@ class Nave(Body):
             self.spawn_explosion()
             self.wants_to_die = True
 
+    def update_rastro_pos(self):
+        self.rastro.pos.x = self.pos.x
+        self.rastro.pos.y = self.pos.y
+
     def destroy_bullet(self, bullet: Bullet):
         bullet.wants_to_die = True
         self.bullets.remove(bullet)
@@ -297,10 +303,10 @@ class Nave(Body):
             self.visible = True
             self.deactivate_shield()
 
-        self.rastro.pos.x = self.pos.x
-        self.rastro.pos.y = self.pos.y
         self.rastro.delta_time = self.delta_time
         self.rastro.update()
 
         self.shield.pos.x = self.pos.x + (self.get_width() - self.shield.get_width()) / 2
         self.shield.pos.y = self.pos.y + (self.get_height() - self.shield.get_height()) / 2
+
+        self.update_rastro_pos()

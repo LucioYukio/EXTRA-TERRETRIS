@@ -234,9 +234,9 @@ class Tetris(Object):
         self.curr_piece : Piece = PECA_NULL # peca escolhida no momento;
         
         self.gravity_speed: float = 1 # velocidade da gravidade; passiva
-        self.gravity_increment_interval: float = 10 # intervalo entre aumentos de gravidade
+        self.gravity_increment_interval: float = 5 # intervalo entre aumentos de gravidade
         self.gravity_increment_cooldown: float = self.gravity_increment_interval
-        self.gravity_increment_value: float = 0.1 # valor adicionado a gravidade periodicamente
+        self.gravity_increment_value: float = 0.5 # valor adicionado a gravidade periodicamente
         
         self.piece_fall_speed: float = 10 # velocidade da caida acelerada da peca; ativa
         

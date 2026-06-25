@@ -1,6 +1,7 @@
 from typing import List
 from engine.const import REF_RES
 from engine.vector2 import Vector2
+from entities.enemy import Enemy, EnemySin, SpinEnemy
 
 SIDEPANEL_W = 120
 DIVISOR_W = 48
@@ -14,6 +15,10 @@ CONTROL_SCHEMES: List[List[str]] = [
     ["up", "down", "left", "right", "n", "m"],
     ["w", "s", "a", "d", "space", "left_shift"],
 ]
+
+ENEMY_POOL =    ["Enemy" for _ in     range(40)] +\
+                ["EnemySin" for _ in  range(40)] +\
+                ["SpinEnemy" for _ in range(20)]
 
 DIFFICULTY_MULT = {"lento": 0.5, "normal": 1, "frenetico": 3}
 
