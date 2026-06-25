@@ -207,19 +207,20 @@ class Object:
             full = self.sprites[0].image
         if full is None:
             return
-        tile_w = int(self._width / self.h_parts * res_scale[0])
-        phys_frame_w = tile_w * self.h_parts
+        total_w = int(self._width * res_scale[0])
+        tile_w = total_w // self.h_parts
+        remainder = total_w - tile_w * self.h_parts
         phys_h = int(self._height * res_scale[1])
+        pos = curr_frame * total_w
         for i in range(self.h_parts):
             spr = self.sprites[i]
-            slice_start = int(curr_frame * phys_frame_w + i * tile_w)
-            slice_end = int(curr_frame * phys_frame_w + (i + 1) * tile_w)
-            w = slice_end - slice_start
+            w = tile_w + (1 if i < remainder else 0)
             if w <= 0:
                 continue
-            spr.image = full.subsurface(pygame.Rect(slice_start, 0, w, phys_h))
+            spr.image = full.subsurface(pygame.Rect(pos, 0, w, phys_h))
             spr.width = w
             spr.curr_frame = 0
+            pos += w
 
     def animate(self):
         if self.playing:
@@ -236,12 +237,15 @@ class Object:
     def update_sprites(self, grow_a_bit: bool = False):
         if not self.sprites:
             return
-        tile_w = int(self._width / self.h_parts * res_scale[0])
-        phys_w = tile_w * self.h_parts * self.total_frames
+        total_w = int(self._width * res_scale[0])
+        tile_w = total_w // self.h_parts
+        remainder = total_w - tile_w * self.h_parts
+        frame_w = total_w
+        phys_w = frame_w * self.total_frames
         phys_h = int(self._height * res_scale[1])
         for i, spr in enumerate(self.sprites):
             spr.image = get_image(self.image, phys_w, phys_h)
-            spr.width = tile_w
+            spr.width = tile_w + (1 if i < remainder else 0)
             spr.height = phys_h
             spr.curr_frame = i
         if self.sprites:

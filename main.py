@@ -1,8 +1,9 @@
+import json
 from typing import List
 
 from config import sounds
 from config import tabs
-from engine.const import TELA_W, TELA_H, REF_RES, get_screen, update_res_scale
+from engine.const import TELA_W, TELA_H, REF_RES, get_screen, update_res_scale, resize_window
 from engine.object import Object
 from engine.vector2 import Vector2
 from ui.button import Button
@@ -10,6 +11,15 @@ from ui.text import Text
 import gameplay
 
 #------------------------- CONSTANTES ---------------------------------------------------------
+
+RESOLUTIONS = [(1280, 720), (1366, 768), (1600, 900), (1920, 1080), (2560, 1440), (3840, 2160)]
+
+try:
+    with open("config.json") as f:
+        saved = json.load(f).get("resolution", [TELA_W, TELA_H])
+        resize_window(*saved)
+except (FileNotFoundError, json.JSONDecodeError):
+    pass
 
 update_res_scale([TELA_W, TELA_H])
 get_screen().set_title("Extraterretris")
@@ -40,6 +50,11 @@ start_button : Button = Button("Jogar", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPA
 quit_button : Button = Button("Sair", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
 selected_difficulty : int = 1
 selected_points : int = 0
+
+# Resolução
+res_index = next((i for i, r in enumerate(RESOLUTIONS) if r[0] == TELA_W and r[1] == TELA_H), 0)
+res_button : Button = Button(str(RESOLUTIONS[res_index][0]) + "x" + str(RESOLUTIONS[res_index][1]), DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
+res_label : Text = Text("Resolucao:", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL], 1)
 
 #-----
 
@@ -101,6 +116,22 @@ while True:
             quit_button.pos.y = 40
             if quit_button.is_just_pressed():
                 exit()
+
+            # Resolução
+            res_label.pos.x = 10
+            res_label.pos.y = 10
+            res_button.pos.x = 10
+            res_button.pos.y = 50
+            if res_button.is_just_pressed():
+                res_index = (res_index + 1) % len(RESOLUTIONS)
+                w, h = RESOLUTIONS[res_index]
+                from engine.const import resize_window
+                resize_window(w, h)
+                new_text = str(w) + "x" + str(h)
+                if res_button.text.text != new_text:
+                    res_button.text.text = new_text
+                    res_button.text.build_text()
+                    res_button.update_sprite()
         case tabs.LOADING:
             loading_text.pos.x = REF_RES[0] // 2 - loading_text.get_width() // 2
             loading_text.pos.y = REF_RES[1] // 2 - loading_text.get_height() // 2

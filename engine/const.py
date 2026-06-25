@@ -3,8 +3,15 @@ from typing import List
 REF_RES = (1600, 900)
 res_scale: List[float] = [1, 1]
 
-TELA_W = 1280
-TELA_H = 720
+TELA_W = 1920
+TELA_H = 1080
+
+def resize_window(w: int, h: int):
+    global TELA_W, TELA_H
+    TELA_W = w
+    TELA_H = h
+    update_res_scale([w, h])
+    get_screen().resize(w, h)
 
 EMPTY_PIXEL = "assets/images/empty_pixel.png"
 

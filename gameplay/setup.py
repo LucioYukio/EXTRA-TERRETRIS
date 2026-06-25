@@ -78,14 +78,17 @@ def setup_backgrounds(naves: Tuple[Nave, Nave]) -> Tuple[List[Background], List[
     bgs_far: List[Background] = []
     bgs: List[Background] = []
 
+    bg_w = int(528 * BG_SCALE)
+    bg_w -= bg_w % 96  # must be divisible by 96 (3 parts × 32 h_parts)
+
     for side in (0, 1):
         anchor = naves[side]
-        x_start = SIDEPANEL_W if side == 0 else REF_RES[0] / 2
-        x_end = REF_RES[0] / 2 - 16 if side == 0 else REF_RES[0]
+        x_start = H_BOUNDS[side].x if side == 0 else REF_RES[0] // 2
+        x_end = REF_RES[0] // 2  if side == 0 else REF_RES[0]
 
         bg_far = Background(
             "assets/images/asteroids_bg_narrow.png",
-            int(528 * BG_SCALE),
+            bg_w,
             int(2041 * BG_SCALE),
             [tabs.NAVE],
             side,
@@ -96,12 +99,12 @@ def setup_backgrounds(naves: Tuple[Nave, Nave]) -> Tuple[List[Background], List[
         bg_far.offset_multiplier = 0.1
         if side == 1:
             bg_far.pos.y = REF_RES[1] - bg_far.get_height() + 200
-            bg_far.pos.x = REF_RES[0] / 2
+        bg_far.pos.x = x_start
         bgs_far.append(bg_far)
 
         bg = Background(
             "assets/images/asteroids_bg_narrow_close.png",
-            int(528 * BG_SCALE),
+            bg_w,
             int(2041 * 3 * BG_SCALE),
             [tabs.NAVE],
             side,
@@ -110,12 +113,8 @@ def setup_backgrounds(naves: Tuple[Nave, Nave]) -> Tuple[List[Background], List[
             Vector2(x_start, x_end),
         )
         bg.offset_multiplier = 0.25
-        if side == 0:
-            bg.pos.y = REF_RES[1] - bg.get_height()
-            bg.pos.x = 60
-        else:
-            bg.pos.y = REF_RES[1] - bg.get_height() + 200
-            bg.pos.x = REF_RES[0] / 2
+        bg.pos.y = REF_RES[1] - bg.get_height() if side == 0 else REF_RES[1] - bg.get_height() + 200
+        bg.pos.x = x_start + 180*side
         bgs.append(bg)
 
     return bgs_far, bgs

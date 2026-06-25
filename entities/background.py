@@ -31,6 +31,8 @@ class Background(Object):
         super().update()
 
         w = self.get_width()
+        previous_x = self.pos.x
         for i in range(3):
-            self.parts[i].pos.x = self.pos.x + w * i / 3
+            self.parts[i].pos.x = previous_x
             self.parts[i].pos.y = self.pos.y
+            previous_x = self.parts[i].pos.x + self.parts[i].get_width()

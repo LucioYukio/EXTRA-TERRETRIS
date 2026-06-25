@@ -40,6 +40,10 @@ class Screen:
     def get_tab(self):
         return self._tab
 
+    def resize(self, width: int, height: int):
+        self.window.set_resolution(width, height)
+        self.set_bg_image()
+
     def set_bg_image(self):
         if self.bg_imgs.get(self._tab):
             self.bg.image = pygame.transform.scale(

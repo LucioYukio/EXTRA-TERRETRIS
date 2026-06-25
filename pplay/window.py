@@ -61,10 +61,12 @@ class Window():
     def restoreScreen(self): pass
     # TODO
 
-    """Not implemented yet - Sets the Window resolution"""
-    # The same problem as fullscreen
-    def set_resolution(self, width, height): pass
-    # TODO
+    """Sets the Window resolution"""
+    def set_resolution(self, width, height):
+        self.width = width
+        self.height = height
+        Window.screen = pygame.display.set_mode([self.width, self.height])
+        self.set_background_color(self.color)
     
 #-----------------------CONTROL METHODS---------------------------
     """Refreshes the Window - makes changes visible, AND updates the Time"""
