@@ -1,4 +1,23 @@
+import os
+import sys
 from typing import List
+
+
+if getattr(sys, 'frozen', False):
+    import pygame
+    _orig_load = pygame.image.load
+    def _patched_load(filename, *args, **kwargs):
+        if not os.path.isabs(filename):
+            filename = os.path.join(sys._MEIPASS, filename)
+        return _orig_load(filename, *args, **kwargs)
+    pygame.image.load = _patched_load
+
+
+def resolve_asset_path(path: str) -> str:
+    if getattr(sys, 'frozen', False):
+        return os.path.join(sys._MEIPASS, path)
+    return path
+
 
 REF_RES = (1600, 900)
 res_scale: List[float] = [1, 1]

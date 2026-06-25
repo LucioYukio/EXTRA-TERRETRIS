@@ -473,7 +473,7 @@ class Game:
         alien.pos.x = int(REF_RES[0] / 2 - alien.get_width() / 2)
         alien.pos.y = int(REF_RES[1] / 2 - 50)
 
-        esc_text = Text("Press ESC to return", SMALL_LETTER_SIZE, [tabs.WIN], color_index=1)
+        esc_text = Text("Pressione ESC para retornar", SMALL_LETTER_SIZE, [tabs.WIN], color_index=1)
         esc_text.pos.x = int(REF_RES[0] / 2 - esc_text.get_width() / 2)
         esc_text.pos.y = int(REF_RES[1] - 100)
 

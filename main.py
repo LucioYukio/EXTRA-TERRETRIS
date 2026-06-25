@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import List
 
 from config import sounds
@@ -115,7 +116,7 @@ while True:
             quit_button.pos.x = center_x[2]
             quit_button.pos.y = 40
             if quit_button.is_just_pressed():
-                exit()
+                sys.exit()
 
             # Resolução
             res_label.pos.x = 10
