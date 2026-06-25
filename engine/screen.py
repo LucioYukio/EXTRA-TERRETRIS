@@ -1,3 +1,4 @@
+from random import random
 from typing import List
 
 import pplay.window as w
@@ -128,7 +129,8 @@ class Screen:
             if obj.wants_to_die:
                 ids_to_remove.append(obj.get_id())
                 continue
-
+            
+            
             obj.apply_coords()
 
             obj.delta_time = self.window.delta_time()

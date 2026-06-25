@@ -129,8 +129,7 @@ class Nave(Body):
             self.spawn_bullet()
             self.bullets[-1].horizontal_bounds = self.horizontal_bounds
             self.bullets[-1].side = self.side
-            if self.anchor != self:
-                self.bullets[-1].anchor = self.anchor
+            self.bullets[-1].anchor = self.anchor
             self.bullets[-1].explosion_info["img"] = self.bullet_explosion_img
             self.bullets[-1].instance_counter = self.bullet_instance_counter
             self.bullet_instance_counter[0] += 1
@@ -239,6 +238,7 @@ class Nave(Body):
                     continue
                 self.health -= c.get_damage()
                 self.damage_cooldown = self.damage_interval
+                self.shake(c.get_damage() * 5, 0.5)
                 c.wants_to_die = c.destroy_on_hit
                 if c.destroy_on_hit and isinstance(c, Bullet):
                     c.spawn_explosion()

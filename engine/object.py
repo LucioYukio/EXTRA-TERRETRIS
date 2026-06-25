@@ -1,3 +1,4 @@
+from random import random
 from typing import List
 
 import pplay.keyboard as k
@@ -24,14 +25,30 @@ class Object:
         self.image = image
         self.sprites: List[Animation] = []
         self.h_parts = h_parts
+        self._z = z
+        
         self._tabs = tabs
+        
+        self.horizontal_bounds = Vector2(-1, -1)
+        self.vertical_bounds = Vector2(-1, -1)
+        self.destroy_out_of_h_bounds = False
+        self.destroy_out_of_v_bounds = False
+        self.keep_in_bounds = True
+        
+        # shake_movement
+        self.shake_movement : Vector2 = Vector2() # movimento adicional aplicado no ultimo frame
+        # listas sincronizadas
+        self.shake_amounts : List[float] = [] # multiplica o vetor normalizado do proximo shake_movement
+        self.shake_timers : List[float] = [] # se maior que zero, aplicar shake_movement. Drenar todo frame
+        
         self.pos = Vector2()
         self.last_pos = Vector2()
-        self._z = z
-        self.offset_multiplier = 0
         self.anchor = self
+        self.offset_multiplier = 0
+        
         self.frame_duration : float = 1
         self.total_frames = 1
+        self.playing = True
 
         self.set_width(width)
         self.set_height(height)
@@ -39,26 +56,23 @@ class Object:
 
         self.visible = True
         self.enabled = True
-        self.playing = True
+        
+        # variaveis mudadas pela tela
+        self.out_of_screen = False
         self.delta_time = 0
         self.time_elapsed = 0
-        self.out_of_screen = False
-        self.horizontal_bounds = Vector2(-1, -1)
-        self.vertical_bounds = Vector2(-1, -1)
-        self.out_of_h_bounds = False
         self.out_of_v_bounds = False
+        self.out_of_h_bounds = False
         self.screen_size = Vector2(REF_RES[0], REF_RES[1])
-        self.keep_in_bounds = True
-        self.destroy_out_of_h_bounds = False
-        self.destroy_out_of_v_bounds = False
+        self.wants_to_die = False
+        self.dead = False
+        
         self.categorie = ""
         self.tags = []
         self.instance_counter: List[int] = [0]
         self._id = 0
-        self.wants_to_die = False
-        self.dead = False
-        self._initialized = False
 
+        self._initialized = False
         if add_to_screen:
             get_screen().add_object(self)
         self._initialized = True
@@ -169,6 +183,10 @@ class Object:
             return False
         return True
 
+    def shake(self, intensity_multiplier: float, time: float):
+        self.shake_timers.append(time)
+        self.shake_amounts.append(intensity_multiplier)
+
     def get_movement(self):
         return Vector2(
             self.pos.x - self.last_pos.x,
@@ -250,6 +268,27 @@ class Object:
             anchor_movement = self.anchor.get_movement()
             self.pos.x -= anchor_movement.x * self.offset_multiplier
             self.pos.y -= anchor_movement.y * self.offset_multiplier
+        
+        # shake
+        self.pos -= self.shake_movement
+        
+        self.shake_movement.x = self.shake_movement.y = 0
+        n = len(self.shake_timers)
+        i = 0
+        while (i < n):
+            self.shake_movement.x += (random() - 0.5) * 2 * self.shake_amounts[i] * min(self.shake_timers[i]/0.5, 1)
+            self.shake_movement.y += (random() - 0.5) * 2 * self.shake_amounts[i] * min(self.shake_timers[i]/0.5, 1)
+            
+            self.shake_timers[i] -= self.delta_time
+            
+            if self.shake_timers[i] <= 0:
+                self.shake_timers.pop(i)
+                self.shake_amounts.pop(i)
+                n -= 1
+            else:
+                i += 1
+        
+        self.pos += self.shake_movement
 
     def destroy(self):
         self.instance_counter[0] -= 1

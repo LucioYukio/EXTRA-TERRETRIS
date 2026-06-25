@@ -37,6 +37,7 @@ for v in points_values:
 points_label : Text = Text("", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL], 1)
 
 start_button : Button = Button("Jogar", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
+quit_button : Button = Button("Sair", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
 selected_difficulty : int = 1
 selected_points : int = 0
 
@@ -54,9 +55,6 @@ while True:
         sounds.MUSICA.stop()
     match get_screen().get_tab():
         case tabs.MENU_PRINCIPAL:
-            if get_screen().keyboard.key_pressed("esc"):
-                exit()
-            
             center_x = [REF_RES[0] // 8, REF_RES[0] // 2 + 200, REF_RES[0] * 7 // 8]
             bottom_y = REF_RES[1] - 20
 
@@ -94,10 +92,15 @@ while True:
 
             # Start group
             start_button.pos.x = center_x[2] - start_button.get_width() // 2
-            start_button.pos.y = bottom_y - 90
+            start_button.pos.y = bottom_y - 120
 
             if start_button.is_just_pressed():
                 get_screen().set_tab(tabs.LOADING)
+
+            quit_button.pos.x = center_x[2]
+            quit_button.pos.y = 40
+            if quit_button.is_just_pressed():
+                exit()
         case tabs.LOADING:
             loading_text.pos.x = REF_RES[0] // 2 - loading_text.get_width() // 2
             loading_text.pos.y = REF_RES[1] // 2 - loading_text.get_height() // 2

@@ -15,6 +15,9 @@ class Bullet(Projectile):
         self.frame_duration = 0.1
 
         self.destroy_out_of_h_bounds = False
+        self.destroy_out_of_v_bounds = False
+        self.destroy_out_of_screen = False
+        self.max_lifetime = 7.5
 
         self.explosion_info: Dict = {
             "img": "assets/images/explosion_small.png",
@@ -30,6 +33,9 @@ class Bullet(Projectile):
         TIRO.play()
 
     def update(self):
+        if self.time_elapsed >= self.max_lifetime:
+            self.wants_to_die = True
+            return
         super().update()
 
     def spawn_explosion(self):

@@ -13,6 +13,7 @@ class EnemyBullet(FollowingBullet):
         self.tags.append("enemy_projectile")
         self.speed = 150
         self.direction.y = 1
+        self.destroy_out_of_h_bounds = False
 
 
 class Enemy(Nave):
@@ -85,3 +86,9 @@ class EnemySin(Enemy):
     def get_direction(self):
         self.direction.y = 1
         self.direction.x = cos(self.time_elapsed * self.sin_speed)
+
+class SpinEnemy(Enemy):
+    def __init__(self, width: int, height: int, side: int, target: Object, tabs: List[int]):
+        super().__init__(f"assets/images/spin_enemy_{"purple" if side == 0 else "green"}.png", width, height, side, target, tabs)
+        self.set_total_frames(8)
+        # chance de atirar a cada mudanca de frame

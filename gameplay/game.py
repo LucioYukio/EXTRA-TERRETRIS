@@ -1,6 +1,6 @@
 from copy import copy
 from random import randrange, uniform
-from typing import List
+from typing import List, Tuple
 
 from config import sounds
 from config import tabs
@@ -10,8 +10,9 @@ from engine.object import Object
 from engine.vector2 import Vector2
 from entities.enemy import Enemy, EnemyBullet, EnemySin
 from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
-from entities.nave import DEFAULT_NAVE_SIZE
+from entities.nave import DEFAULT_NAVE_SIZE, Nave
 from entities import powers
+from tetris.tetris import Tetris
 from ui.text import Text
 
 from .config import (
@@ -70,40 +71,22 @@ class Game:
         preload_images()
         setup_tab_backgrounds()
 
-        self.nave1, self.nave2 = setup_naves()
-        self.bg_far1, self.bg1, self.bg_far2, self.bg2 = setup_backgrounds(
-            self.nave1, self.nave2
-        )
-        self.asteroids = setup_asteroids(
-            self.nave1, self.nave2, self.difficulty_mult, self.auras
-        )
+        self.naves: Tuple[Nave, Nave] = setup_naves()
+        self.bgs_far, self.bgs = setup_backgrounds(self.naves)
+        self.asteroids = setup_asteroids(self.naves, self.difficulty_mult, self.auras)
 
         from .config import TETRIS_LINES
         piece_size = Vector2(REF_RES[1] / TETRIS_LINES, REF_RES[1] / TETRIS_LINES)
-        self.tetris1, self.tetris2 = setup_tetris(piece_size)
+        self.tetris: Tuple[Tetris, Tetris] = setup_tetris(piece_size)
 
-        (self.tetris_powers1, self.tetris_powers2,
-         self.nave_powers1, self.nave_powers2) = setup_power_stacks(
-            self.tetris1, self.tetris2, self.nave1, self.nave2,
-        )
+        (self.tetris_power_stacks,
+         self.nave_power_stacks) = setup_power_stacks(self.tetris, self.naves)
 
-        self.nave_store, self.tetris_store = setup_stores(
-            self.nave1, self.nave2, self.tetris1, self.tetris2, self.auras,
-        )
+        self.nave_store, self.tetris_store = setup_stores(self.naves, self.tetris, self.auras)
 
-        ui = setup_ui_elements(self.nave1, self.nave2)
-        self.sidepanel1 = ui["sidepanel1"]
-        self.sidepanel2 = ui["sidepanel2"]
-        self.points_text1 = ui["points_text1"]
-        self.points_text2 = ui["points_text2"]
-        self.aura_text = ui["aura_text"]
-        self.aura1_text_value = ui["aura1_text_value"]
-        self.aura2_text_value = ui["aura2_text_value"]
-        self.purple_alien_display = ui["purple_alien_display"]
-        self.green_alien_display = ui["green_alien_display"]
-        self.lose_screens = ui["lose_screens"]
-        self.win_screens = ui["win_screens"]
-        self.divisao = ui["divisao"]
+        (self.sidepanels, self.points_texts, self.aura_text,
+         self.aura_text_values, self.alien_displays, self.lose_screens,
+         self.win_screens, self.divisao) = setup_ui_elements(self.naves)
 
         for fade_cls in (WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut):
             fade = fade_cls([tabs.NAVE], total_duration=0.016)
@@ -112,10 +95,7 @@ class Game:
     # ---- helpers ----
 
     def get_random_pos(self, side: int) -> int:
-        if side == 0:
-            return randrange(0, REF_RES[0] // 2)
-        else:
-            return randrange(REF_RES[0] // 2, REF_RES[0])
+        return randrange(REF_RES[0] // 2 * side, REF_RES[0] // 2 * (side + 1)) if side == 0 else randrange(REF_RES[0] // 2, REF_RES[0])
 
     def reset_enemy(self, enemy: Enemy):
         enemy.pos.x = self.get_random_pos(enemy.side)
@@ -129,7 +109,7 @@ class Game:
             int(DEFAULT_NAVE_SIZE.x),
             int(DEFAULT_NAVE_SIZE.y),
             side,
-            self.nave1 if side == 0 else self.nave2,
+            self.naves[side],
             [tabs.NAVE],
         )
         inimigo.instance_counter = self.enemy_counter
@@ -141,10 +121,7 @@ class Game:
         inimigo.pos.x = x
         inimigo.pos.y = -inimigo.get_height() + 1
         inimigo.horizontal_bounds = copy(H_BOUNDS[side])
-        if side == 0:
-            inimigo.anchor = self.nave1
-        else:
-            inimigo.anchor = self.nave2
+        inimigo.anchor = self.naves[side]
         inimigo.vertical_bounds = Vector2(-inimigo.get_height(), REF_RES[1] + inimigo.get_height())
         inimigo.bullet_img = "assets/images/bullet_green.png" if side == 0 else "assets/images/bullet_purple.png"
         inimigo.bullet_explosion_img = "assets/images/explosion_small_green.png" if side == 0 else "assets/images/explosion_small_purple.png"
@@ -158,11 +135,10 @@ class Game:
 
     def reset_game(self):
         self.round_over = False
-        self.tetris1.reset()
-        self.tetris2.reset()
-        self.tetris1.enabled = True
-        self.tetris2.enabled = True
-        for nave in (self.nave1, self.nave2):
+        for t in self.tetris:
+            t.reset()
+            t.enabled = True
+        for nave in self.naves:
             nave.health = nave.default_health
             nave.wants_to_die = False
             nave.dead = False
@@ -175,10 +151,10 @@ class Game:
             for bullet in nave.bullets:
                 bullet.wants_to_die = True
             nave.bullets.clear()
-        self.nave1.pos.x = REF_RES[0] / 4 - self.nave1.get_width() / 2
-        self.nave1.pos.y = REF_RES[1] - self.nave1.get_height() - 8
-        self.nave2.pos.x = REF_RES[0] / 4 + REF_RES[0] / 2 - self.nave2.get_width() / 2
-        self.nave2.pos.y = REF_RES[1] - self.nave2.get_height() - 8
+        self.naves[0].pos.x = REF_RES[0] / 4 - self.naves[0].get_width() / 2
+        self.naves[0].pos.y = REF_RES[1] - self.naves[0].get_height() - 8
+        self.naves[1].pos.x = REF_RES[0] / 4 + REF_RES[0] / 2 - self.naves[1].get_width() / 2
+        self.naves[1].pos.y = REF_RES[1] - self.naves[1].get_height() - 8
         for obj in get_screen()._objs:
             if isinstance(obj, Enemy):
                 self.reset_enemy(obj)
@@ -192,44 +168,35 @@ class Game:
     # ---- nave power effects ----
 
     def heal(self, side: int, amount: int = 1):
-        if side == 0:
-            self.nave1.health += amount
-        else:
-            self.nave2.health += amount
+        sounds.HEAL_NAVE.play()
+        self.naves[side].health += amount
 
     def increase_speed(self, side: int):
-        if side == 0:
-            if not self.speed_increased[0]:
-                self.nave1.speed *= NAVE_SPEED_INCREASE
-                self.speed_increased[0] = True
-        else:
-            if not self.speed_increased[1]:
-                self.nave2.speed *= NAVE_SPEED_INCREASE
-                self.speed_increased[1] = True
+        if not self.speed_increased[side]:
+            self.naves[side].speed *= NAVE_SPEED_INCREASE
+            self.speed_increased[side] = True
 
     def decrease_enemy_speed(self, side: int):
-        if side == 0:
-            if not self.enemy_speed_decreased[0]:
-                self.nave2.speed *= ENEMY_SPEED_DECREASE
-                self.enemy_speed_decreased[0] = True
-        else:
-            if not self.enemy_speed_decreased[1]:
-                self.nave1.speed *= ENEMY_SPEED_DECREASE
-                self.enemy_speed_decreased[1] = True
+        sounds.SLOW_DOWN.play()
+        if not self.enemy_speed_decreased[side]:
+            self.naves[1 - side].speed *= ENEMY_SPEED_DECREASE
+            self.enemy_speed_decreased[side] = True
 
     def side_shoot(self, side: int):
+        sounds.SIDE_SHOT.play()
         b: EnemyBullet = EnemyBullet(
             "assets/images/bullet_red.png", 1 - side, [tabs.NAVE],
-            self.nave1 if side else self.nave2, 0.01,
+            self.naves[1 - side], 0.01,
         )
         b.direction = Vector2(1 - side, 0)
-        b.pos = self.nave1.pos.copy() if side == 0 else self.nave2.pos.copy()
+        b.pos = self.naves[side].pos.copy()
         b.set_width(48)
         b.set_height(48)
-        b.z = 6
+        b.z = 3
         b.horizontal_bounds = Vector2(-1, -1)
 
     def kill_all(self, side: int):
+        sounds.KILL_ALL.play()
         for obj in get_screen().get_objs_in_tab(tabs.NAVE):
             if isinstance(obj, Enemy) and obj.side == side:
                 obj.wants_to_die = True
@@ -241,14 +208,12 @@ class Game:
             REF_RES[1],
         )
         fade.pos.x = SIDEPANEL_W if side == 0 else int(REF_RES[0] / 2 + DIVISOR_W / 2)
+        self.naves[side].shake(30, 1)
 
     def shield_up(self, side: int):
-        if side == 0:
-            self.nave1.damage_cooldown = SHIELD_UP_DURATION
-            self.nave1.activate_shield()
-        else:
-            self.nave2.damage_cooldown = SHIELD_UP_DURATION
-            self.nave2.activate_shield()
+        sounds.SHIELD_NAVE.play()
+        self.naves[side].damage_cooldown = SHIELD_UP_DURATION
+        self.naves[side].activate_shield()
 
     def nave_use_power(self, power: int, side: int):
         match power:
@@ -262,13 +227,12 @@ class Game:
     # ---- tetris power effects ----
 
     def add_blocked_bar(self, side: int):
-        if side == 0:
-            self.tetris2.add_blocked_line_bellow()
-        else:
-            self.tetris1.add_blocked_line_bellow()
+        sounds.BLOCKED_BAR.play()
+        self.tetris[1 - side].add_blocked_line_bellow()
 
     def erase_bottom(self, side: int):
-        target = self.tetris1 if side == 0 else self.tetris2
+        sounds.ERASE_BOTTOM.play()
+        target = self.tetris[side]
         for i in range(target.lines - 1, -1, -1):
             row = target.matrix[i]
             if any(t != 0 for t in row):
@@ -277,36 +241,29 @@ class Game:
                 break
 
     def new_piece(self, side: int):
-        if side == 0:
-            self.tetris1.choice_piece()
-        else:
-            self.tetris2.choice_piece()
+        sounds.NEW_PIECE.play()
+        self.tetris[side].choice_piece()
 
     def increase_enemy_gravity(self, side: int):
-        if side == 0:
-            if not self.tetris_gravity_increased[0]:
-                self.tetris2.gravity_speed *= TETRIS_GRAVITY_INCREASE
-                self.tetris_gravity_increased[0] = True
-        else:
-            if not self.tetris_gravity_increased[1]:
-                self.tetris1.gravity_speed *= TETRIS_GRAVITY_INCREASE
-                self.tetris_gravity_increased[1] = True
+        if not self.tetris_gravity_increased[side]:
+            self.tetris[1 - side].gravity_speed *= TETRIS_GRAVITY_INCREASE
+            self.tetris_gravity_increased[side] = True
 
     def decrease_your_gravity(self, side: int):
-        if side == 0:
-            if not self.tetris_gravity_decreased[0]:
-                self.tetris1.gravity_speed *= TETRIS_GRAVITY_DECREASE
-                self.tetris_gravity_decreased[0] = True
-        else:
-            if not self.tetris_gravity_decreased[1]:
-                self.tetris2.gravity_speed *= TETRIS_GRAVITY_DECREASE
-                self.tetris_gravity_decreased[1] = True
+        sounds.SLOW_DOWN.play()
+        if not self.tetris_gravity_decreased[side]:
+            self.tetris[side].gravity_speed *= TETRIS_GRAVITY_DECREASE
+            self.tetris_gravity_decreased[side] = True
 
     def clear_grid(self, side: int):
-        if side == 0:
-            self.tetris1.build_matrix()
-        else:
-            self.tetris2.build_matrix()
+        sounds.KILL_ALL.play()
+        self.tetris[side].build_matrix()
+        fade = WhiteFadeOut(
+            [tabs.TETRIS], 0.2,
+            int(REF_RES[0] / 2 - SIDEPANEL_W - DIVISOR_W / 2),
+            REF_RES[1],
+        )
+        fade.pos.x = SIDEPANEL_W if side == 0 else int(REF_RES[0] / 2 + DIVISOR_W / 2)
 
     def tetris_use_power(self, power: int, side: int):
         match power:
@@ -329,13 +286,26 @@ class Game:
         sounds.MUSICA.play()
 
         while not self.wants_to_quit:
-            if self.switch_cooldown <= 0:
-                if screen.keyboard.key_pressed("t"):
-                    screen.set_tab(tabs.TETRIS)
-                if screen.keyboard.key_pressed("j"):
-                    screen.set_tab(tabs.NAVE)
+            # ---- NAVE tab (always handle deaths to prevent removal from screen) ----
+            if screen.get_tab() == tabs.NAVE:
+                for side in (0, 1):
+                    nave = self.naves[side]
+                    other = self.naves[1 - side]
+                    if nave.wants_to_die and not nave.dead:
+                        if not self.round_over:
+                            self.auras[1 - side] += int(other.health * AURA_REWARD_MULTIPLIER)
+                            self.lose_screens[side].show(3)
+                            self.win_screens[1 - side].show(3)
+                            self.round_over = True
+                            self.switch_cooldown = 3
+                            self.switch_target = tabs.TETRIS_LOJA
+                            sounds.MUSICA.set_volume(sounds.MUSICA.volume / 1.5)
+                            sounds.SABOTAGE_INCOMING.play()
+                            self.points[1 - side] += 1
+                        nave.dead = True
+                        nave.enabled = False
 
-            # ---- NAVE tab ----
+            # ---- NAVE tab (active gameplay) ----
             if screen.get_tab() == tabs.NAVE and self.switch_cooldown <= 0:
                 if self.enemy_spawn_cooldown <= 0 and self.enemy_counter[0] + 2 <= MAX_ENEMY_COUNT:
                     self.spawn_enemy(self.get_random_pos(0), 0)
@@ -346,66 +316,30 @@ class Game:
                     if o.pos.y >= REF_RES[1] and isinstance(o, Enemy):
                         self.reset_enemy(o)
 
-                if self.nave1.damage_cooldown > 0:
-                    self.purple_alien_display.hurt()
-                    if self.speed_increased[1]:
-                        self.nave2.speed /= NAVE_SPEED_INCREASE
-                        self.speed_increased[1] = False
-                    if self.enemy_speed_decreased[0]:
-                        self.nave2.speed /= ENEMY_SPEED_DECREASE
-                        self.enemy_speed_decreased[0] = False
+                for side in (0, 1):
+                    nave = self.naves[side]
+                    other = self.naves[1 - side]
 
-                if self.nave2.damage_cooldown > 0:
-                    self.green_alien_display.hurt()
-                    if self.speed_increased[0]:
-                        self.nave1.speed /= NAVE_SPEED_INCREASE
-                        self.speed_increased[0] = False
-                    if self.enemy_speed_decreased[1]:
-                        self.nave1.speed /= ENEMY_SPEED_DECREASE
-                        self.enemy_speed_decreased[1] = False
+                    if nave.damage_cooldown > 0:
+                        self.alien_displays[side].hurt()
+                        if self.speed_increased[1 - side]:
+                            other.speed /= NAVE_SPEED_INCREASE
+                            self.speed_increased[1 - side] = False
+                        if self.enemy_speed_decreased[side]:
+                            other.speed /= ENEMY_SPEED_DECREASE
+                            self.enemy_speed_decreased[side] = False
 
-                if self.nave1.wants_to_power:
-                    power = self.nave1.pop_power()
-                    self.nave_use_power(power, 0)
-                    self.nave1.wants_to_power = False
+                    if nave.wants_to_power:
+                        power = nave.pop_power()
+                        self.nave_use_power(power, side)
+                        nave.wants_to_power = False
 
-                if self.nave1.wants_to_die and not self.nave1.dead and not self.round_over:
-                    self.auras[1] += int(self.nave2.health * AURA_REWARD_MULTIPLIER)
-                    self.lose_screens[0].show(3)
-                    self.win_screens[1].show(3)
-                    self.nave1.dead = True
-                    self.nave1.enabled = False
-                    self.round_over = True
-                    self.switch_cooldown = 3
-                    self.switch_target = tabs.TETRIS_LOJA
-                    sounds.MUSICA.set_volume(sounds.MUSICA.volume / 1.5)
-                    sounds.SABOTAGE_INCOMING.play()
-                    self.points[1] += 1
-
-                if self.nave2.wants_to_power:
-                    power = self.nave2.pop_power()
-                    self.nave_use_power(power, 1)
-                    self.nave2.wants_to_power = False
-
-                if self.nave2.wants_to_die and not self.nave2.dead and not self.round_over:
-                    self.auras[0] += int(self.nave1.health * AURA_REWARD_MULTIPLIER)
-                    self.lose_screens[1].show(3)
-                    self.win_screens[0].show(3)
-                    self.nave2.dead = True
-                    self.nave2.enabled = False
-                    self.round_over = True
-                    self.switch_cooldown = 3
-                    self.switch_target = tabs.TETRIS_LOJA
-                    sounds.MUSICA.set_volume(sounds.MUSICA.volume / 1.5)
-                    sounds.SABOTAGE_INCOMING.play()
-                    self.points[0] += 1
-
-                self.bg1.pos.y += BG_VELOCITY
-                if self.bg1.pos.y >= -self.bg1.get_height() / 3:
-                    self.bg1.pos.y -= self.bg1.get_height() / 3
-                self.bg2.pos.y += BG_VELOCITY
-                if self.bg2.pos.y >= -self.bg2.get_height() / 3:
-                    self.bg2.pos.y -= self.bg2.get_height() / 3
+                self.bgs[0].pos.y += BG_VELOCITY
+                if self.bgs[0].pos.y >= -self.bgs[0].get_height() / 3:
+                    self.bgs[0].pos.y -= self.bgs[0].get_height() / 3
+                self.bgs[1].pos.y += BG_VELOCITY
+                if self.bgs[1].pos.y >= -self.bgs[1].get_height() / 3:
+                    self.bgs[1].pos.y -= self.bgs[1].get_height() / 3
                 for asteroid in self.asteroids:
                     if asteroid.pos.y >= REF_RES[1]:
                         asteroid.pos.y = REF_RES[1] * 2
@@ -415,48 +349,35 @@ class Game:
 
             # ---- TETRIS tab ----
             if screen.get_tab() == tabs.TETRIS and self.switch_cooldown <= 0:
-                self.tetris1.pos.x = (SIDEPANEL_W + REF_RES[0] / 2 - DIVISOR_W / 2) / 2 - self.tetris1.get_width() / 2
-                self.tetris2.pos.x = (REF_RES[0] / 2 + DIVISOR_W / 2 + REF_RES[0] - SIDEPANEL_W) / 2 - self.tetris2.get_width() / 2
+                for side in (0, 1):
+                    t = self.tetris[side]
+                    t.pos.x = ((SIDEPANEL_W + REF_RES[0] / 2 - DIVISOR_W / 2) / 2 - t.get_width() / 2) if side == 0 else ((REF_RES[0] / 2 + DIVISOR_W / 2 + REF_RES[0] - SIDEPANEL_W) / 2 - t.get_width() / 2)
 
-                if self.tetris1.check_loss():
-                    self.auras[1] += int(self.nave2.health * AURA_REWARD_MULTIPLIER)
-                    self.lose_screens[0].show(3)
-                    self.win_screens[1].show(3)
-                    self.tetris1.enabled = False
-                    self.tetris2.enabled = False
-                    self.switch_cooldown = 3
-                    self.switch_target = tabs.NAVE_LOJA
-                    sounds.MUSICA.set_volume(sounds.MUSICA.volume / 1.5)
-                    sounds.ROUND_END.play()
-                    self.points[1] += 1
-                if self.tetris2.check_loss():
-                    self.auras[0] += int(self.nave1.health * AURA_REWARD_MULTIPLIER)
-                    self.lose_screens[1].show(3)
-                    self.win_screens[0].show(3)
-                    self.tetris1.enabled = False
-                    self.tetris2.enabled = False
-                    self.switch_cooldown = 3
-                    self.switch_target = tabs.NAVE_LOJA
-                    sounds.MUSICA.set_volume(sounds.MUSICA.volume / 1.5)
-                    sounds.ROUND_END.play()
-                    self.points[0] += 1
+                for side in (0, 1):
+                    if self.tetris[side].check_loss():
+                        self.auras[1 - side] += int(self.naves[1 - side].health * AURA_REWARD_MULTIPLIER)
+                        self.lose_screens[side].show(3)
+                        self.win_screens[1 - side].show(3)
+                        for t in self.tetris:
+                            t.enabled = False
+                        self.switch_cooldown = 3
+                        self.switch_target = tabs.NAVE_LOJA
+                        sounds.MUSICA.set_volume(sounds.MUSICA.volume / 1.5)
+                        sounds.ROUND_END.play()
+                        self.points[1 - side] += 1
 
-                if self.tetris1.wants_to_power:
-                    power = self.tetris1.pop_power()
-                    self.tetris_use_power(power, 0)
-                    self.tetris1.wants_to_power = False
+                for side in (0, 1):
+                    t = self.tetris[side]
+                    if t.wants_to_power:
+                        power = t.pop_power()
+                        self.tetris_use_power(power, side)
+                        t.wants_to_power = False
 
-                if self.tetris2.wants_to_power:
-                    power = self.tetris2.pop_power()
-                    self.tetris_use_power(power, 1)
-                    self.tetris2.wants_to_power = False
-
-                if self.tetris1.points > 0:
-                    self.auras[0] += self.tetris1.points * TETRIS_POINTS_MULTIPLIER
-                    self.tetris1.points = 0
-                if self.tetris2.points > 0:
-                    self.auras[1] += self.tetris2.points * TETRIS_POINTS_MULTIPLIER
-                    self.tetris2.points = 0
+                for side in (0, 1):
+                    t = self.tetris[side]
+                    if t.points > 0:
+                        self.auras[side] += t.points * TETRIS_POINTS_MULTIPLIER
+                        t.points = 0
 
             # ---- TETRIS_LOJA tab ----
             if screen.get_tab() == tabs.TETRIS_LOJA and self.switch_cooldown <= 0:
@@ -487,11 +408,11 @@ class Game:
 
             self.aura_text.pos.x = REF_RES[0] / 2 - self.aura_text.get_width() / 2
             self.aura_text.pos.y = REF_RES[1] - self.aura_text.get_height()
-            self.aura1_text_value.value = self.auras[0]
-            self.aura2_text_value.value = self.auras[1]
+            self.aura_text_values[0].value = self.auras[0]
+            self.aura_text_values[1].value = self.auras[1]
 
-            self.points_text1.value = self.points[0]
-            self.points_text2.value = self.points[1]
+            self.points_texts[0].value = self.points[0]
+            self.points_texts[1].value = self.points[1]
 
             if self.switch_cooldown > 0:
                 self.switch_cooldown -= screen.window.delta_time()

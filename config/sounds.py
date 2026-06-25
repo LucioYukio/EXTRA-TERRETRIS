@@ -13,6 +13,18 @@ TETRIS_LIMPA_LINHA = Sound("assets/sounds/tetris_line_clear.ogg")
 TETRIS_RODAR       = Sound("assets/sounds/tetris_spin.ogg"      )
 TETRIS_COLAR       = Sound("assets/sounds/tetris_glue.ogg"      )
 
+# poderes - nave
+HEAL_NAVE          = Sound("assets/sounds/heal.ogg")
+KILL_ALL           = Sound("assets/sounds/kill_all.ogg")
+SLOW_DOWN          = Sound("assets/sounds/slow_down.ogg")
+SHIELD_NAVE        = Sound("assets/sounds/shield.ogg")
+SIDE_SHOT          = Sound("assets/sounds/tiro_alt.ogg")
+
+# poderes - tetris
+BLOCKED_BAR        = Sound("assets/sounds/blocked_bar.ogg")
+ERASE_BOTTOM       = Sound("assets/sounds/erase_bottom.ogg")
+NEW_PIECE          = Sound("assets/sounds/new_piece.ogg")
+
 # geral
 ROUND_END          = Sound("assets/sounds/next_confront.ogg")
 ROUND_END.set_volume(100)

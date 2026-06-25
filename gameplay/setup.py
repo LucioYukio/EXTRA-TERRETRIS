@@ -74,65 +74,54 @@ def setup_naves() -> Tuple[Nave, Nave]:
     return nave1, nave2
 
 
-def setup_backgrounds(nave1: Nave, nave2: Nave) -> Tuple[Background, Background, Background, Background]:
-    asteroid_bg_far1: Background = Background(
-        "assets/images/asteroids_bg_narrow.png",
-        int(528 * BG_SCALE),
-        int(2041 * BG_SCALE),
-        [tabs.NAVE],
-        0,
-        32,
-        nave1,
-        Vector2(SIDEPANEL_W, REF_RES[0] / 2 - 16),
-    )
-    asteroid_bg_far1.offset_multiplier = 0.1
+def setup_backgrounds(naves: Tuple[Nave, Nave]) -> Tuple[List[Background], List[Background]]:
+    bgs_far: List[Background] = []
+    bgs: List[Background] = []
 
-    asteroid_bg1: Background = Background(
-        "assets/images/asteroids_bg_narrow_close.png",
-        int(528 * BG_SCALE),
-        int(2041 * 3 * BG_SCALE),
-        [tabs.NAVE],
-        0,
-        32,
-        nave1,
-        Vector2(SIDEPANEL_W, REF_RES[0] / 2 - 16),
-    )
-    asteroid_bg1.offset_multiplier = 0.25
-    asteroid_bg1.pos.y = REF_RES[1] - asteroid_bg1.get_height()
-    asteroid_bg1.pos.x = 60
+    for side in (0, 1):
+        anchor = naves[side]
+        x_start = SIDEPANEL_W if side == 0 else REF_RES[0] / 2
+        x_end = REF_RES[0] / 2 - 16 if side == 0 else REF_RES[0]
 
-    asteroid_bg_far2: Background = Background(
-        "assets/images/asteroids_bg_narrow.png",
-        int(528 * BG_SCALE),
-        int(2041 * BG_SCALE),
-        [tabs.NAVE],
-        1,
-        32,
-        nave2,
-        Vector2(REF_RES[0] / 2, REF_RES[0]),
-    )
-    asteroid_bg_far2.offset_multiplier = 0.1
-    asteroid_bg_far2.pos.y = REF_RES[1] - asteroid_bg_far2.get_height() + 200
-    asteroid_bg_far2.pos.x = REF_RES[0] / 2
+        bg_far = Background(
+            "assets/images/asteroids_bg_narrow.png",
+            int(528 * BG_SCALE),
+            int(2041 * BG_SCALE),
+            [tabs.NAVE],
+            side,
+            32,
+            anchor,
+            Vector2(x_start, x_end),
+        )
+        bg_far.offset_multiplier = 0.1
+        if side == 1:
+            bg_far.pos.y = REF_RES[1] - bg_far.get_height() + 200
+            bg_far.pos.x = REF_RES[0] / 2
+        bgs_far.append(bg_far)
 
-    asteroid_bg2: Background = Background(
-        "assets/images/asteroids_bg_narrow_close.png",
-        int(528 * BG_SCALE),
-        int(2041 * 3 * BG_SCALE),
-        [tabs.NAVE],
-        1,
-        32,
-        nave2,
-        Vector2(REF_RES[0] / 2, REF_RES[0]),
-    )
-    asteroid_bg2.offset_multiplier = 0.25
-    asteroid_bg2.pos.y = REF_RES[1] - asteroid_bg2.get_height() + 200
-    asteroid_bg2.pos.x = REF_RES[0] / 2
+        bg = Background(
+            "assets/images/asteroids_bg_narrow_close.png",
+            int(528 * BG_SCALE),
+            int(2041 * 3 * BG_SCALE),
+            [tabs.NAVE],
+            side,
+            32,
+            anchor,
+            Vector2(x_start, x_end),
+        )
+        bg.offset_multiplier = 0.25
+        if side == 0:
+            bg.pos.y = REF_RES[1] - bg.get_height()
+            bg.pos.x = 60
+        else:
+            bg.pos.y = REF_RES[1] - bg.get_height() + 200
+            bg.pos.x = REF_RES[0] / 2
+        bgs.append(bg)
 
-    return asteroid_bg_far1, asteroid_bg1, asteroid_bg_far2, asteroid_bg2
+    return bgs_far, bgs
 
 
-def setup_asteroids(nave1: Nave, nave2: Nave, difficulty_mult: float,
+def setup_asteroids(naves: Tuple[Nave, Nave], difficulty_mult: float,
                      auras: List[int]) -> List[Asteroid]:
     def get_random_pos(side: int):
         if side == 0:
@@ -146,7 +135,7 @@ def setup_asteroids(nave1: Nave, nave2: Nave, difficulty_mult: float,
         asteroid.horizontal_bounds = copy(H_BOUNDS[side])
         asteroid.pos.x = x
         asteroid.pos.y = 0
-        asteroid.anchor = nave1 if side == 0 else nave2
+        asteroid.anchor = naves[side]
         asteroid.speed = 200 * difficulty_mult
         return asteroid
 
@@ -187,52 +176,45 @@ def setup_tetris(piece_size: Vector2) -> Tuple[Tetris, Tetris]:
     return tetris1, tetris2
 
 
-def setup_power_stacks(tetris1: Tetris, tetris2: Tetris, nave1: Nave, nave2: Nave):
-    tetris_powers1: PowerStack = PowerStack(
-        Vector2(64, 64), 6, 18, [tabs.TETRIS, tabs.TETRIS_LOJA], z=5,
-        image="assets/images/powers_tetris.png",
-    )
-    tetris_powers1.values = tetris1.powers
-    tetris_powers1.pos.x = SIDEPANEL_W / 2 - tetris_powers1.get_width() / 2
-    tetris_powers1.pos.y = 176
+def setup_power_stacks(tetris: Tuple[Tetris, Tetris], naves: Tuple[Nave, Nave]):
+    tetris_power_stacks: List[PowerStack] = []
+    nave_power_stacks: List[PowerStack] = []
 
-    tetris_powers2: PowerStack = PowerStack(
-        Vector2(64, 64), 6, 18, [tabs.TETRIS, tabs.TETRIS_LOJA], z=5,
-        image="assets/images/powers_tetris.png",
-    )
-    tetris_powers2.values = tetris2.powers
-    tetris_powers2.pos.x = REF_RES[0] - SIDEPANEL_W / 2 - tetris_powers2.get_width() / 2
-    tetris_powers2.pos.y = 176
+    for side in (0, 1):
+        tp = PowerStack(
+            Vector2(64, 64), 6, 18, [tabs.TETRIS, tabs.TETRIS_LOJA], z=5,
+            image="assets/images/powers_tetris.png",
+        )
+        tp.values = tetris[side].powers
+        tp.pos.x = SIDEPANEL_W / 2 - tp.get_width() / 2 if side == 0 else REF_RES[0] - SIDEPANEL_W / 2 - tp.get_width() / 2
+        tp.pos.y = 176
+        tetris_power_stacks.append(tp)
 
-    nave_powers1: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
-    nave_powers1.values = nave1.powers
-    nave_powers1.pos.x = SIDEPANEL_W / 2 - nave_powers1.get_width() / 2
-    nave_powers1.pos.y = 176
+        np = PowerStack(Vector2(64, 64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
+        np.values = naves[side].powers
+        np.pos.x = SIDEPANEL_W / 2 - np.get_width() / 2 if side == 0 else REF_RES[0] - SIDEPANEL_W / 2 - np.get_width() / 2
+        np.pos.y = 176
+        nave_power_stacks.append(np)
 
-    nave_powers2: PowerStack = PowerStack(Vector2(64, 64), 6, 18, [tabs.NAVE, tabs.NAVE_LOJA], z=5)
-    nave_powers2.values = nave2.powers
-    nave_powers2.pos.x = REF_RES[0] - SIDEPANEL_W / 2 - nave_powers2.get_width() / 2
-    nave_powers2.pos.y = 176
-
-    return tetris_powers1, tetris_powers2, nave_powers1, nave_powers2
+    return tetris_power_stacks, nave_power_stacks
 
 
-def setup_stores(nave1: Nave, nave2: Nave, tetris1: Tetris, tetris2: Tetris,
+def setup_stores(naves: Tuple[Nave, Nave], tetris: Tuple[Tetris, Tetris],
                  auras: List[int]) -> Tuple[NavePowerStore, TetrisPowerStore]:
     nave_store: NavePowerStore = NavePowerStore(
-        [nave1.powers, nave2.powers], auras,
+        [naves[0].powers, naves[1].powers], auras,
         [tabs.NAVE_LOJA], [CONTROL_SCHEMES[1], CONTROL_SCHEMES[0]],
     )
 
     tetris_store: TetrisPowerStore = TetrisPowerStore(
-        [tetris1.powers, tetris2.powers], auras,
+        [tetris[0].powers, tetris[1].powers], auras,
         [tabs.TETRIS_LOJA], [CONTROL_SCHEMES[1], CONTROL_SCHEMES[0]],
     )
 
     return nave_store, tetris_store
 
 
-def setup_ui_elements(nave1: Nave, nave2: Nave) -> Dict[str, Any]:
+def setup_ui_elements(naves: Tuple[Nave, Nave]):
     aura_text: CompositeText = CompositeText(
         DEFAULT_LETTER_SIZE,
         [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA],
@@ -245,44 +227,39 @@ def setup_ui_elements(nave1: Nave, nave2: Nave) -> Dict[str, Any]:
     divisao = Object("assets/images/divisor.png", DIVISOR_W, REF_RES[1], [tabs.NAVE, tabs.TETRIS], z=3)
     divisao.pos.x = REF_RES[0] / 2 - divisao.get_width() / 2
 
-    sidepanel1: Object = Object(
-        "assets/images/sidepanel_background_purple.png", SIDEPANEL_W, REF_RES[1],
-        [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3,
-    )
-    sidepanel1.categorie = "sidepanel"
+    sidepanels: List[Object] = [
+        Object(
+            "assets/images/sidepanel_background_purple.png", SIDEPANEL_W, REF_RES[1],
+            [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3,
+        ),
+        Object(
+            "assets/images/sidepanel_background_green.png", SIDEPANEL_W, REF_RES[1],
+            [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3,
+        ),
+    ]
+    sidepanels[0].categorie = "sidepanel"
+    sidepanels[1].pos.x = REF_RES[0] - sidepanels[1].get_width()
 
-    points_text1: NumberText = NumberText(
-        1, Vector2(SIDEPANEL_W, SIDEPANEL_W),
-        [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True,
-    )
+    points_texts: List[NumberText] = [
+        NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W),
+                   [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True),
+        NumberText(1, Vector2(SIDEPANEL_W, SIDEPANEL_W),
+                   [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True),
+    ]
+    points_texts[1].pos.x = REF_RES[0] - SIDEPANEL_W
 
-    purple_alien_display: PurpleAlienDisplay = PurpleAlienDisplay(
-        120, int(120 * 1.25),
-        [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA],
-        lambda: (nave1.health, nave1.default_health),
-    )
-    purple_alien_display.pos.x = sidepanel1.get_center().x - purple_alien_display.get_width() / 2
-    purple_alien_display.pos.y = REF_RES[1] - purple_alien_display.get_height()
-
-    sidepanel2: Object = Object(
-        "assets/images/sidepanel_background_green.png", SIDEPANEL_W, REF_RES[1],
-        [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], z=3,
-    )
-    sidepanel2.pos.x = REF_RES[0] - sidepanel2.get_width()
-
-    points_text2: NumberText = NumberText(
-        1, Vector2(SIDEPANEL_W, SIDEPANEL_W),
-        [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA], 1, True,
-    )
-    points_text2.pos.x = REF_RES[0] - SIDEPANEL_W
-
-    green_alien_display: GreenAlienDisplay = GreenAlienDisplay(
-        120, int(120 * 1.25),
-        [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA],
-        lambda: (nave2.health, nave2.default_health),
-    )
-    green_alien_display.pos.x = sidepanel2.get_center().x - green_alien_display.get_width() / 2
-    green_alien_display.pos.y = REF_RES[1] - green_alien_display.get_height()
+    alien_displays: List = [
+        PurpleAlienDisplay(120, int(120 * 1.25),
+                           [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA],
+                           lambda: (naves[0].health, naves[0].default_health)),
+        GreenAlienDisplay(120, int(120 * 1.25),
+                          [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA],
+                          lambda: (naves[1].health, naves[1].default_health)),
+    ]
+    alien_displays[0].pos.x = sidepanels[0].get_center().x - alien_displays[0].get_width() / 2
+    alien_displays[0].pos.y = REF_RES[1] - alien_displays[0].get_height()
+    alien_displays[1].pos.x = sidepanels[1].get_center().x - alien_displays[1].get_width() / 2
+    alien_displays[1].pos.y = REF_RES[1] - alien_displays[1].get_height()
 
     lose_screens: List[LoseScreen] = [
         LoseScreen(
@@ -314,17 +291,6 @@ def setup_ui_elements(nave1: Nave, nave2: Nave) -> Dict[str, Any]:
     win_screens[0].pos.x = SIDEPANEL_W
     win_screens[1].pos.x = int(REF_RES[0] / 2 + DIVISOR_W / 2)
 
-    return {
-        "sidepanel1": sidepanel1,
-        "sidepanel2": sidepanel2,
-        "points_text1": points_text1,
-        "points_text2": points_text2,
-        "aura_text": aura_text,
-        "aura1_text_value": aura1_text_value,
-        "aura2_text_value": aura2_text_value,
-        "purple_alien_display": purple_alien_display,
-        "green_alien_display": green_alien_display,
-        "lose_screens": lose_screens,
-        "win_screens": win_screens,
-        "divisao": divisao,
-    }
+    return (sidepanels, points_texts, aura_text,
+            [aura1_text_value, aura2_text_value],
+            alien_displays, lose_screens, win_screens, divisao)

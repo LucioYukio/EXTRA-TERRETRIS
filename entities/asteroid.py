@@ -98,6 +98,7 @@ class Asteroid(Projectile):
 
     def die(self):
         self.spawn_explosion()
+        self.anchor.shake(self.get_width()/5, 0.5)
         self.spawn_debris()
         self.pos.y = REF_RES[1]
         self.health = self.total_health
