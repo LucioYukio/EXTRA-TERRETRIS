@@ -279,6 +279,8 @@ class Tetris(Object):
         self.points = 0
         self.gravity_speed = 1
         self.gravity_increment_cooldown = self.gravity_increment_interval
+        self.power_cooldown = self.power_interval
+        self.wants_to_power = False
         self.build_matrix()
         self.choice_piece()
 

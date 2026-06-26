@@ -20,7 +20,7 @@ ENEMY_POOL =    ["Enemy" for _ in     range(40)] +\
                 ["EnemySin" for _ in  range(40)] +\
                 ["SpinEnemy" for _ in range(20)]
 
-DIFFICULTY_MULT = {"lento": 0.5, "normal": 1, "frenetico": 3}
+DIFFICULTY_MULT = {"lento": 0.5, "normal": 1, "rapido": 10}
 
 TETRIS_LINES = 20
 TETRIS_COLUMNS = 10

@@ -80,7 +80,7 @@ class Nave(Body):
     def __init__(self, image: str, width: int, height: int, side: int, tabs: List[int], h_parts: int = 2):
         super().__init__(image, width, height, side, tabs, h_parts, z=1)
         self.tags.append("player")
-        self.damage_from_tags = {"enemy_projectile", "asteroid"}
+        self.damage_from_tags = {"enemy_projectile", "asteroid", "debri"}
         self.keyboard = get_screen().keyboard
         self.speed : float = 200
         self.direction = Vector2(0, 0)

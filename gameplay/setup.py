@@ -16,7 +16,7 @@ from entities.powerstores import NavePowerStore, TetrisPowerStore
 from entities.winlosescreens import LoseScreen, WinScreen
 from tetris.tetris import Tetris
 from ui.persondisplay import GreenAlienDisplay, PurpleAlienDisplay
-from ui.text import CompositeText, NumberText
+from ui.text import CompositeText, NumberText, Text
 
 from .config import (
     BG_SCALE,
@@ -24,6 +24,7 @@ from .config import (
     DIVISOR_W,
     H_BOUNDS,
     SIDEPANEL_W,
+    SMALL_LETTER_SIZE,
     TETRIS_COLUMNS,
     TETRIS_LINES,
     ASTEROID_BASE_POINT_VALUE,
@@ -247,6 +248,20 @@ def setup_ui_elements(naves: Tuple[Nave, Nave]):
     ]
     points_texts[1].pos.x = REF_RES[0] - SIDEPANEL_W
 
+    not_ready_texts: List[Text] = [
+        Text("Comprando...", SMALL_LETTER_SIZE, [tabs.NAVE_LOJA, tabs.TETRIS_LOJA], 1, True),
+        Text("Comprando...", SMALL_LETTER_SIZE, [tabs.NAVE_LOJA, tabs.TETRIS_LOJA], 1, True)
+    ]
+    not_ready_texts[0].keep_in_bounds = False
+    not_ready_texts[1].keep_in_bounds = False
+    
+    ready_texts: List[Text] = [
+        Text("Pronto.", SMALL_LETTER_SIZE, [tabs.NAVE_LOJA, tabs.TETRIS_LOJA], 1, True),
+        Text("Pronto.", SMALL_LETTER_SIZE, [tabs.NAVE_LOJA, tabs.TETRIS_LOJA], 1, True)
+    ]
+    ready_texts[0].keep_in_bounds = False
+    ready_texts[1].keep_in_bounds = False
+
     alien_displays: List = [
         PurpleAlienDisplay(120, int(120 * 1.25),
                            [tabs.NAVE, tabs.NAVE_LOJA, tabs.TETRIS, tabs.TETRIS_LOJA],
@@ -292,4 +307,5 @@ def setup_ui_elements(naves: Tuple[Nave, Nave]):
 
     return (sidepanels, points_texts, aura_text,
             [aura1_text_value, aura2_text_value],
-            alien_displays, lose_screens, win_screens, divisao)
+            alien_displays, lose_screens, win_screens, divisao,
+            ready_texts, not_ready_texts)

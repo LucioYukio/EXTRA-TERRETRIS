@@ -47,7 +47,7 @@ class Enemy(Nave):
             
         self.tags.append("enemy")
         
-        self.damage_from_tags = {"player_projectile", "asteroid"}
+        self.damage_from_tags = {"player_projectile", "asteroid", "debri"}
         self.health = 3
         self.keep_in_bounds = False
         self.destroy_out_of_h_bounds = False

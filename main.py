@@ -57,6 +57,11 @@ res_index = next((i for i, r in enumerate(RESOLUTIONS) if r[0] == TELA_W and r[1
 res_button : Button = Button(str(RESOLUTIONS[res_index][0]) + "x" + str(RESOLUTIONS[res_index][1]), DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
 res_label : Text = Text("Resolucao:", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL], 1)
 
+# Informações
+screen = get_screen()
+screen.bg_imgs[tabs.INFO] = "assets/images/info.png"
+info_button : Button = Button("Info", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
+
 #-----
 
 # Tela de Loading
@@ -118,6 +123,11 @@ while True:
             if quit_button.is_just_pressed():
                 sys.exit()
 
+            info_button.pos.x = center_x[2]
+            info_button.pos.y = 88
+            if info_button.is_just_pressed():
+                get_screen().set_tab(tabs.INFO)
+
             # Resolução
             res_label.pos.x = 10
             res_label.pos.y = 10
@@ -128,6 +138,8 @@ while True:
                 w, h = RESOLUTIONS[res_index]
                 from engine.const import resize_window
                 resize_window(w, h)
+                with open("config.json", "w") as f:
+                    json.dump({"resolution": [w, h]}, f)
                 new_text = str(w) + "x" + str(h)
                 if res_button.text.text != new_text:
                     res_button.text.text = new_text
@@ -143,4 +155,7 @@ while True:
             get_screen().clear_tab(tabs.TETRIS_LOJA)
             gameplay.play_game(difficulty_names[selected_difficulty], points_values[selected_points])
             get_screen().set_tab(tabs.MENU_PRINCIPAL)
+        case tabs.INFO:
+            if get_screen().keyboard.key_pressed("esc"):
+                get_screen().set_tab(tabs.MENU_PRINCIPAL)
     get_screen().update()

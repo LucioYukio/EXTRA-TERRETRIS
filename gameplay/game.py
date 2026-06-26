@@ -9,6 +9,7 @@ from engine.const import REF_RES, clamp, get_screen
 from engine.object import Object
 from engine.vector2 import Vector2
 from entities.bullets import Bullet
+from entities.effect import Effect
 from entities.enemy import Enemy, EnemyBullet, EnemySin, FollowingEnemyBullet, SpinEnemy
 from entities.fades import WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut
 from entities.nave import DEFAULT_ENEMY_SIZE, DEFAULT_NAVE_SIZE, Nave
@@ -49,7 +50,7 @@ from .setup import (
 
 class Game:
     def __init__(self, difficulty: str, win_points: int):
-        self.difficulty_mult = {"lento": 0.5, "normal": 1, "frenetico": 3}.get(difficulty, 1)
+        self.difficulty_mult = {"lento": 0.5, "normal": 1, "rapido": 10}.get(difficulty, 1)
         self.win_points = win_points
 
         self.auras: List[int] = [0, 0]
@@ -88,7 +89,8 @@ class Game:
 
         (self.sidepanels, self.points_texts, self.aura_text,
          self.aura_text_values, self.alien_displays, self.lose_screens,
-         self.win_screens, self.divisao) = setup_ui_elements(self.naves)
+         self.win_screens, self.divisao,
+         self.ready_texts, self.not_ready_texts) = setup_ui_elements(self.naves)
 
         for fade_cls in (WhiteFadeIn, WhiteFadeOut, BlackFadeIn, BlackFadeOut):
             fade = fade_cls([tabs.NAVE], total_duration=0.016)
@@ -165,6 +167,7 @@ class Game:
         for nave in self.naves:
             nave.health = nave.default_health
             nave.wants_to_die = False
+            nave.wants_to_power = False
             nave.dead = False
             nave.enabled = True
             nave.damage_cooldown = 0
@@ -299,7 +302,7 @@ class Game:
             case powers.INCREASE_ENEMY_GRAVITY: self.increase_enemy_gravity(side)
             case powers.CLEAR_GRID: self.clear_grid(side)
 
-    # ---- main loop ----
+    # ---- game loop ----
 
     def run(self):
         screen = get_screen()
@@ -358,6 +361,11 @@ class Game:
                         power = nave.pop_power()
                         self.nave_use_power(power, side)
                         nave.wants_to_power = False
+                        Effect(
+                            "assets/images/sidepanel_power_used.png",
+                            9, 0.2, SIDEPANEL_W, REF_RES[1], [tabs.NAVE], 1,
+                            z=self.sidepanels[side].z + 1,
+                        ).pos.x = (REF_RES[0] - SIDEPANEL_W) * side
 
                 self.bgs[0].pos.y += BG_VELOCITY
                 if self.bgs[0].pos.y >= -self.bgs[0].get_height() / 3:
@@ -397,12 +405,32 @@ class Game:
                         power = t.pop_power()
                         self.tetris_use_power(power, side)
                         t.wants_to_power = False
+                        Effect(
+                            "assets/images/sidepanel_power_used.png",
+                            9, 0.2, SIDEPANEL_W, REF_RES[1], [tabs.TETRIS], 1,
+                            z=self.sidepanels[side].z + 1,
+                        ).pos.x = (REF_RES[0] - SIDEPANEL_W) * side
 
                 for side in (0, 1):
                     t = self.tetris[side]
                     if t.points > 0:
                         self.auras[side] += t.points * TETRIS_POINTS_MULTIPLIER
                         t.points = 0
+            
+            # ---- TETRIS_LOJA tab and NAVE_LOJA tab ----
+            if screen.get_tab() in (tabs.TETRIS_LOJA, tabs.NAVE_LOJA):
+                GAP = 16
+                y = self.tetris_store.pos.y + self.tetris_store.get_height() + GAP
+                # player 1
+                self.not_ready_texts[0].pos.x = self.tetris_store.pos.x
+                self.not_ready_texts[0].pos.y = y
+                self.ready_texts[0].pos.x = self.tetris_store.pos.x
+                self.ready_texts[0].pos.y = y
+                # player 2
+                self.not_ready_texts[1].pos.x = self.tetris_store.pos.x + self.tetris_store.get_width() - self.not_ready_texts[1].get_width()
+                self.not_ready_texts[1].pos.y = y
+                self.ready_texts[1].pos.x = self.tetris_store.pos.x + self.tetris_store.get_width() - self.ready_texts[1].get_width()
+                self.ready_texts[1].pos.y = y
 
             # ---- TETRIS_LOJA tab ----
             if screen.get_tab() == tabs.TETRIS_LOJA and self.switch_cooldown <= 0:
@@ -414,7 +442,16 @@ class Game:
                     screen.set_tab(tabs.TETRIS)
                     self.tetris_store.reset()
                     self.enemy_spawn_cooldown = 5 / self.difficulty_mult
-
+                    
+                if not self.tetris_store.cursors[0].finished:
+                    self.ready_texts[0].pos.y = 10000
+                else:
+                    self.not_ready_texts[0].pos.y = 10000
+                if not self.tetris_store.cursors[1].finished:
+                    self.ready_texts[1].pos.y = 10000
+                else:
+                    self.not_ready_texts[1].pos.y = 10000
+                
             # ---- NAVE_LOJA tab ----
             if screen.get_tab() == tabs.NAVE_LOJA and self.switch_cooldown <= 0:
                 self.nave_store.pos.x = REF_RES[0] / 2 - self.nave_store.get_width() / 2
@@ -425,6 +462,15 @@ class Game:
                     screen.set_tab(tabs.NAVE)
                     self.nave_store.reset()
                     self.enemy_spawn_cooldown = 5 / self.difficulty_mult
+                
+                if not self.nave_store.cursors[0].finished:
+                    self.ready_texts[0].pos.y = 10000
+                else:
+                    self.not_ready_texts[0].pos.y = 10000
+                if not self.nave_store.cursors[1].finished:
+                    self.ready_texts[1].pos.y = 10000
+                else:
+                    self.not_ready_texts[1].pos.y = 10000
 
             # ---- common updates ----
             self.enemy_spawn_cooldown = max(
