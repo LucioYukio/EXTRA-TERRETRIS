@@ -228,7 +228,7 @@ class Game:
         for obj in get_screen().get_objs_in_tab(tabs.NAVE):
             if isinstance(obj, Enemy) and obj.side == side:
                 obj.wants_to_die = True
-            if isinstance(obj, EnemyBullet) and obj.side == side:
+            if isinstance(obj, Bullet):
                 obj.wants_to_die = True
         fade = WhiteFadeOut(
             [tabs.NAVE], 0.2,

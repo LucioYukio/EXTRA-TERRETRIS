@@ -4,7 +4,8 @@ from typing import List
 
 from config import sounds
 from config import tabs
-from engine.const import TELA_W, TELA_H, REF_RES, get_screen, update_res_scale, resize_window
+from engine import const as const_mod
+from engine.const import REF_RES, get_screen, update_res_scale, resize_window
 from engine.object import Object
 from engine.vector2 import Vector2
 from ui.button import Button
@@ -17,12 +18,10 @@ RESOLUTIONS = [(1280, 720), (1366, 768), (1600, 900), (1920, 1080), (2560, 1440)
 
 try:
     with open("config.json") as f:
-        saved = json.load(f).get("resolution", [TELA_W, TELA_H])
+        saved = json.load(f).get("resolution", [const_mod.TELA_W, const_mod.TELA_H])
         resize_window(*saved)
 except (FileNotFoundError, json.JSONDecodeError):
-    pass
-
-update_res_scale([TELA_W, TELA_H])
+    update_res_scale([const_mod.TELA_W, const_mod.TELA_H])
 get_screen().set_title("Extraterretris")
 
 DEFAULT_LETTER_SIZE = Vector2(32,32)
@@ -53,7 +52,7 @@ selected_difficulty : int = 1
 selected_points : int = 0
 
 # Resolução
-res_index = next((i for i, r in enumerate(RESOLUTIONS) if r[0] == TELA_W and r[1] == TELA_H), 0)
+res_index = next((i for i, r in enumerate(RESOLUTIONS) if r[0] == const_mod.TELA_W and r[1] == const_mod.TELA_H), 0)
 res_button : Button = Button(str(RESOLUTIONS[res_index][0]) + "x" + str(RESOLUTIONS[res_index][1]), DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL])
 res_label : Text = Text("Resolucao:", DEFAULT_LETTER_SIZE, [tabs.MENU_PRINCIPAL], 1)
 

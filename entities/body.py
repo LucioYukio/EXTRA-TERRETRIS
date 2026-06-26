@@ -80,24 +80,25 @@ class Body(Object):
     def get_colliders(self, tags_to_check: Set[str]):
         objs = []
         for obj in bodies[self.side]:
-            if isinstance(obj, Body):
-                distance = sqrt(
-                    ((self.pos.x + self.get_width() / 2) - (obj.pos.x + obj.get_width() / 2)) ** 2 +
-                    ((self.pos.y + self.get_height() / 2) - (obj.pos.y + obj.get_height() / 2)) ** 2
-                )
-                if distance > self.radius and distance > obj.radius:
-                    continue
+            if not isinstance(obj, Body) or obj.wants_to_die:
+                continue
+            distance = sqrt(
+                ((self.pos.x + self.get_width() / 2) - (obj.pos.x + obj.get_width() / 2)) ** 2 +
+                ((self.pos.y + self.get_height() / 2) - (obj.pos.y + obj.get_height() / 2)) ** 2
+            )
+            if distance > self.radius and distance > obj.radius:
+                continue
+            valid = False
+            if tags_to_check:
+                for tag in tags_to_check:
+                    if tag in obj.tags:
+                        valid = True
+                        break
+            else:
                 valid = False
-                if tags_to_check:
-                    for tag in tags_to_check:
-                        if tag in obj.tags:
-                            valid = True
-                            break
-                else:
-                    valid = False
-                if valid:
-                    if self.is_colliding_with_body(obj):
-                        objs.append(obj)
+            if valid:
+                if self.is_colliding_with_body(obj):
+                    objs.append(obj)
         return objs
 
     def collide(self, body: 'Body | None'):
